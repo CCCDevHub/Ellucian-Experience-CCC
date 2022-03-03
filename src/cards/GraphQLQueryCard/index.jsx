@@ -8,9 +8,7 @@ import { useIntl } from 'react-intl';
 
 const styles = () => ({
     card: {
-        marginRight: spacing40,
-        marginLeft: spacing40,
-        paddingTop: spacing10
+        width: '12.5rem'
     },
     list: {
         paddingBottom: spacing40

@@ -1,129 +1,129 @@
 module.exports = {
-    "name": "Ellucian-Experience",
-    "publisher": "Sample",
-    "configuration": {
-        "client": [{
-            "key": "extension-client-url",
-            "label": "extension client url",
-            "type": "url",
-            "required": true
-        }, {
-            "key": "extension-client-text",
-            "label": "extension client text",
-            "type": "text"
-        }, {
-            "key": "extension-client-password",
-            "label": "extension client password",
-            "type": "password"
-        }],
-        "server": [{
-            "key": "extension-server-url",
-            "label": "extension server url",
-            "type": "url",
-            "required": true
-        }, {
-            "key": "extension-server-text",
-            "label": "extension server text",
-            "type": "text"
-        }, {
-            "key": "extension-server-password",
-            "label": "extension server password",
-            "type": "password"
-        }]
-    },
+    "name": "View My Schedule",
+    "publisher": "Huey Phan",
+    "version": "1.0.0",
     "cards": [{
-        "type": "ThrowErrorCard",
-        "source": "./src/cards/ThrowErrorCard.jsx",
-        "title": "Throw Error",
-        "displayCardType": "Nothing but Error",
-        "description": "Throws an Error"
-    }, {
-        "type": "CardConfigurationCard",
-        "source": "./src/cards/CardConfigurationCard",
-        "title": "Card Configuration",
-        "displayCardType": "Card Configuration",
-        "description": "Card Configuration",
-        "configuration": {
-            "client": [{
-                "key": "card-client-url",
-                "label": "card client url",
-                "type": "url",
-                "required": true
-            }, {
-                "key": "card-client-text",
-                "label": "card client text",
-                "type": "text"
-            }, {
-                "key": "card-client-password",
-                "label": "card client password",
-                "type": "password"
-            }],
-            "server": [{
-                "key": "card-server-url",
-                "label": "card server url",
-                "type": "url",
-                "required": true
-            }, {
-                "key": "card-server-text",
-                "label": "card server text",
-                "type": "text"
-            }, {
-                "key": "card-server-password",
-                "label": "card server password",
-                "type": "password"
-            }]
-        }
-    }, {
         "type": "GraphQLQueryCard",
-        "source": "./src/cards/GraphQLQueryCard",
-        "title": "Buildings",
-        "displayCardType": "GraphQL Query",
-        "description": "GraphQL Query",
+        "source": "./src/cards/ViewMyScheduleCard",
+        "title": "View My Schedule",
+        "displayCardType": "GraphQL Query View My Schedule",
+        "description": "GraphQL Query View My Schedule",
         "queries": {
-            "list-sites": [
+            "list-instructional-events": [
                 {
                     "resourceVersions": {
-                        "sites": {min: 6},
+                        "instructionalEvents": { min: 8 },
+                        "instructionalMethods": { min: 6 },
+                        "instructors": { min: 12 },
+                        "sections": { min: 16 },
+                        "sites": { min: 6 },
+                        "rooms": { min: 10 },
+                        "buildings": { min: 6 }
                     },
                     "query":
                         `{
-                            sites: {sites} (
-                                sort: { title: ASC }
-                            )
-                            {
-                                edges {
-                                    node {
-                                        id
-                                        title
+                            query listInstructionalEvents($sectionId: ID) {
+                                instructionalEvents {instrucitonalEvents}(
+                                    filter: { {sections}: {
+                                        id: { EQ: $sectionID } }
+                                    }
+                                    
+                                ) {
+                                    edges {
+                                        node {
+                                            id
+                                            instructionalMethod: {instructionalMethod} {
+                                                abbreviation
+                                            }
+                                            instructorRoster {
+                                                instructor: {instructor} {
+                                                    names {
+                                                        fullName
+                                                        title
+                                                        pedigree
+                                                    }
+                                                }
+                                            }
+                                            recurrence {
+                                                timePeriod {
+                                                    startOn
+                                                    endOn
+                                                }
+                                                repeatRule {
+                                                    type
+                                                    interval
+                                                    ends {
+                                                        repetitions
+                                                        date
+                                                    }
+                                                    daysOfWeek
+                                                    repeatBy {
+                                                        dayOfWeek {
+                                                            day
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            section: {section} {
+                                                titles {
+                                                    value
+                                                }
+                                            }
+                                            locations {
+                                                location {
+                                                    site: {site} {
+                                                        title
+                                                        code
+                                                    }
+                                                    room: {room} {
+                                                        number
+                                                        floor
+                                                        title
+                                                        building: {building} {
+                                                            title
+                                                        }
+                                                        floor
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }`
                 }
             ],
-            "list-buildings": [
+            "list-classes": [
                 {
                     "resourceVersions": {
-                        "buildings": {min: 6},
-                        "sites": {min: 6},
+                        "sectionRegistrations": { min: 16 },
+                        "sections": { min: 16 },
+                        "persons": { min: 12 }
                     },
                     "query":
-                        `query listBuildings($siteId: ID){
-                            buildings : {buildings}(
+                        `query listClasses($personId: ID, $yesterday: Date, $tomorrow: Date) {
+                            sectionRegistrations(
                                 filter: {
-                                    {site}: {
-                                        id: { EQ: $siteId }
-                                    }
-                                },
-                                sort: { title: ASC } 
-                            )
-                            {
+                                    {registrant@persons}: { id: { EQ: $personID } }
+                                    {sections}: { startOn: { BEFORE: $tomorrow }, endOn: { AFTER: $yesterday } }
+                                }
+                            ) {
                                 edges {
                                     node {
                                         id
-                                        title
-                                        site  : {site} {
+                                        {sections}: sections {
                                             id
+                                            startOn
+                                            endOn
+                                            titles {
+                                                value
+                                            }
+                                        }
+                                        {registrant@persons}: registrant {
+                                            id
+                                            names {
+                                                fullName
+                                            }
                                         }
                                     }
                                 }
@@ -131,45 +131,6 @@ module.exports = {
                         }`
                 }
             ]
-        }
-    }, {
-        "type": "CacheCard",
-        "source": "./src/cards/CacheCard",
-        "title": "Cache Card",
-        "displayCardType": "Cache Card",
-        "description": "Cache Card"
-    }, {
-        "type": "PreventRemoveCard",
-        "source": "./src/cards/PreventRemoveCard",
-        "title": "Prevent Remove",
-        "displayCardType": "Prevent Remove",
-        "description": "This card can prevent its removal"
-    }, {
-        "type": "DrilldownCard",
-        "source": "./src/cards/DrilldownCard",
-        "title": "Drilldown Example",
-        "displayCardType": "Drilldown Example",
-        "description": "This card demostrates drilldown pattern"
-    }, {
-        "type": "LoadingStateCard",
-        "source": "./src/cards/LoadingStateCard",
-        "title": "Loading State",
-        "displayCardType": "Loading State",
-        "description": "This card sets it state to loading for 10 seconds"
-    }, {
-        "type": "ErrorMessageCard",
-        "source": "./src/cards/ErrorMessageCard",
-        "title": "Error Message",
-        "displayCardType": "Error Message",
-        "description": "This card sets an error message to display"
-    }, {
-        "type": "PropsCard",
-        "source": "./src/cards/PropsCard",
-        "title": "Properties",
-        "displayCardType": "Properties Card",
-        "description": "This card displays non-function properties",
-        "pageRoute": {
-            "route": "/"
         }
     }],
     "page": {

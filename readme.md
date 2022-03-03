@@ -2,6 +2,12 @@
 
 This module bootstraps your Ellucian Experience Extension development by creating an extension project. This module is primarily used to create your initial project. From this, you would add cards and make modifications. This project should be placed under your source control.
 
+# Table of Contents
+1. [Workflow](#workflow)
+2. [Create Extension Card](#create-extension-card)
+3. [Live Reloading The Extensions](#live-reloading-the-extensions)
+4. [Developers Resoureces](#developers-resources)
+
 ## Workflow
 
 1. Branches
@@ -10,156 +16,197 @@ This module bootstraps your Ellucian Experience Extension development by creatin
    - **dev** (Development Evnironment)
 2. Procedure
    - Before your work do this to update master branch
-   ```
-   $ git checkout master
-   $ git fetch --all
-   $ git pull
-   ```
+        ```
+        $ git checkout master
+        $ git fetch --all
+        $ git pull
+        ```
    - Create yourFeature branch from dev
-   ```
-   $ git checkout -b yourFeature origin/dev
-   ```
+        ```
+        $ git checkout -b yourFeature origin/dev
+        ```
    - Update your current branch up to date with master
-   ```
-   $ git merge master
-   ```
+        ```
+        $ git rebase master
+        ```
    - Do your work, add the file
-   ```
-   $ git add path/to/the/file
-   ```
+        ```
+        $ git add path/to/the/file
+        ```
    - Commit your work
-   ```
-   $ git commit -am "Your message"
-   ```
+        ```
+        $ git commit -am "Your message"
+        ```
    - Now merge your changes to dev without a fast-forward
-   ```
-   $ git checkout dev
-   $ git merge --no-ff yourFeature
-   ```
+        ```
+        $ git checkout dev
+        $ git merge --no-ff yourFeature
+        ```
    - Now push changes to the server
-   ```
-   $ git push origin dev
-   $ git push origin yourFeature
-   ```
+        ```
+        $ git push origin dev
+        $ git push origin yourFeature
+        ```
    - Create PR to staging and assign for code review
    - After merged will be testing
    - After testing done create PR to master
 
-Run this before working on the card
+## Create Extension Card
 
-```
-npm install
-```
+1. Run this before working on the card
 
-Copy sample.env
+    ```
+    npm install
+    ```
 
-For Unix based systems:
+2. Copy sample.env
 
-```
-cp sample.env .env
-```
+    - For Unix based systems:
 
-For Windows based systems:
+        ```
+        cp sample.env .env
+        ```
 
-```
-copy sample.env .env
-```
+    - For Windows based systems:
 
-In the .env replace <upload-token> with an extension token from Experience Setup.
+        ```
+        copy sample.env .env
+        ```
 
-Work on your card, modify extension.js with your info
+3. In the .env replace <upload-token> with an extension token from Experience Setup.
 
-```
-    "name": "Extension Name",
-    "publisher": "Your Name",
-```
+4. Example of a card:
+    ```
+    import React from 'react';
+    import { withStyles } from '@ellucian/react-design-system/core/styles';
+    import PropTypes from 'prop-types';
 
-Example for regular card
-
-```
-{
-        "type": "SampleCard",
-        "source": "./path/to/card",
-        "title": "Sample",
-        "displayCardType": "Sample Card",
-        "description": "This card is a sample card",
-}
-```
-
-Example for GraphQL Card
-
-```
-{
-        "type": "CardName",
-        "source": "./path/to/card",
-        "title": "Card Title",
-        "displayCardType": "GraphQL Query",
-        "description": "CardName GraphQL Query",
-        "queries": {
-            "getPerson": [
-                {
-                    "resourceVersions": {
-                        "persons": {min: 12}
-                    },
-                    "query":
-                        `query getPerson($personId: ID){
-                            persons: {persons} (
-                                    filter: {
-                                        id: {EQ: $personId}
-                                    }
-                                )
-                                {
-                                    edges {
-                                        node {
-                                            id
-                                            gender
-                                            dateOfBirth
-                                        }
-                                    }
-                                }
-                        }`
-                }
-            ]
+    // Your Style Sheet
+    const styles = () => ({
+        card: {
+            marginLef: '1rem',
+            marginRight: '1rem'
+        },
+        image: {
+            width: '100%',
+            height: 'auto'
         }
-}
-```
+    })
 
-After you done run
+    // Your Main Function
+    function ViewMySchedule(props) {
+        const { classes } = props;
+        return (
+            <div className={classes.card}>
+                <h1>View My Schedule</h1>
+                <img className={classes.image} alt="" src="https://southpasadenan.com/wp-content/uploads/south-pasadena-news-05-12-2020-pcc-pasadena-city-college-campus-01.jpg" />
+            </div>
+        );
+    }
 
-```
-npm run deploy-dev
-```
 
-Go to Experience Setup to enable the card & environments
+    ViewMySchedule.propTypes = {
+        classes: PropTypes.object.isRequired
+    }
 
-Got to Ellucian Experience to make the card available
+    // Export Your Card with Style Included
+    export default withStyles(styles)(ViewMySchedule);
+    ```
+5. Work on your card
+    - Before deploy, modify extension.js with your info
 
-At this point, you have deployed the updated builds. Please re-run `npm run deploy-dev` if you update `extension.js`, `package.json`, or add a new card.
+        ```
+            "name": "Extension Name",
+            "publisher": "Your Name",
+            "version": "1.0.0",
+        ```
+
+    - Example for regular card
+
+        ```
+        {
+                "type": "SampleCard",
+                "source": "./path/to/card",
+                "title": "Sample",
+                "displayCardType": "Sample Card",
+                "description": "This card is a sample card",
+        }
+        ```
+
+    - Example for GraphQL Card
+
+        ```
+        {
+                "type": "CardName",
+                "source": "./path/to/card",
+                "title": "Card Title",
+                "displayCardType": "GraphQL Query",
+                "description": "CardName GraphQL Query",
+                "queries": {
+                    "getPerson": [
+                        {
+                            "resourceVersions": {
+                                "persons": {min: 12}
+                            },
+                            "query":
+                                `query getPerson($personId: ID){
+                                    persons: {persons} (
+                                            filter: {
+                                                id: {EQ: $personId}
+                                            }
+                                        )
+                                        {
+                                            edges {
+                                                node {
+                                                    id
+                                                    gender
+                                                    dateOfBirth
+                                                }
+                                            }
+                                        }
+                                }`
+                        }
+                    ]
+                }
+        }
+        ```
+
+    - After you done run
+
+        ```
+        npm run deploy-dev
+        ```
+
+    - Go to Experience Setup to enable the card & environments
+
+    - Got to Ellucian Experience to make the card available
+
+    - At this point, you have deployed the updated builds. Please re-run `npm run deploy-dev` if you update `extension.js`, `package.json`, or add a new card.
 
 **NOTE:** This is using the real Experience Dashboard so your extension will not be visible until it is fully set up. This means you must enable your extension in Experience Setup and configure your card(s) in the Dashboard. This will be required each time you change your extension's version number.
 
-### Live reloading the extensions
+## Live Reloading The Extensions
 
-With live reloading enabled, you can make changes to your extensions locally and see them reflected immediately in your extensions — no browser reload required. Also, in this mode, changes are served directly from your development machine. This should significantly speed up the build/test process. Make sure you have run `npm run deploy-dev` command once to upload the extensions.
+1. After deployed and enabled, you can live reload the extension by running
 
-```
-npm start
-```
+    ```
+    npm start
+    ```
 
-The server uses local port `8082` to communicate with the Experience Dashboard, by default. If that port is not open — or you need to use a different one, for any reason — you can specify an override. To do this, create a `.env` file if not already created and add the `PORT` environment variable with the port value that is available and save the file. EX: `PORT=8989`. Now run the below command.
+2. The server uses local port `8082` to communicate with the Experience Dashboard, by default. If that port is not open — or you need to use a different one, for any reason — you can specify an override. To do this, create a `.env` file if not already created and add the `PORT` environment variable with the port value that is available and save the file. EX: `PORT=8989`. Now run the below command.
 
-```
-npm start
-```
+    ```
+    npm start
+    ```
 
-This will start the local development server of the extension on port `8082` or the port number you have provided in the `.env` file. Now you can open the Experience app on any instances such as https://experience-test.elluciancloud.com/.
+3. Now you can open the Experience app on any instances such as https://experience-test.elluciancloud.com/.
 
-To put the Experience app into live reload mode, follow the steps given below.
+4. To put the Experience app into live reload mode, follow the steps given below.
 
-1. Open browser developer tools
-2. Go to the console tab of developer tools.
-3. Run this function `enableLiveReload([optional-port-number])` from the console tab. NOTE that if you have launched the extension app on port other than the default `8082` port then provide the same port number while enabling live reload for Experience app.
-4. Refresh the Experience app.
+    - Open browser developer tools
+    - Go to the console tab of developer tools.
+    - Run this function `enableLiveReload([optional-port-number])` from the console tab. NOTE that if you have launched the extension app on port other than the default `8082` port then provide the same port number while enabling live reload for Experience app.
+    - Refresh the Experience app.
 
 After you refresh the app, the cool thing is that only your extensions will show up. Make sure to bookmark your extensions. Now when you make changes to your extension code, locally, you'll see those changes reflected automatically and instantly in your browser, for both cards and pages. There will be no need for an explicit browser reload.
 
@@ -177,6 +224,7 @@ npm run deploy-dev -- --env forceUpload
 - [Ethos Integration API](https://resources.elluciancloud.com/bundle/ethos_integration_gov_standards/page/c_ethos_int_standards.html)
 - [Ellucian Experience Documentation](https://resources.elluciancloud.com/bundle/ellucian_experience_lrn_getstarted/page/c_about_experience.html)
 - [Ellucian Developer Resources](https://resources.elluciancloud.com/category/developer_resources)
+- [HTML DOM Style Object](https://www.w3schools.com/jsref/dom_obj_style.asp)
 - Ellucian Experience Videos Training
   - [Getting Started](https://training.ellucian.com/share/asset/view/281)
   - [Build a Card From Start to Finish](https://training.ellucian.com/share/asset/view/282)
