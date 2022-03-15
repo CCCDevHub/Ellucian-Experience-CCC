@@ -20,7 +20,7 @@ module.exports = {
             ]
         },
         "queries": {
-            "list-schedule": [
+            "schedule-list": [
                 {
                     "resourceVersions": {
                         "instructionalEvents": { min: 8 },
@@ -52,7 +52,6 @@ module.exports = {
                                         }
                                         instructorRoster {
                                             instructorRole
-
                                         }
                                         recurrence {
                                             timePeriod {
