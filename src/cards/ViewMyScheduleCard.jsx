@@ -31,12 +31,14 @@ const ViewMySchedule = (props) => {
 
     const textMessage = configuration.message;
     const [schedule, setSchedule] = useState();
+
+    // Create event
     const [event, setEvent] = useState({});
 
     const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
     const sectionsEvents = [];
-    const dayList = [];
 
+    // Create set event function to get event object
     const onSelectEvent = (e) => {
         setEvent(e);
     };
@@ -72,11 +74,18 @@ const ViewMySchedule = (props) => {
         )();
     }, []);
 
-
+    // Loop through schedule
     for (const item in schedule) {
         if (item) {
+            // Destruct each item in schedule
             const { recurrence: { repeatRule: { type: repeatType, daysOfWeek }, timePeriod: { startOn, endOn } }, section: { titles: classTitle }, locations } = schedule[item];
+
+            // Destruct location to get room and building
             const { room: { number: roomNum, building }, site } = locations[0].location
+
+
+            // Get List of day in each class
+            const dayList = [];
 
             for (const day in daysOfWeek) {
                 if (day) {
@@ -84,11 +93,14 @@ const ViewMySchedule = (props) => {
                 }
             }
 
+            // Set start/end Date
             const startDate = new Date('2022, 01, 01');
             const endDate = new Date('2022, 06, 01');
 
+            // Set the loop as startDate
             let loop = new Date(startDate);
 
+            // Loop through startDate to endDate and create Event if loop day is Monday or Tuestday, etc.
             while (loop <= endDate) {
                 if (dayList.includes(days[loop.getDay()]) && repeatType === 'weekly') {
                     const classEvent = {
@@ -99,6 +111,7 @@ const ViewMySchedule = (props) => {
                     }
                     sectionsEvents.push(classEvent);
                 }
+                // Create next date
                 const newDate = loop.setDate(loop.getDate() + 1);
                 loop = new Date(newDate);
             }
@@ -114,7 +127,8 @@ const ViewMySchedule = (props) => {
         end: new Date('2022, 03, 16')
     };
 
-    const TestCalendar = (schedule) => {
+    // Craete Calendar
+    const MyCalendar = (schedule) => {
         moment.locale('en')
         return (
             <div>
@@ -127,19 +141,19 @@ const ViewMySchedule = (props) => {
                     style={{ height: 900 }}
                     min={moment('7:00am', 'h:mma').toDate()}
                     max={moment('9:00pm', 'h:mma').toDate()}
+                    // set Event to event select function
                     onSelectEvent={onSelectEvent}
                     onKeyPressEvent={onSelectEvent}
-                    popperContent={
-                        <h1>TEST</h1>
-                    }
                 />
             </div >
         )
     }
 
+    // Render Calendar
+
     return (
         <Fragment>
-            <TestCalendar />
+            <MyCalendar />
         </Fragment >
     );
 };
