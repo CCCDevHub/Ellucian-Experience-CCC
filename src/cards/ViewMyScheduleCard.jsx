@@ -74,6 +74,7 @@ const ViewMySchedule = (props) => {
         )();
     }, []);
 
+    let counter = 0;
     // Loop through schedule
     for (const item in schedule) {
         if (item) {
@@ -101,11 +102,7 @@ const ViewMySchedule = (props) => {
 
             // Set the loop as startDate
             let loop = new Date(startDate);
-            console.log(startOn);
-            console.log(new Date(startOn).getHours());
-            console.log(new Date(startOn).getMinutes());
-            console.log(new Date(startOn).getSeconds());
-            let counter = 0;
+
             // Loop through startDate to endDate and create Event if loop day is Monday or Tuestday, etc.
             while (loop <= endDate) {
                 if (dayList.includes(days[loop.getDay()]) && repeatType === 'weekly') {
@@ -130,21 +127,8 @@ const ViewMySchedule = (props) => {
         }
     }
 
-    const testEvent =
-    {
-        id: 0,
-        title: 'Chemistry Test - Study time',
-        allDay: true,
-        start: new Date('2022, 03, 16, 12, 00, 00'),
-        end: new Date('2022, 03, 16, 11, 00, 00'),
-        room: 'Tuttleman 100',
-        facultyName: 'Siggi',
-        facultyAvatarSrc: './Siggi.png'
-    };
-    console.log(event.title, event.room)
     // Craete Calendar
     const MyCalendar = (schedule) => {
-
         return (
             <div>
                 <Calendar
