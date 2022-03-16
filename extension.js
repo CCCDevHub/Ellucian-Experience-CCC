@@ -1,20 +1,30 @@
 module.exports = {
-    "name": "View My Schedule",
+    "name": "ViewMySchedule",
     "publisher": "Huey Phan",
-    "version": "1.0.0",
+    "version": "1.0.1",
+    "configuration": {
+    },
     "cards": [{
-        "type": "GraphQLQueryCard",
+        "type": "ViewMySchedule",
         "source": "./src/cards/ViewMyScheduleCard",
         "title": "View My Schedule",
-        "displayCardType": "GraphQL Query View My Schedule",
-        "description": "GraphQL Query View My Schedule",
+        "displayCardType": "GraphQL Query",
+        "description": "View My Schedule GraphQL Query",
+        "configuration": {
+            client: [
+                {
+                    key: 'message',
+                    label: 'Your Message',
+                    type: 'text'
+                }
+            ]
+        },
         "queries": {
-            "list-instructional-events": [
+            "schedule-list": [
                 {
                     "resourceVersions": {
                         "instructionalEvents": { min: 8 },
                         "instructionalMethods": { min: 6 },
-                        "instructors": { min: 12 },
                         "sections": { min: 16 },
                         "sites": { min: 6 },
                         "rooms": { min: 10 },
@@ -22,113 +32,74 @@ module.exports = {
                     },
                     "query":
                         `{
-                            query listInstructionalEvents($sectionId: ID) {
-                                instructionalEvents {instrucitonalEvents}(
-                                    filter: { {sections}: {
-                                        id: { EQ: $sectionID } }
-                                    }
-                                    
-                                ) {
-                                    edges {
-                                        node {
-                                            id
-                                            instructionalMethod: {instructionalMethod} {
-                                                abbreviation
-                                            }
-                                            instructorRoster {
-                                                instructor: {instructor} {
-                                                    names {
-                                                        fullName
-                                                        title
-                                                        pedigree
-                                                    }
-                                                }
-                                            }
-                                            recurrence {
-                                                timePeriod {
-                                                    startOn
-                                                    endOn
-                                                }
-                                                repeatRule {
-                                                    type
-                                                    interval
-                                                    ends {
-                                                        repetitions
-                                                        date
-                                                    }
-                                                    daysOfWeek
-                                                    repeatBy {
-                                                        dayOfWeek {
-                                                            day
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            section: {section} {
-                                                titles {
-                                                    value
-                                                }
-                                            }
-                                            locations {
-                                                location {
-                                                    site: {site} {
-                                                        title
-                                                        code
-                                                    }
-                                                    room: {room} {
-                                                        number
-                                                        floor
-                                                        title
-                                                        building: {building} {
-                                                            title
-                                                        }
-                                                        floor
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }`
-                }
-            ],
-            "list-classes": [
-                {
-                    "resourceVersions": {
-                        "sectionRegistrations": { min: 16 },
-                        "sections": { min: 16 },
-                        "persons": { min: 12 }
-                    },
-                    "query":
-                        `query listClasses($personId: ID, $yesterday: Date, $tomorrow: Date) {
-                            sectionRegistrations(
-                                filter: {
-                                    {registrant@persons}: { id: { EQ: $personID } }
-                                    {sections}: { startOn: { BEFORE: $tomorrow }, endOn: { AFTER: $yesterday } }
+                            instructionalEvents: {instructionalEvents}(
+                                filter: { 
+                                    id: { 
+                                        IN: [
+                                            "006aa7bf-bc88-4afe-8aae-907d3d48d3c2",
+                                            "007b4486-eb6b-4071-8f9b-48951414021a"
+                                            "00923c44-4798-4d84-ab72-5392b29aedab"
+                                            "00b49925-8661-4136-8913-2a58c994a0c9"
+                                        ]
+                                    } 
                                 }
                             ) {
                                 edges {
                                     node {
                                         id
-                                        {sections}: sections {
-                                            id
-                                            startOn
-                                            endOn
+                                        instructionalMethod: {instructionalMethod} {
+                                            abbreviation
+                                        }
+                                        instructorRoster {
+                                            instructorRole
+                                        }
+                                        recurrence {
+                                            timePeriod {
+                                                startOn
+                                                endOn
+                                            }
+                                            repeatRule {
+                                                type
+                                                interval
+                                                ends {
+                                                    repetitions
+                                                    date
+                                                }
+                                                daysOfWeek
+                                                repeatBy {
+                                                    dayOfWeek {
+                                                        day
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        section: {section} {
                                             titles {
                                                 value
                                             }
                                         }
-                                        {registrant@persons}: registrant {
-                                            id
-                                            names {
-                                                fullName
+                                        locations {
+                                            location {
+                                                site: {site} {
+                                                    title
+                                                    code
+                                                }
+                                                room: {room} {
+                                                    number
+                                                    floor
+                                                    title
+                                                    building: {building} {
+                                                        title
+                                                    }
+                                                    floor
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
-                        }`
+                        }
+                        `
                 }
             ]
         }
