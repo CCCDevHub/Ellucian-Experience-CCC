@@ -17,6 +17,7 @@ const styles = () => ({
         height: 'auto'
     }
 });
+// TODO: Change GraphQL to use $personId
 
 const ViewMySchedule = (props) => {
     const {
