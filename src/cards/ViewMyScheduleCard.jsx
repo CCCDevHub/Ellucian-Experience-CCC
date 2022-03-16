@@ -96,20 +96,31 @@ const ViewMySchedule = (props) => {
             // Set start/end Date
             const startDate = new Date('2022, 01, 01');
             const endDate = new Date('2022, 06, 01');
+            // const startDate = startOn;
+            // const endDate = endOn;
 
             // Set the loop as startDate
             let loop = new Date(startDate);
-
+            console.log(startOn);
+            console.log(new Date(startOn).getHours());
+            console.log(new Date(startOn).getMinutes());
+            console.log(new Date(startOn).getSeconds());
+            let counter = 0;
             // Loop through startDate to endDate and create Event if loop day is Monday or Tuestday, etc.
             while (loop <= endDate) {
                 if (dayList.includes(days[loop.getDay()]) && repeatType === 'weekly') {
+                    const yr = loop.getFullYear();
+                    const month = loop.getMonth();
+                    const da = loop.getDate()
                     const classEvent = {
+                        id: counter,
                         title: classTitle[0].value,
-                        start: new Date(loop),
-                        end: new Date(loop),
+                        start: new Date(yr, month, da, new Date(startOn).getHours(), new Date(startOn).getMinutes(), new Date(startOn).getSeconds()),
+                        end: new Date(yr, month, da, new Date(endOn).getHours(), new Date(endOn).getMinutes(), new Date(endOn).getSeconds()),
                         room: building.title + ' ' + roomNum
                     }
                     sectionsEvents.push(classEvent);
+                    counter += 1;
                 }
                 // Create next date
                 const newDate = loop.setDate(loop.getDate() + 1);
@@ -121,20 +132,24 @@ const ViewMySchedule = (props) => {
 
     const testEvent =
     {
-        title: 'MIT200',
+        id: 0,
+        title: 'Chemistry Test - Study time',
         allDay: true,
-        start: new Date('2022, 03, 16'),
-        end: new Date('2022, 03, 16')
+        start: new Date('2022, 03, 16, 12, 00, 00'),
+        end: new Date('2022, 03, 16, 11, 00, 00'),
+        room: 'Tuttleman 100',
+        facultyName: 'Siggi',
+        facultyAvatarSrc: './Siggi.png'
     };
-
+    console.log(event.title, event.room)
     // Craete Calendar
     const MyCalendar = (schedule) => {
-        moment.locale('en')
+
         return (
             <div>
                 <Calendar
                     defaultView={views.DAY}
-                    views={[views.DAY, views.WORK_WEEK]}
+                    views={[views.DAY, views.WORK_WEEK, views.AGENDA]}
                     timeslots={1}
                     step={60}
                     events={sectionsEvents}
