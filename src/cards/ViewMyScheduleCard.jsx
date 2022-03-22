@@ -17,7 +17,6 @@ const styles = () => ({
         height: 'auto'
     }
 });
-// TODO: Change GraphQL to use $personId
 
 const ViewMySchedule = (props) => {
     const {
@@ -32,34 +31,44 @@ const ViewMySchedule = (props) => {
 
     const textMessage = configuration.message;
     const [schedule, setSchedule] = useState();
-
+    const [sections, setSections] = useState();
     // Create event
     const [event, setEvent] = useState({});
 
     const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
     const sectionsEvents = [];
-
+    const sectionIdList = ["0a116178-76a6-4e7a-8577-e03a285e9ea4", "27f2bae9-8249-437b-a908-64609591b96a", "ab0101a0-883d-43fd-a743-6be4f5628be4", "57944a38-6af5-42d2-82b3-60b36f9b4a24", "aae04d9c-2a54-43e3-9d1c-2993d19c236e"]
     // Create set event function to get event object
     const onSelectEvent = (e) => {
         setEvent(e);
     };
-
     useEffect(() => {
         (async () => {
             setLoadingStatus(true)
             try {
                 // Get Etho Query from index.js
-                const result = await getEthosQuery({ queryId: 'schedule-list' });
-
-                // Destruct to Edges
-                const scheduleEdges = (result?.data?.instructionalEvents?.edges || []);
-
-                // Destruct to node data
-                const scheduleData = scheduleEdges.map((edge) => edge.node);
-
+                // const sectionResult = await getEthosQuery({ queryId: 'section-list' });
+                // const sectionEdges = (sectionResult?.data?.instructionalEvents?.edges || []);
+                // const sectionData = sectionEdges.map((edge) => edge.node);
+                //  setSections(() => sectionData);
+                // const testSchedule = await getEthosQuery({ queryId: 'schedule-list', properties: { sectionIds: testingString } });
+                // console.log(testSchedule);
+                const schedulePromises = []
+                const scheduleList = []
+                for (const sectionId of sectionIdList) {
+                    const promise = getEthosQuery({ queryId: 'schedule-list', properties: { sectionId: sectionId } });
+                    schedulePromises.push(promise);
+                }
+                const scheduleResult = await Promise.all(schedulePromises);
+                scheduleResult.forEach((result) => {
+                    // Destruct to Edges
+                    const scheduleEdges = (result?.data?.instructionalEvents?.edges || []);
+                    // Destruct to node data
+                    const scheduleData = scheduleEdges.map((edge) => edge.node);
+                    scheduleList.push(scheduleData)
+                })
                 // Set to object
-                setSchedule(() => scheduleData);
-                //
+                setSchedule(() => scheduleList);
                 setLoadingStatus(false);
             }
             catch (error) {
@@ -74,72 +83,23 @@ const ViewMySchedule = (props) => {
         }
         )();
     }, []);
+    console.log(event);
 
-    let counter = 0;
     // Loop through schedule
-    for (const item in schedule) {
-        if (item) {
-            // Destruct each item in schedule
-            const { recurrence: { repeatRule: { type: repeatType, daysOfWeek }, timePeriod: { startOn, endOn } }, section: { titles: classTitle }, locations } = schedule[item];
+    getEvents(schedule, days, sectionsEvents);
 
-            // Destruct location to get room and building
-            const { room: { number: roomNum, building }, site } = locations[0].location
-
-
-            // Get List of day in each class
-            const dayList = [];
-
-            for (const day in daysOfWeek) {
-                if (day) {
-                    dayList.push(daysOfWeek[day].toUpperCase())
-                }
-            }
-
-            // Set start/end Date
-            const startDate = new Date('2022, 01, 01');
-            const endDate = new Date('2022, 06, 01');
-            // const startDate = startOn;
-            // const endDate = endOn;
-
-            // Set the loop as startDate
-            let loop = new Date(startDate);
-
-            // Loop through startDate to endDate and create Event if loop day is Monday or Tuestday, etc.
-            while (loop <= endDate) {
-                if (dayList.includes(days[loop.getDay()]) && repeatType === 'weekly') {
-                    const yr = loop.getFullYear();
-                    const month = loop.getMonth();
-                    const da = loop.getDate()
-                    const classEvent = {
-                        id: counter,
-                        title: classTitle[0].value,
-                        start: new Date(yr, month, da, new Date(startOn).getHours(), new Date(startOn).getMinutes(), new Date(startOn).getSeconds()),
-                        end: new Date(yr, month, da, new Date(endOn).getHours(), new Date(endOn).getMinutes(), new Date(endOn).getSeconds()),
-                        room: building.title + ' ' + roomNum
-                    }
-                    sectionsEvents.push(classEvent);
-                    counter += 1;
-                }
-                // Create next date
-                const newDate = loop.setDate(loop.getDate() + 1);
-                loop = new Date(newDate);
-            }
-
-        }
-    }
-
-    // Craete Calendar
+    // Create Calendar
     const MyCalendar = (schedule) => {
         return (
             <div>
                 <Calendar
                     defaultView={views.DAY}
                     views={[views.DAY, views.WORK_WEEK, views.AGENDA]}
-                    timeslots={1}
+                    timeslots={2}
                     step={60}
                     events={sectionsEvents}
                     style={{ height: 900 }}
-                    min={moment('7:00am', 'h:mma').toDate()}
+                    min={moment('6:00am', 'h:mma').toDate()}
                     max={moment('9:00pm', 'h:mma').toDate()}
                     // set Event to event select function
                     onSelectEvent={onSelectEvent}
@@ -157,6 +117,77 @@ const ViewMySchedule = (props) => {
         </Fragment >
     );
 };
+
+function destructClasses(schedule, sectionsEvents, days) {
+    let counter = 0;
+
+    for (const eachSchedule of schedule) {
+        const { instructionalMethod: { title: classType }, recurrence: { repeatRule: { type: repeatType, daysOfWeek }, timePeriod: { startOn, endOn } }, section: { titles: classTitles }, locations } = eachSchedule;
+        const { roomNum, buildingName } = destructBuildingRoom(locations);
+
+        // Destruct location to get room and building
+        // Get List of day in each class
+        const dayList = [];
+
+        for (const day in daysOfWeek) {
+            if (day) {
+                dayList.push(daysOfWeek[day].toUpperCase());
+            }
+        }
+
+        // Set start/end Date
+        const startDate = new Date('2022, 01, 01');
+        const endDate = new Date('2022, 06, 01');
+        // const startDate = startOn;
+        // const endDate = endOn;
+        // Set the loop as startDate
+        let loop = new Date(startDate);
+
+        // Loop through startDate to endDate and create Event if loop day is Monday or Tuestday, etc.
+        while (loop <= endDate) {
+            if (dayList.includes(days[loop.getDay()]) && repeatType === 'weekly') {
+                const yr = loop.getFullYear();
+                const month = loop.getMonth();
+                const da = loop.getDate();
+                const classEvent = {
+                    id: counter,
+                    title: classTitles[0].value + ' ' + classType.toUpperCase() + ' \n' + buildingName + ' ' + roomNum,
+                    start: new Date(yr, month, da, new Date(startOn).getHours(), new Date(startOn).getMinutes(), new Date(startOn).getSeconds()),
+                    end: new Date(yr, month, da, new Date(endOn).getHours(), new Date(endOn).getMinutes(), new Date(endOn).getSeconds())
+                    //  room: building.title + ' ' + roomNum
+                };
+                sectionsEvents.push(classEvent);
+                counter += 1;
+            }
+            // Create next date
+            const newDate = loop.setDate(loop.getDate() + 1);
+            loop = new Date(newDate);
+        }
+    }
+}
+
+function getEvents(schedule, days, sectionsEvents) {
+    for (const item in schedule) {
+        if (item) {
+            if (schedule[item].length > 0) {
+                destructClasses(schedule[item], sectionsEvents, days);
+            }
+        }
+    }
+}
+
+function destructBuildingRoom(locations) {
+    if (locations.length != 0) {
+        const { room: { number: roomNum, building: { title: buildingName } }, site } = locations[0].location;
+        return { roomNum, buildingName };
+    }
+    else {
+        const roomNum = "";
+        const buildingName = "ONLINE"
+        return { roomNum, buildingName };
+    }
+}
+
 ViewMySchedule.propTypes = {
     classes: PropTypes.object.isRequired,
     cardControl: PropTypes.object.isRequired,
@@ -165,3 +196,4 @@ ViewMySchedule.propTypes = {
 }
 
 export default withStyles(styles)(ViewMySchedule);
+

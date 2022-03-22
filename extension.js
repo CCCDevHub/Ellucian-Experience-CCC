@@ -31,24 +31,21 @@ module.exports = {
                         "buildings": { min: 6 }
                     },
                     "query":
-                        `{
+                        `query instructionalEventsBySections($sectionId: ID){
                             instructionalEvents: {instructionalEvents}(
                                 filter: { 
-                                    id: { 
-                                        IN: [
-                                            "006aa7bf-bc88-4afe-8aae-907d3d48d3c2",
-                                            "007b4486-eb6b-4071-8f9b-48951414021a"
-                                            "00923c44-4798-4d84-ab72-5392b29aedab"
-                                            "00b49925-8661-4136-8913-2a58c994a0c9"
-                                        ]
-                                    } 
+                                    {section}: {
+                                        id: {
+                                            EQ: $sectionId                                           
+                                        }
+                                    }
                                 }
                             ) {
                                 edges {
                                     node {
                                         id
                                         instructionalMethod: {instructionalMethod} {
-                                            abbreviation
+                                            title
                                         }
                                         instructorRoster {
                                             instructorRole
@@ -100,6 +97,29 @@ module.exports = {
                             }
                         }
                         `
+                }
+            ],
+            "section-registration-list": [
+                {
+                    "resourceVersions": {
+                        "sectionRegistrations": { min: 16 },
+                        "sections": { min: 16 }
+                    },
+                    "query":
+                        `query sectionRegistrationsByPerson($personId: ID, $startDate: Date, $endDate: Date){
+                            sectionRegistrations: {sectionRegistrations}(
+                                		limit: 10
+                                        sort: { id: DESC }
+                            ){
+                                edges {
+                                    node {
+                                        section: {section} {
+                                            id
+                                        }
+                                    }
+                                }
+                            }
+                        }`
                 }
             ]
         }
