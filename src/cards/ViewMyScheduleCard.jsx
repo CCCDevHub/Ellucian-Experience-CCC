@@ -83,14 +83,13 @@ const ViewMySchedule = (props) => {
         }
         )();
     }, []);
-    console.log(event);
 
     // Loop through schedule
     getEvents(schedule, days, sectionsEvents);
 
-    // Create Calendar
-    const MyCalendar = (schedule) => {
-        return (
+    // Render Calendar
+    return (
+        <div>
             <div>
                 <Calendar
                     defaultView={views.DAY}
@@ -104,17 +103,26 @@ const ViewMySchedule = (props) => {
                     // set Event to event select function
                     onSelectEvent={onSelectEvent}
                     onKeyPressEvent={onSelectEvent}
+                    popperContent={
+                        // Sample popper content here
+                        <div>
+                            <Typography variant="h4">
+                                <b>{event.title}</b>
+                            </Typography>
+                            <br />
+                            <Typography variant="h5">
+                                {event.type}
+                            </Typography>
+                            <br />
+                            <Typography color="textSecondary">
+                                {moment(event.start).format('h:mm A')} - {moment(event.end).format('h:mm A')}
+                            </Typography>
+                            <Typography color="textSecondary">Room: {event.room}</Typography>
+                        </div>
+                    }
                 />
-            </div >
-        )
-    }
-
-    // Render Calendar
-
-    return (
-        <Fragment>
-            <MyCalendar />
-        </Fragment >
+            </div>
+        </div >
     );
 };
 
@@ -151,10 +159,11 @@ function destructClasses(schedule, sectionsEvents, days) {
                 const da = loop.getDate();
                 const classEvent = {
                     id: counter,
-                    title: classTitles[0].value + ' ' + classType.toUpperCase() + ' \n' + buildingName + ' ' + roomNum,
+                    title: `${classTitles[1].value}`,
+                    type: ` ${classType.toUpperCase()}`,
                     start: new Date(yr, month, da, new Date(startOn).getHours(), new Date(startOn).getMinutes(), new Date(startOn).getSeconds()),
-                    end: new Date(yr, month, da, new Date(endOn).getHours(), new Date(endOn).getMinutes(), new Date(endOn).getSeconds())
-                    //  room: building.title + ' ' + roomNum
+                    end: new Date(yr, month, da, new Date(endOn).getHours(), new Date(endOn).getMinutes(), new Date(endOn).getSeconds()),
+                    room: `${buildingName}-${roomNum}`
                 };
                 sectionsEvents.push(classEvent);
                 counter += 1;
