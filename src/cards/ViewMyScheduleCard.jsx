@@ -131,7 +131,7 @@ function destructClasses(schedule, sectionsEvents, days) {
 
     for (const eachSchedule of schedule) {
         const { instructionalMethod: { title: classType }, recurrence: { repeatRule: { type: repeatType, daysOfWeek }, timePeriod: { startOn, endOn } }, section: { titles: classTitles }, locations } = eachSchedule;
-        const { roomNum, buildingName } = destructBuildingRoom(locations);
+        const location = destructBuildingRoom(locations);
 
         // Destruct location to get room and building
         // Get List of day in each class
@@ -163,7 +163,7 @@ function destructClasses(schedule, sectionsEvents, days) {
                     type: ` ${classType.toUpperCase()}`,
                     start: new Date(yr, month, da, new Date(startOn).getHours(), new Date(startOn).getMinutes(), new Date(startOn).getSeconds()),
                     end: new Date(yr, month, da, new Date(endOn).getHours(), new Date(endOn).getMinutes(), new Date(endOn).getSeconds()),
-                    room: `${buildingName}-${roomNum}`
+                    room: `${location}`
                 };
                 sectionsEvents.push(classEvent);
                 counter += 1;
@@ -188,12 +188,10 @@ function getEvents(schedule, days, sectionsEvents) {
 function destructBuildingRoom(locations) {
     if (locations.length != 0) {
         const { room: { number: roomNum, building: { title: buildingName } }, site } = locations[0].location;
-        return { roomNum, buildingName };
+        return `${buildingName}-${roomNum}`;
     }
     else {
-        const roomNum = "";
-        const buildingName = "ONLINE"
-        return { roomNum, buildingName };
+        return "ONLINE";
     }
 }
 
