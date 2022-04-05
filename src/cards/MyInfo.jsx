@@ -21,16 +21,10 @@ const MyInfo = (props) => {
             setErrorMessage
         }
     } = props;
-    const configurationItems = [];
-
-    const testt = () => configuration.html;
-
     console.log(configuration.html)
     return (
         <div className={classes.card}>
             <h1>Testing</h1>
-            <div dangerouslySetInnerHTML={{__html: configuration.html}}/>
-
         </div>
     )
 };
