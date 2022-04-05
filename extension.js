@@ -1,24 +1,52 @@
 module.exports = {
-    "name": "HTMLTest",
+    "name": "ViewMyInfo",
     "publisher": "Huey Phan",
     "version": "1.0.0",
     "cards": [{
-        "type": "HTML Test",
-        "source": "./src/cards/HTMLTest",
-        "title": "HTML Test",
-        "displayCardType": "HTML Test",
-        "description": "Render HTML with React",
-        "configuration": {
-            "client": [
+        "type": "GraphQLQueryCard",
+        "source": "./src/cards/MyInfo",
+        "title": "View My Info",
+        "displayCardType": "GraphQL Query View My Info",
+        "description": "GraphQL Query View My Info",
+        "queries": {
+            "person-info": [
                 {
-                    key: 'html',
-                    label: 'HTML Code',
-                    type: 'text'
-                },
-                {
-                    key: 'htmlScript',
-                    label: 'HTML Code with Script',
-                    type: 'text'
+                    "resourceVersions": {
+                        "persons": {min: 12}
+                    },
+                    "query":
+                        `query personInfo($personId: ID){
+                            persons: {persons} (
+                                    filter: {
+                                        id: {EQ: $personId}
+                                    }
+                                )
+                                {
+                                    edges {
+                                        node {
+                                            id
+                                            gender
+                                            dateOfBirth
+                                            names {
+                                                fullName
+                                            }
+                                            credentials {
+                                                value
+                                                type
+                                            }
+                                            emails {
+                                                address
+                                                type {
+                                                    emailType
+                                                }
+                                            }
+                                            roles {
+                                                role
+                                            }
+                                        }
+                                    }
+                                }
+                        }`
                 }
             ]
         }
