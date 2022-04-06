@@ -1,11 +1,11 @@
 module.exports = {
-    "name": "ViewMyInfo",
+    "name": "MyInfo",
     "publisher": "Huey Phan",
     "version": "1.0.0",
     "cards": [{
         "type": "GraphQLQueryCard",
         "source": "./src/cards/MyInfo",
-        "title": "View My Info",
+        "title": "My Info",
         "displayCardType": "GraphQL Query View My Info",
         "description": "GraphQL Query View My Info",
         "queries": {
@@ -26,22 +26,30 @@ module.exports = {
                                         node {
                                             id
                                             gender
-                                            dateOfBirth
                                             names {
                                                 fullName
                                             }
+                                            dateOfBirth
+                                            veteranStatus {
+                                                category
+                                            }
+                                            citizenshipStatus {
+                                                category
+                                            }
+                                            roles {
+                                                role
+                                            }
+                            
                                             credentials {
                                                 value
                                                 type
                                             }
+                            
                                             emails {
-                                                address
                                                 type {
                                                     emailType
                                                 }
-                                            }
-                                            roles {
-                                                role
+                                                address
                                             }
                                         }
                                     }
