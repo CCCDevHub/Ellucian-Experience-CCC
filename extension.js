@@ -56,6 +56,39 @@ module.exports = {
                                 }
                         }`
                 }
+            ],
+            "person-hold": [
+                {
+                    "resourceVersions": {
+                        "persons": {min: 12},
+                        "personHolds": {min: 6}
+                    },
+                    "query":
+                        `query personHoldInfo($personId : ID) {
+                            personHolds: {personHolds} (
+                                filter:{
+                                    {person@persons}: {
+                                        id: {EQ: $personId}
+                                    }
+                                }
+                            ) {
+                                edges {
+                                    node {
+                                        id
+                                        type {
+                                            detail6 {
+                                                title
+                                                category
+                                                description
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        `
+                }
             ]
         }
     }],
