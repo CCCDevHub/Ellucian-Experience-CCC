@@ -75,7 +75,6 @@ const MyInfo = (props) => {
     }, []);
     const person = destructPersonData(persons);
     const personHoldList = destrucPersonHold(personHolds);
-    personHoldList.push("Bookstore Hold");
 
     return (
         <Fragment>
