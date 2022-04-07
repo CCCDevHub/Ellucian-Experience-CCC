@@ -20,6 +20,11 @@ const styles = () => ({
     text: {
         marginRight: spacing40,
         marginLeft: spacing40
+    },
+    table: {
+        maxWidth: spacing10,
+        maxHeight: spacing10,
+        margin: spacing10
     }
 });
 
@@ -34,20 +39,27 @@ const MyInfo = (props) => {
         }
     } = props;
 
-    const [persons, setPerson] = useState();
-    const tableData = [];
+    const [persons, setPersons] = useState();
+    const [personHolds, setPersonHolds] = useState();
 
     useEffect(() => {
         (async () => {
                 setLoadingStatus(true);
                 try {
                     const personResult = await getEthosQuery({
-                        queryId: 'person-info',
-                        properties: {personId: "0000f558-20c1-4944-ac76-f5816ecaed73"}
+                        queryId: 'person-info'
                     });
                     const personEdges = (personResult?.data?.persons?.edges || []);
                     const personData = personEdges.map((edges) => edges.node);
-                    setPerson(() => personData);
+
+                    const personHoldResult = await getEthosQuery({
+                        queryId: 'person-hold'
+                    });
+                    const personHoldEdges = (personHoldResult?.data?.personHolds?.edges || []);
+                    const personHoldData = personHoldEdges.map((edges) => edges.node);
+
+                    setPersons(() => personData);
+                    setPersonHolds(() => personHoldData);
                     setLoadingStatus(false);
                 } catch (error) {
                     console.log('ethosQuery failed', error);
@@ -62,11 +74,13 @@ const MyInfo = (props) => {
         )();
     }, []);
     const person = destructPersonData(persons);
+    const personHoldList = destrucPersonHold(personHolds);
+    personHoldList.push("Bookstore Hold");
 
     return (
         <Fragment>
             <div className={classes.card}>
-                <Table>
+                <Table className={classes.table} size="small">
                     {person && (
                         <TableBody>
                             <TableRow>
@@ -95,6 +109,14 @@ const MyInfo = (props) => {
                             </TableRow>
                             <TableRow>
                                 <TableCell align="left">
+                                    <h5>Hold</h5>
+                                </TableCell>
+                                <TableCell align="right">
+                                    {personHoldList.join('\n')}
+                                </TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell align="left">
                                     <h5>Role</h5>
                                 </TableCell>
                                 <TableCell align="right">
@@ -117,6 +139,19 @@ const MyInfo = (props) => {
         </Fragment>
     )
 };
+
+function destrucPersonHold(personHolds) {
+    const holdList = [];
+    if (personHolds) {
+        for (const i in personHolds) {
+            if (i) {
+                const {type: {detail6: {title: holdType}}} = personHolds[i]
+                holdList.push(holdType);
+            }
+        }
+    }
+    return holdList;
+}
 
 function destructPersonData(persons) {
     if (persons) {
