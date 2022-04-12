@@ -2,14 +2,13 @@ import React, {useState, useEffect, Fragment} from "react";
 import PropTypes from "prop-types";
 import {spacing10, spacing40} from '@ellucian/react-design-system/core/styles/tokens';
 import {withStyles} from '@ellucian/react-design-system/core/styles';
-import {Dropdown, DropdownItem, List, ListItem, ListItemText, Typography} from '@ellucian/react-design-system/core';
 import {
     Table,
-    TableHead,
     TableRow,
     TableCell,
     TableBody
 } from '@ellucian/react-design-system/core';
+
 
 const styles = () => ({
     card: {
@@ -49,14 +48,12 @@ const MyInfo = (props) => {
                     const personResult = await getEthosQuery({
                         queryId: 'person-info'
                     });
-                    const personEdges = (personResult?.data?.persons?.edges || []);
-                    const personData = personEdges.map((edges) => edges.node);
+                    const personData = (personResult?.data?.persons?.edges.map(edge => edge.node));
 
                     const personHoldResult = await getEthosQuery({
                         queryId: 'person-hold'
                     });
-                    const personHoldEdges = (personHoldResult?.data?.personHolds?.edges || []);
-                    const personHoldData = personHoldEdges.map((edges) => edges.node);
+                    const personHoldData = (personHoldResult?.data?.personHolds?.edges.map(edge => edge.node));
 
                     setPersons(() => personData);
                     setPersonHolds(() => personHoldData);
@@ -73,8 +70,7 @@ const MyInfo = (props) => {
             }
         )();
     }, []);
-    const person = destructPersonData(persons);
-    const personHoldList = destrucPersonHold(personHolds);
+    const person = destructPersonData(persons, personHolds);
 
     return (
         <Fragment>
@@ -82,55 +78,18 @@ const MyInfo = (props) => {
                 <Table className={classes.table} size="small">
                     {person && (
                         <TableBody>
-                            <TableRow>
-                                <TableCell align="left">
-                                    <h5>Name</h5>
-                                </TableCell>
-                                <TableCell align="right">
-                                    {person.name}
-                                </TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell align="left">
-                                    <h5>Email</h5>
-                                </TableCell>
-                                <TableCell align="right">
-                                    {person.email}
-                                </TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell align="left">
-                                    <h5>ID</h5>
-                                </TableCell>
-                                <TableCell align="right">
-                                    {person.studentId}
-                                </TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell align="left">
-                                    <h5>Hold</h5>
-                                </TableCell>
-                                <TableCell align="right">
-                                    {personHoldList.join('\n')}
-                                </TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell align="left">
-                                    <h5>Role</h5>
-                                </TableCell>
-                                <TableCell align="right">
-                                    {person.role}
-                                </TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell align="left">
-                                    <h5>Citizenship Status</h5>
-
-                                </TableCell>
-                                <TableCell align="right">
-                                    {person.citizenStatus}
-                                </TableCell>
-                            </TableRow>
+                            {person.map(n => {
+                                return (
+                                    <TableRow key={n.id}>
+                                        <TableCell align="left">
+                                            <h5>{n.name}</h5>
+                                        </TableCell>
+                                        <TableCell align="right">
+                                            {n.value}
+                                        </TableCell>
+                                    </TableRow>
+                                )
+                            })}
                         </TableBody>
                     )}
                 </Table>
@@ -139,21 +98,16 @@ const MyInfo = (props) => {
     )
 };
 
-function destrucPersonHold(personHolds) {
+function destructPersonData(persons, personHolds) {
+    let id = 0;
     const holdList = [];
-    if (personHolds) {
-        for (const i in personHolds) {
-            if (i) {
-                const {type: {detail6: {title: holdType}}} = personHolds[i]
-                holdList.push(holdType);
-            }
-        }
-    }
-    return holdList;
-}
 
-function destructPersonData(persons) {
-    if (persons) {
+    function createData(name, value) {
+        id += 1;
+        return {id, name, value};
+    }
+
+    if (persons && personHolds) {
         const {
             citizenshipStatus: {category: citizenStatus},
             dateOfBirth,
@@ -163,6 +117,7 @@ function destructPersonData(persons) {
             roles,
             veteranStatus: {category: vetStatus}
         } = persons[0];
+
         const studentId = () => {
             for (const cred in credentials) {
                 if (cred) {
@@ -182,13 +137,23 @@ function destructPersonData(persons) {
                 }
             }
         }
-        const data = {
-            citizenStatus: citizenStatus,
-            name: names[0].fullName,
-            studentId: studentId(),
-            role: roles[0].role,
-            email: email()
+
+        for (const i in personHolds) {
+            if (i) {
+                const {type: {detail6: {title: holdType}}} = personHolds[i]
+                holdList.push(holdType);
+            }
         }
+
+        const data = [
+            createData("Name", names[0].fullName),
+            createData("Id", studentId()),
+            createData("Email", email()),
+            createData("Hold", holdList.join('\n')),
+            createData("Citizen Status", citizenStatus),
+            createData("Role", roles[0].role)
+        ]
+
         return data;
     }
 }
