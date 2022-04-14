@@ -6,7 +6,8 @@ import {
     Table,
     TableRow,
     TableCell,
-    TableBody
+    TableBody,
+    Typography
 } from '@ellucian/react-design-system/core';
 
 
@@ -54,7 +55,6 @@ const MyInfo = (props) => {
                         queryId: 'person-hold'
                     });
                     const personHoldData = (personHoldResult?.data?.personHolds?.edges.map(edge => edge.node));
-
                     setPersons(() => personData);
                     setPersonHolds(() => personHoldData);
                     setLoadingStatus(false);
@@ -71,10 +71,11 @@ const MyInfo = (props) => {
         )();
     }, []);
     const person = destructPersonData(persons, personHolds);
-
+    console.log(person)
     return (
         <Fragment>
             <div className={classes.card}>
+                <Typography>
                 <Table className={classes.table} size="small">
                     {person && (
                         <TableBody>
@@ -93,6 +94,7 @@ const MyInfo = (props) => {
                         </TableBody>
                     )}
                 </Table>
+                </Typography>
             </div>
         </Fragment>
     )
