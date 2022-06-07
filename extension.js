@@ -1,24 +1,15 @@
 module.exports = {
-    "name": "ViewMySchedule",
+    "name": "Faculty Schedule",
     "publisher": "Huey Phan",
     "version": "1.0.1",
     "configuration": {
     },
     "cards": [{
-        "type": "ViewMySchedule",
-        "source": "./src/cards/ViewMyScheduleCard",
-        "title": "View My Schedule",
+        "type": "FacultySchedule",
+        "source": "./src/cards/FacultyScheduleCard",
+        "title": "Faculty Schedule",
         "displayCardType": "GraphQL Query",
-        "description": "View My Schedule GraphQL Query",
-        "configuration": {
-            client: [
-                {
-                    key: 'message',
-                    label: 'Your Message',
-                    type: 'text'
-                }
-            ]
-        },
+        "description": "Faculty Schedule GraphQL Query",
         "queries": {
             "schedule-list": [
                 {
@@ -98,7 +89,9 @@ module.exports = {
                         }
                         `
                 }
-            ],
+            ]
+
+            /* ,
             "section-registration-list": [
                 {
                     "resourceVersions": {
@@ -122,6 +115,7 @@ module.exports = {
                         }`
                 }
             ]
+             */
         }
     }],
     "page": {
