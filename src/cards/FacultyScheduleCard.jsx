@@ -1,10 +1,10 @@
-import React, { useState, useEffect, Fragment, Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@ellucian/react-design-system/core/styles';
 import { spacing10, spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
-import { Typography, Button, TextLink, List, ListItem, Calendar, CalendarLegend, CalendarLegendItem, views, momentLocalizer } from '@ellucian/react-design-system/core';
+import { Typography, Calendar,  views } from '@ellucian/react-design-system/core';
 import moment from 'moment';
-import { saffron600 } from '@ellucian/react-design-system/core/styles/tokens';
+
 
 const styles = () => ({
     card: {
@@ -37,7 +37,15 @@ const ViewMySchedule = (props) => {
 
     const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
     const sectionsEvents = [];
-    const sectionIdList = ["0a116178-76a6-4e7a-8577-e03a285e9ea4", "27f2bae9-8249-437b-a908-64609591b96a", "ab0101a0-883d-43fd-a743-6be4f5628be4", "57944a38-6af5-42d2-82b3-60b36f9b4a24", "aae04d9c-2a54-43e3-9d1c-2993d19c236e"]
+    const sectionIdList = ["cb9475e2-69ee-437e-88ff-6e190f30d282",
+        "581fee9e-5e7d-41c8-8205-3929a47f411e",
+        "00531855-6397-441f-b876-8efd87ec8c65",
+        "ef1b341b-6776-4834-8447-462eac7fd5ad",
+        "0648f603-7196-48bb-9c45-c2f3863202a5",
+        "e1b808f7-2ec7-4b31-88c0-08c10ba0433b",
+        "3ec2dfc8-0147-418e-86b1-d4d1ad1aad3d",
+        "2367fc5c-75b9-4b4e-9c43-59c6f7bbcf1a",
+        "9df38eb1-846e-4d1b-95a3-996068c0f153"]
     // Create set event function to get event object
     const onSelectEvent = (e) => {
         setEvent(e);
@@ -83,21 +91,18 @@ const ViewMySchedule = (props) => {
         }
         )();
     }, []);
-
     // Loop through schedule
     getEvents(schedule, days, sectionsEvents);
-
     // Render Calendar
     return (
         <div>
             <div>
                 <Calendar
-                    defaultView={views.DAY}
-                    views={[views.DAY, views.WORK_WEEK, views.AGENDA]}
-                    timeslots={2}
+                    defaultView={views.AGENDA}
+                    views={[views.DAY, views.WEEK, views.AGENDA]}
                     step={60}
                     events={sectionsEvents}
-                    style={{ height: 900 }}
+                    style={{ height: 550 }}
                     min={moment('6:00am', 'h:mma').toDate()}
                     max={moment('9:00pm', 'h:mma').toDate()}
                     // set Event to event select function
@@ -136,7 +141,6 @@ function destructClasses(schedule, sectionsEvents, days) {
         // Destruct location to get room and building
         // Get List of day in each class
         const dayList = [];
-
         for (const day in daysOfWeek) {
             if (day) {
                 dayList.push(daysOfWeek[day].toUpperCase());
@@ -144,13 +148,15 @@ function destructClasses(schedule, sectionsEvents, days) {
         }
 
         // Set start/end Date
-        const startDate = new Date('2022, 01, 01');
-        const endDate = new Date('2022, 06, 01');
-        // const startDate = startOn;
-        // const endDate = endOn;
+        // const startDate = new Date('2022, 01, 01');
+        // const endDate = new Date('2022, 06, 01');
+        const startDate = new Date(startOn); ƒ
+        const endDate = new Date(endOn);
+
+        // TODO: Add online classes to the calendar
+
         // Set the loop as startDate
         let loop = new Date(startDate);
-
         // Loop through startDate to endDate and create Event if loop day is Monday or Tuestday, etc.
         while (loop <= endDate) {
             if (dayList.includes(days[loop.getDay()]) && repeatType === 'weekly') {
