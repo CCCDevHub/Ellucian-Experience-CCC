@@ -13,16 +13,17 @@ module.exports = {
                 {
                     "resourceVersions": {
                         "sections": {min: 16},
-                        "reportingAcademicPeriods" : {min: 16},
                         "courses": {min: 16},
                         "subjects": {min: 6},
-                        "SectionStatuses" : {min: 11}
+                        "sectionStatuses" : {min: 11},
+                        "academicPeriods": { min: 16}
                     },
                     "query":
-                        `query sectionList($sectionId: ID){
+                        `query sectionList($sectionIds: [ID]){
                             sections: {sections} (
+                                    sort:{reportingAcademicPeriod16:{code:ASC}}
                                     filter: {
-                                        id: {EQ: $sectionId}
+                                        id: {IN: $sectionIds}
                                     }
                                 )
                                 {
@@ -33,20 +34,27 @@ module.exports = {
                                                 value
                                             }
                                             code
-                                            reportingAcademicPeriod: {reportingAcademicPeriods} {
+                                            reportingAcademicPeriod16 {
                                                 code
                                                 title
                                                 registration
                                             }
-         
+                                            status {
+                                                category
+                                                detail11 {
+                                                    title
+                                                    category
+                                                    description
+                                                }
+                                            }
                                             maxEnrollment
                                             crossListed
                                             alternateIds {
                                                 title
                                                 value
                                             }
-                                            course: {courses} {
-                                                subject: {subjects} {
+                                            course: {course} {
+                                                subject: {subject} {
                                                     abbreviation
                                                 }
                                                 number
