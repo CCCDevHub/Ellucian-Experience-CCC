@@ -19,15 +19,18 @@ module.exports = {
                         "sections": { min: 16 },
                         "sites": { min: 6 },
                         "rooms": { min: 10 },
-                        "buildings": { min: 6 }
+                        "buildings": { min: 6 },
+                        "courses": {min: 16},
+                        "subjects": {min: 6},
+                        "academicPeriods": { min: 16}
                     },
                     "query":
-                        `query instructionalEventsBySections($sectionId: ID){
+                        `query instructionalEventsBySections($sectionIds: [ID]){
                             instructionalEvents: {instructionalEvents}(
                                 filter: { 
                                     {section}: {
                                         id: {
-                                            EQ: $sectionId                                           
+                                            IN: $sectionIds                                           
                                         }
                                     }
                                 }
@@ -62,8 +65,28 @@ module.exports = {
                                             }
                                         }
                                         section: {section} {
+                                            code
                                             titles {
                                                 value
+                                            }
+                                            site: {site} {
+                                                    title
+                                                    code
+                                            }
+                                            course: {course} {
+                                                subject: {subject} {
+                                                    abbreviation
+                                                    title
+                                                }
+                                                number
+                                            }
+                                            reportingAcademicPeriod16 {
+                                                code
+                                                title
+                                                registration
+                                                startOn
+                                                endOn
+                                                censusDates
                                             }
                                         }
                                         locations {
