@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@ellucian/react-design-system/core/styles';
 import { spacing10, spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
-import { Typography, Calendar,  views } from '@ellucian/react-design-system/core';
+import { Typography, Calendar,  views, Tabs, Tab, TextLink } from '@ellucian/react-design-system/core';
 import moment from 'moment';
 
+// eslint-disable-next-line no-warning-comments
+// TODO: Filter out classes that are not in semester time frame, change URL TextLink to direct to Faculty class
 
 const styles = () => ({
     card: {
@@ -15,7 +17,12 @@ const styles = () => ({
     image: {
         width: '100%',
         height: 'auto'
+    },
+    list: {
+        display: 'flex',
+        gap: spacing40
     }
+
 });
 
 const ViewMySchedule = (props) => {
@@ -34,8 +41,8 @@ const ViewMySchedule = (props) => {
     const [sections, setSections] = useState();
     // Create event
     const [event, setEvent] = useState({});
-
     const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+    const onlineSections = [];
     const sectionsEvents = [];
     const sectionIdList = ["cb9475e2-69ee-437e-88ff-6e190f30d282",
         "581fee9e-5e7d-41c8-8205-3929a47f411e",
@@ -44,8 +51,7 @@ const ViewMySchedule = (props) => {
         "0648f603-7196-48bb-9c45-c2f3863202a5",
         "e1b808f7-2ec7-4b31-88c0-08c10ba0433b",
         "3ec2dfc8-0147-418e-86b1-d4d1ad1aad3d",
-        "2367fc5c-75b9-4b4e-9c43-59c6f7bbcf1a",
-        "9df38eb1-846e-4d1b-95a3-996068c0f153"]
+        "2367fc5c-75b9-4b4e-9c43-59c6f7bbcf1a"]
     // Create set event function to get event object
     const onSelectEvent = (e) => {
         setEvent(e);
@@ -63,10 +69,9 @@ const ViewMySchedule = (props) => {
                 // console.log(testSchedule);
                 const schedulePromises = []
                 const scheduleList = []
-                for (const sectionId of sectionIdList) {
-                    const promise = getEthosQuery({ queryId: 'schedule-list', properties: { sectionId: sectionId } });
-                    schedulePromises.push(promise);
-                }
+                const promise = getEthosQuery({ queryId: 'schedule-list', properties: { sectionIds: sectionIdList } });
+                schedulePromises.push(promise);
+
                 const scheduleResult = await Promise.all(schedulePromises);
                 scheduleResult.forEach((result) => {
                     // Destruct to Edges
@@ -92,10 +97,24 @@ const ViewMySchedule = (props) => {
         )();
     }, []);
     // Loop through schedule
-    getEvents(schedule, days, sectionsEvents);
+    getEvents(schedule, days, sectionsEvents, onlineSections);
+
     // Render Calendar
     return (
         <div>
+            <Typography paragraph className={classes.card}>
+                Online Classes:
+                <Typography paragraph className={classes.list}>
+                    {onlineSections.map(n => {
+                        return (
+                        <TextLink key={n.id} target="_blank"
+                                  href={`https://ssb-prod.ec.pasadena.edu/PROD/pw_psearch_sched.p_course_popup?vsub=${n.dept}&vcrse=${n.csn}&vterm=${n.termCode}&vcrn=${n.crn}`}>
+                            {n.dept} - {n.csn}
+                        </TextLink>
+                        )
+                    })}
+                </Typography>
+            </Typography>
             <div>
                 <Calendar
                     defaultView={views.AGENDA}
@@ -131,14 +150,18 @@ const ViewMySchedule = (props) => {
     );
 };
 
-function destructClasses(schedule, sectionsEvents, days) {
+function destructClasses(schedule, sectionsEvents, days, onlineSections) {
     let counter = 0;
 
     for (const eachSchedule of schedule) {
-        const { instructionalMethod: { title: classType }, recurrence: { repeatRule: { type: repeatType, daysOfWeek }, timePeriod: { startOn, endOn } }, section: { titles: classTitles }, locations } = eachSchedule;
+        const { instructionalMethod: { title: classType }, recurrence: { repeatRule: { type: repeatType, daysOfWeek }, timePeriod: { startOn, endOn } }, section: { code: crn, titles: classTitles, site, reportingAcademicPeriod16: { code: termCode}, course: { subject: { abbreviation: dept }, number: csn } }, locations } = eachSchedule;
         const location = destructBuildingRoom(locations);
-
         // Destruct location to get room and building
+
+        // Get List of online Classes
+        if (site.code === 'DE') {
+            onlineSections.push(createOnlineClassesData(dept, csn, crn, termCode));
+        }
         // Get List of day in each class
         const dayList = [];
         for (const day in daysOfWeek) {
@@ -150,10 +173,10 @@ function destructClasses(schedule, sectionsEvents, days) {
         // Set start/end Date
         // const startDate = new Date('2022, 01, 01');
         // const endDate = new Date('2022, 06, 01');
-        const startDate = new Date(startOn); ƒ
+        const startDate = new Date(startOn);
         const endDate = new Date(endOn);
 
-        // TODO: Add online classes to the calendar
+        // Add online classes to the calendar
 
         // Set the loop as startDate
         let loop = new Date(startDate);
@@ -179,21 +202,27 @@ function destructClasses(schedule, sectionsEvents, days) {
             loop = new Date(newDate);
         }
     }
+
 }
 
-function getEvents(schedule, days, sectionsEvents) {
+function createOnlineClassesData(dept, csn, crn, termCode) {
+    return {dept, csn, crn, termCode};
+}
+
+
+function getEvents(schedule, days, sectionsEvents, onlineSections) {
     for (const item in schedule) {
         if (item) {
             if (schedule[item].length > 0) {
-                destructClasses(schedule[item], sectionsEvents, days);
+                destructClasses(schedule[item], sectionsEvents, days, onlineSections);
             }
         }
     }
 }
 
 function destructBuildingRoom(locations) {
-    if (locations.length != 0) {
-        const { room: { number: roomNum, building: { title: buildingName } }, site } = locations[0].location;
+    if (locations.length !== 0) {
+        const { room: { number: roomNum, building: { title: buildingName } } } = locations[0].location;
         return `${buildingName}-${roomNum}`;
     }
     else {
