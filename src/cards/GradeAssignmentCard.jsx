@@ -11,6 +11,9 @@ import {
     Typography,
     TextLink
 } from '@ellucian/react-design-system/core';
+import {useCardInfo} from "@ellucian/experience-extension/extension-utilities";
+
+const cacheKey = 'section-table-data';
 
 const styles = () => ({
     card: {
@@ -36,8 +39,12 @@ const GradeAssignmentCard = (props) => {
         cardControl: {
             setLoadingStatus,
             setErrorMessage
-        }
+        },
+        cache: {
+            storeItem
+             }
     } = props;
+    const { cardId } = useCardInfo();
 
     let id = 0;
     const [sectionData, setSectionData] = useState();
@@ -74,16 +81,22 @@ const GradeAssignmentCard = (props) => {
             }
         )();
     }, []);
+
     for (const i in sectionData) {
         if (i != null) {
             const {alternateIds, code: crn, course:{number:csn, subject:{abbreviation:dept}}, maxEnrollment, reportingAcademicPeriod16: {code: termCode, registration, title: termName}, status: {detail11:{category, title:statusTitle}}, titles} = sectionData[i];
             tableData.push(createData(statusTitle, titles[1].value, dept, csn, termName, crn, maxEnrollment, termCode));
         }
     }
+    if (tableData !== undefined || tableData.length !== 0){
+        storeItem({ key: cacheKey, data: tableData, scope: cardId });
+    }
+
     function createData(status, title, dept, csn, term, crn, enrolled, termCode) {
         id += 1;
         return {id, status, title, dept, csn, term, crn, enrolled, termCode};
     }
+
     return (
             <div className={classes.root}>
                 <Typography>
@@ -144,7 +157,8 @@ const GradeAssignmentCard = (props) => {
 GradeAssignmentCard.propTypes = {
     classes: PropTypes.object.isRequired,
     cardControl: PropTypes.object.isRequired,
-    data: PropTypes.object.isRequired
+    data: PropTypes.object.isRequired,
+    cache: PropTypes.object.isRequired
 }
 
 export default withStyles(styles)(GradeAssignmentCard);
