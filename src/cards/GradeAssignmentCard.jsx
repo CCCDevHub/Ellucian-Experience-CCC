@@ -121,7 +121,7 @@ const GradeAssignmentCard = (props) => {
                                         {n.status}
                                     </TableCell>
                                     <TableCell columnName="Course Title">
-                                        <TextLink id={n.id}
+                                        <TextLink id="link"
                                                   href={`https://ssb-prod.ec.pasadena.edu/PROD/pw_psearch_sched.p_course_popup?vsub=${n.dept}&vcrse=${n.csn}&vterm=${n.termCode}&vcrn=${n.crn}`}>
                                             {n.title}
                                         </TextLink>
