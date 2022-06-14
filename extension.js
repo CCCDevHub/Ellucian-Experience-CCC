@@ -9,7 +9,8 @@ module.exports = {
         "displayCardType": "GraphQL Grade Assignment",
         "description": "Grade Assignment",
         "pageRoute" : {
-            "route": "/"
+            "route": "/",
+            "excludeClickSelectors": ['#link']
         },
         "queries": {
             "section-list": [
