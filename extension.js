@@ -8,6 +8,9 @@ module.exports = {
         "title": "Grade Assignment",
         "displayCardType": "GraphQL Grade Assignment",
         "description": "Grade Assignment",
+        "pageRoute" : {
+            "route": "/"
+        },
         "queries": {
             "section-list": [
                 {
@@ -68,6 +71,6 @@ module.exports = {
         }
     }],
     "page": {
-        "source": "./src/page/index.jsx"
+        "source": "./src/page/gradeAssignmentPage.jsx"
     }
 }
