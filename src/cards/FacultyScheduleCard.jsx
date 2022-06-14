@@ -116,7 +116,7 @@ const ViewMySchedule = (props) => {
                 </Typography>
             </Typography>
             <div>
-                <Calendar
+                <Calendar className={classes.card}
                     defaultView={views.AGENDA}
                     views={[views.DAY, views.WEEK, views.AGENDA]}
                     step={60}
@@ -129,7 +129,7 @@ const ViewMySchedule = (props) => {
                     onKeyPressEvent={onSelectEvent}
                     popperContent={
                         // Sample popper content here
-                        <div>
+                        <div className={classes.card}>
                             <Typography variant="h4">
                                 <b>{event.title}</b>
                             </Typography>
