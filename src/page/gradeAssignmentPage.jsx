@@ -82,9 +82,10 @@ const PropsPage = (props) => {
                                         {n.status}
                                     </TableCell>
                                     <TableCell columnName="Course Title">
+                                        // TODO: remove TEST link
                                         <TextLink id={n.id}
-                                                  href={`https://ssb-prod.ec.pasadena.edu/PROD/pw_psearch_sched.p_course_popup?vsub=${n.dept}&vcrse=${n.csn}&vterm=${n.termCode}&vcrn=${n.crn}`}>
-                                            {n.title}
+                                                 // href={`https://ssb-prod.ec.pasadena.edu/PROD/bwlkffgd.P_FacFinGrd?TERM=${n.termCode}&CRN=${n.crn}`}>
+                                                  href={`https://ssb-dev.ec.pasadena.edu:9003/TEST/bwlkffgd.P_FacFinGrd?TERM=${n.termCode}&CRN=${n.crn}`}>                                            {n.title}
                                         </TextLink>
                                     </TableCell>
                                     <TableCell columnName="Dept">
