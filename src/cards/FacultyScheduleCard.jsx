@@ -108,7 +108,8 @@ const ViewMySchedule = (props) => {
                     {onlineSections.map(n => {
                         return (
                         <TextLink key={n.id} target="_blank"
-                                  href={`https://ssb-prod.ec.pasadena.edu/PROD/pw_psearch_sched.p_course_popup?vsub=${n.dept}&vcrse=${n.csn}&vterm=${n.termCode}&vcrn=${n.crn}`}>
+                                  // href={`https://ssb-prod.ec.pasadena.edu/PROD/bwlkifac.P_FacSched?term_in=${n.termCode}`}>
+                                  href={`https://ssb-dev.ec.pasadena.edu:9003/TEST/bwlkifac.P_FacSched?term_in=${n.termCode}`}>
                             {n.dept} - {n.csn}
                         </TextLink>
                         )
