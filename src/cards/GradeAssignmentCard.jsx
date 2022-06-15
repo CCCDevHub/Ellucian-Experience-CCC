@@ -122,7 +122,8 @@ const GradeAssignmentCard = (props) => {
                                     </TableCell>
                                     <TableCell columnName="Course Title">
                                         <TextLink id="link"
-                                                  href={`https://ssb-prod.ec.pasadena.edu/PROD/pw_psearch_sched.p_course_popup?vsub=${n.dept}&vcrse=${n.csn}&vterm=${n.termCode}&vcrn=${n.crn}`}>
+                                                 // href={`https://ssb-prod.ec.pasadena.edu/PROD/bwlkffgd.P_FacFinGrd?TERM=${n.termCode}&CRN=${n.crn}`}>
+                                                  href={`https://ssb-dev.ec.pasadena.edu:9003/TEST/bwlkffgd.P_FacFinGrd?TERM=${n.termCode}&CRN=${n.crn}`}>
                                             {n.title}
                                         </TextLink>
                                     </TableCell>
