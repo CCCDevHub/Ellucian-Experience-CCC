@@ -12,7 +12,7 @@ module.exports = {
             "person-info": [
                 {
                     "resourceVersions": {
-                        "persons": {min: 12}
+                        "persons": { min: 12 }
                     },
                     "query":
                         `query personInfo($personId: ID){
@@ -60,11 +60,11 @@ module.exports = {
             "person-hold": [
                 {
                     "resourceVersions": {
-                        "persons": {min: 12},
-                        "personHolds": {min: 6}
+                        "persons": { min: 12 },
+                        "personHolds": { min: 6 }
                     },
                     "query":
-                        `query personHoldInfo($personId : ID) {
+                        `query personHoldInfo($personId : ID, $todayDateTime: DateTime) {
                             personHolds: {personHolds} (
                                 filter:{
                                     {person@persons}: {
@@ -82,11 +82,51 @@ module.exports = {
                                                 description
                                             }
                                         }
+                                        startOn
+                                        endOn
                                     }
                                 }
                             }
                         }
-                        
+                        `
+                }
+            ],
+            "student-tags": [
+                {
+                    "resourceVersions": {
+                        "persons": { min: 12 },
+                        "studentTags": { min: 7 },
+                        "studentTagAssignments": { min: 1 }
+                    },
+                    "query":
+                        `query studentTagInfo($personId : ID, $today: Date) {
+                            studentTagAssignments: {studentTagAssignments} (
+                                filter:{
+                                    {person@persons}: {
+                                        id: {EQ: $personId}
+                                    }
+                                    {tag@studentTags}: { code: { IN: ["OUT", "NSV"] } }
+                                    startOn:{ AFTER: $today} endOn:{BEFORE: $today}
+
+                                }
+                            ) {
+                               edges {
+                                    node {
+                                        id
+                                        tag7 {
+                                            title
+                                            description
+                                            code
+                                        }
+                                        startOn
+                                        endOn
+                                        person12 {
+                                            id
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         `
                 }
             ]
