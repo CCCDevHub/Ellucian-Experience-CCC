@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@ellucian/react-design-system/core/styles';
 import { spacing10, spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
-import { Typography, Calendar,  views, Tabs, Tab, TextLink } from '@ellucian/react-design-system/core';
+import { Typography, Calendar, views, Tabs, Tab, TextLink } from '@ellucian/react-design-system/core';
 import moment from 'moment';
 
 // eslint-disable-next-line no-warning-comments
@@ -98,20 +98,19 @@ const ViewMySchedule = (props) => {
     }, []);
     // Loop through schedule
     getEvents(schedule, days, sectionsEvents, onlineSections);
-
     // Render Calendar
     return (
         <div>
             <Typography paragraph className={classes.card}>
-                Online Classes:
+                Unassigned Meeting Times:
                 <Typography paragraph className={classes.list}>
                     {onlineSections.map(n => {
                         return (
-                        <TextLink key={n.id} target="_blank"
-                                  // href={`https://ssb-prod.ec.pasadena.edu/PROD/bwlkifac.P_FacSched?term_in=${n.termCode}`}>
-                                  href={`https://ssb-dev.ec.pasadena.edu:9003/TEST/bwlkifac.P_FacSched?term_in=${n.termCode}`}>
-                            {n.dept} - {n.csn}
-                        </TextLink>
+                            <TextLink key={n.id} target="_blank"
+                                // href={`https://ssb-prod.ec.pasadena.edu/PROD/bwlkifac.P_FacSched?term_in=${n.termCode}`}>
+                                href={`https://ssb-dev.ec.pasadena.edu:9003/TEST/bwlkifac.P_FacSched?term_in=${n.termCode}`}>
+                                {n.dept} - {n.csn}
+                            </TextLink>
                         )
                     })}
                 </Typography>
@@ -155,7 +154,7 @@ function destructClasses(schedule, sectionsEvents, days, onlineSections) {
     let counter = 0;
 
     for (const eachSchedule of schedule) {
-        const { instructionalMethod: { title: classType }, recurrence: { repeatRule: { type: repeatType, daysOfWeek }, timePeriod: { startOn, endOn } }, section: { code: crn, titles: classTitles, site, reportingAcademicPeriod16: { code: termCode}, course: { subject: { abbreviation: dept }, number: csn } }, locations } = eachSchedule;
+        const { instructionalMethod: { title: classType }, recurrence: { repeatRule: { type: repeatType, daysOfWeek }, timePeriod: { startOn, endOn } }, section: { code: crn, titles: classTitles, site, reportingAcademicPeriod16: { code: termCode }, course: { subject: { abbreviation: dept }, number: csn } }, locations } = eachSchedule;
         const location = destructBuildingRoom(locations);
         // Destruct location to get room and building
 
@@ -207,7 +206,7 @@ function destructClasses(schedule, sectionsEvents, days, onlineSections) {
 }
 
 function createOnlineClassesData(dept, csn, crn, termCode) {
-    return {dept, csn, crn, termCode};
+    return { dept, csn, crn, termCode };
 }
 
 
