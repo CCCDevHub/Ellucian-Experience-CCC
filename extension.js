@@ -23,17 +23,20 @@ module.exports = {
                         "academicPeriods": { min: 16}
                     },
                     "query":
-                        `query sectionList($sectionIds: [ID]){
+                        `query sectionList($sectionIds: [ID], $todayDate: Date){
                             sections: {sections} (
                                     sort:{reportingAcademicPeriod16:{code:ASC}}
                                     filter: {
                                         id: {IN: $sectionIds}
+                                        startOn:{BEFORE: $todayDate}
                                     }
                                 )
                                 {
                                     edges {
                                         node {
                                             id
+                                            startOn
+                                            endOn
                                             titles {
                                                 value
                                             }
