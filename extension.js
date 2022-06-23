@@ -25,13 +25,14 @@ module.exports = {
                         "academicPeriods": { min: 16}
                     },
                     "query":
-                        `query instructionalEventsBySections($sectionIds: [ID]){
+                        `query instructionalEventsBySections($personId: ID, $todayDate: Date){
                             instructionalEvents: {instructionalEvents}(
                                 filter: { 
+                        			instructorRoster: {
+                                        instructor12: { id: { EQ: $personId } }
+                                    }
                                     {section}: {
-                                        id: {
-                                            IN: $sectionIds                                           
-                                        }
+                                        endOn:{AFTER: $todayDate} startOn:{BEFORE: $todayDate}
                                     }
                                 }
                             ) {
@@ -43,6 +44,12 @@ module.exports = {
                                         }
                                         instructorRoster {
                                             instructorRole
+                                            instructor12 {
+                                                id
+                                                names {
+                                                    fullName
+                                                }
+                                            }
                                         }
                                         recurrence {
                                             timePeriod {
@@ -66,6 +73,8 @@ module.exports = {
                                         }
                                         section: {section} {
                                             code
+                                            startOn
+                                            endOn
                                             titles {
                                                 value
                                             }

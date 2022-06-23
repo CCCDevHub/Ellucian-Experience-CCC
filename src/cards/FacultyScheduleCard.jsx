@@ -51,7 +51,10 @@ const ViewMySchedule = (props) => {
         "0648f603-7196-48bb-9c45-c2f3863202a5",
         "e1b808f7-2ec7-4b31-88c0-08c10ba0433b",
         "3ec2dfc8-0147-418e-86b1-d4d1ad1aad3d",
-        "2367fc5c-75b9-4b4e-9c43-59c6f7bbcf1a"]
+        "2367fc5c-75b9-4b4e-9c43-59c6f7bbcf1a"];
+
+    const todayDate = new Date().toJSON().slice(0, 10);
+
     // Create set event function to get event object
     const onSelectEvent = (e) => {
         setEvent(e);
@@ -69,7 +72,7 @@ const ViewMySchedule = (props) => {
                 // console.log(testSchedule);
                 const schedulePromises = []
                 const scheduleList = []
-                const promise = getEthosQuery({ queryId: 'schedule-list', properties: { sectionIds: sectionIdList } });
+                const promise = getEthosQuery({ queryId: 'schedule-list', properties: {todayDate: todayDate } });
                 schedulePromises.push(promise);
 
                 const scheduleResult = await Promise.all(schedulePromises);
@@ -98,24 +101,33 @@ const ViewMySchedule = (props) => {
     }, []);
     // Loop through schedule
     getEvents(schedule, days, sectionsEvents, onlineSections);
+    const unAssignedClasses = ( () => {
+        if (onlineSections.length !== 0) {
+            return (
+                <Typography paragraph className={classes.card}>
+                    Unassigned Meeting Times:
+                    <Typography paragraph className={classes.list}>
+                        {onlineSections.map(n => {
+                            return (
+                                <TextLink key={n.id} target="_blank"
+                                    // href={`https://ssb-prod.ec.pasadena.edu/PROD/bwlkifac.P_FacSched?term_in=${n.termCode}`}>
+                                          href={`https://ssb-dev.ec.pasadena.edu:9003/TEST/bwlkifac.P_FacSched?term_in=${n.termCode}`}>
+                                    {n.dept} - {n.csn}
+                                </TextLink>
+                            )
+                        })}
+                    </Typography>
+                </Typography>
+            )
+        } else {
+            return (null)
+        }
+    });
     // Render Calendar
     return (
         <div>
-            <Typography paragraph className={classes.card}>
-                Unassigned Meeting Times:
-                <Typography paragraph className={classes.list}>
-                    {onlineSections.map(n => {
-                        return (
-                            <TextLink key={n.id} target="_blank"
-                                // href={`https://ssb-prod.ec.pasadena.edu/PROD/bwlkifac.P_FacSched?term_in=${n.termCode}`}>
-                                href={`https://ssb-dev.ec.pasadena.edu:9003/TEST/bwlkifac.P_FacSched?term_in=${n.termCode}`}>
-                                {n.dept} - {n.csn}
-                            </TextLink>
-                        )
-                    })}
-                </Typography>
-            </Typography>
             <div>
+                {unAssignedClasses()}
                 <Calendar className={classes.card}
                     defaultView={views.AGENDA}
                     views={[views.DAY, views.WEEK, views.AGENDA]}
