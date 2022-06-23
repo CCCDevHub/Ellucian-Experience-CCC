@@ -57,12 +57,15 @@ const GradeAssignmentCard = (props) => {
         "e1b808f7-2ec7-4b31-88c0-08c10ba0433b",
         "3ec2dfc8-0147-418e-86b1-d4d1ad1aad3d",
         "2367fc5c-75b9-4b4e-9c43-59c6f7bbcf1a",
-        "9df38eb1-846e-4d1b-95a3-996068c0f153"]
+        "9df38eb1-846e-4d1b-95a3-996068c0f153"];
+
+    const todayDate = new Date().toJSON().slice(0, 10);
+
     useEffect(() => {
         (async () => {
                 setLoadingStatus(true);
                 try {
-                    const sectionResult = await getEthosQuery({ queryId: 'section-list', properties: { sectionIds: sectionIdList } });
+                    const sectionResult = await getEthosQuery({ queryId: 'section-list', properties: { sectionIds: sectionIdList, todayDate: todayDate } });
 
                     const sections = sectionResult?.data?.sections?.edges.map(edge => edge.node);
 
