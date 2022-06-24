@@ -28,7 +28,6 @@ const styles = () => ({
 const ViewMySchedule = (props) => {
     const {
         classes,
-        cardInfo: { configuration },
         data: { getEthosQuery },
         cardControl: {
             setLoadingStatus,
@@ -36,22 +35,20 @@ const ViewMySchedule = (props) => {
         }
     } = props;
 
-    const textMessage = configuration.message;
     const [schedule, setSchedule] = useState();
-    const [sections, setSections] = useState();
     // Create event
     const [event, setEvent] = useState({});
     const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
     const onlineSections = [];
     const sectionsEvents = [];
-    const sectionIdList = ["cb9475e2-69ee-437e-88ff-6e190f30d282",
-        "581fee9e-5e7d-41c8-8205-3929a47f411e",
-        "00531855-6397-441f-b876-8efd87ec8c65",
-        "ef1b341b-6776-4834-8447-462eac7fd5ad",
-        "0648f603-7196-48bb-9c45-c2f3863202a5",
-        "e1b808f7-2ec7-4b31-88c0-08c10ba0433b",
-        "3ec2dfc8-0147-418e-86b1-d4d1ad1aad3d",
-        "2367fc5c-75b9-4b4e-9c43-59c6f7bbcf1a"];
+    // const sectionIdList = ["cb9475e2-69ee-437e-88ff-6e190f30d282",
+    //     "581fee9e-5e7d-41c8-8205-3929a47f411e",
+    //     "00531855-6397-441f-b876-8efd87ec8c65",
+    //     "ef1b341b-6776-4834-8447-462eac7fd5ad",
+    //     "0648f603-7196-48bb-9c45-c2f3863202a5",
+    //     "e1b808f7-2ec7-4b31-88c0-08c10ba0433b",
+    //     "3ec2dfc8-0147-418e-86b1-d4d1ad1aad3d",
+    //     "2367fc5c-75b9-4b4e-9c43-59c6f7bbcf1a"];
 
     const todayDate = new Date().toJSON().slice(0, 10);
 
@@ -110,8 +107,7 @@ const ViewMySchedule = (props) => {
                         {onlineSections.map(n => {
                             return (
                                 <TextLink key={n.id} target="_blank"
-                                    // href={`https://ssb-prod.ec.pasadena.edu/PROD/bwlkifac.P_FacSched?term_in=${n.termCode}`}>
-                                          href={`https://ssb-dev.ec.pasadena.edu:9003/TEST/bwlkifac.P_FacSched?term_in=${n.termCode}`}>
+                                    href={`https://ssb-prod.ec.pasadena.edu/PROD/bwlkifac.P_FacSched?term_in=${n.termCode}`}>
                                     {n.dept} - {n.csn}
                                 </TextLink>
                             )
