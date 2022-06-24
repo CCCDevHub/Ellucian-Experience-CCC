@@ -20,51 +20,61 @@ module.exports = {
                         "courses": {min: 16},
                         "subjects": {min: 6},
                         "sectionStatuses" : {min: 11},
-                        "academicPeriods": { min: 16}
+                        "academicPeriods": { min: 16},
+                        "sectionInstructors": {min: 10},
+                        "persons": {min: 12}
                     },
                     "query":
-                        `query sectionList($sectionIds: [ID], $todayDate: Date){
-                            sections: {sections} (
-                                    sort:{reportingAcademicPeriod16:{code:ASC}}
+                        `query sectionList($personId: ID, $todayDate: Date){
+                            	sectionInstructors: {sectionInstructors} (
                                     filter: {
-                                        id: {IN: $sectionIds}
-                                        startOn:{BEFORE: $todayDate}
+                                        {instructor@persons} : { id: { EQ: $personId } }
+                                        {section@sections}: { startOn: { BEFORE: $todayDate } }
                                     }
-                                )
-                                {
+                                    sort: {{section@sections}:{{reportingAcademicPeriod@academicPeriods}:{code:DESC}}}
+                                ) {
                                     edges {
                                         node {
                                             id
-                                            startOn
-                                            endOn
-                                            titles {
-                                                value
-                                            }
-                                            code
-                                            reportingAcademicPeriod16 {
+                                            section16 {
+                                                id
+                                                startOn
+                                                endOn
+                                                titles {
+                                                    value
+                                                }
                                                 code
-                                                title
-                                                registration
-                                            }
-                                            status {
-                                                category
-                                                detail11 {
+                                                reportingAcademicPeriod16 {
+                                                    code
                                                     title
+                                                    registration
+                                                }
+                                                status {
                                                     category
-                                                    description
+                                                    detail11 {
+                                                        title
+                                                        category
+                                                        description
+                                                    }
+                                                }
+                                                maxEnrollment
+                                                crossListed
+                                                alternateIds {
+                                                    title
+                                                    value
+                                                }
+                                                course16 {
+                                                    subject: {subject} {
+                                                        abbreviation
+                                                    }
+                                                    number
                                                 }
                                             }
-                                            maxEnrollment
-                                            crossListed
-                                            alternateIds {
-                                                title
-                                                value
-                                            }
-                                            course: {course} {
-                                                subject: {subject} {
-                                                    abbreviation
+                                            instructor12 {
+                                                id
+                                                names {
+                                                    fullName
                                                 }
-                                                number
                                             }
                                         }
                                     }
