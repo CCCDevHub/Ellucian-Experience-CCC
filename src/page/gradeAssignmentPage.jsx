@@ -76,16 +76,18 @@ const PropsPage = (props) => {
                     </TableHead>
                     <TableBody>
                         {tableData?.map(n => {
+                            function getHref() {
+                                return "https://ssb-prod.ec.pasadena.edu/PROD/bwlkffgd.P_FacFinGrd?TERM=" + n.termCode + "&CRN=" + n.crn;
+                            }
                             return (
                                 <TableRow key={n.id}>
                                     <TableCell columnName="Status">
                                         {n.status}
                                     </TableCell>
                                     <TableCell columnName="Course Title">
-                                        // TODO: remove TEST link
-                                        <TextLink id={n.id}
-                                                 // href={`https://ssb-prod.ec.pasadena.edu/PROD/bwlkffgd.P_FacFinGrd?TERM=${n.termCode}&CRN=${n.crn}`}>
-                                                  href={`https://ssb-dev.ec.pasadena.edu:9003/TEST/bwlkffgd.P_FacFinGrd?TERM=${n.termCode}&CRN=${n.crn}`}>                                            {n.title}
+                                        <TextLink id="link"
+                                                  href={getHref()}>
+                                            {n.title}
                                         </TextLink>
                                     </TableCell>
                                     <TableCell columnName="Dept">
