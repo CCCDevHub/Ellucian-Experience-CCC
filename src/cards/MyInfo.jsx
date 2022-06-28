@@ -1,8 +1,8 @@
 import React, {Fragment, useEffect, useState} from "react";
 import PropTypes from "prop-types";
-import {spacing10, spacing40} from '@ellucian/react-design-system/core/styles/tokens';
+import {spacing10, spacing40, spacing50, spacing60, spacing90} from '@ellucian/react-design-system/core/styles/tokens';
 import {withStyles} from '@ellucian/react-design-system/core/styles';
-import {Table, TableBody, TableCell, TableRow, Typography} from '@ellucian/react-design-system/core';
+import {Table, TableBody, TableCell, TableRow, Typography, List, ListItem, ListItemText} from '@ellucian/react-design-system/core';
 
 
 const styles = () => ({
@@ -19,6 +19,11 @@ const styles = () => ({
         maxWidth: spacing10,
         maxHeight: spacing10,
         margin: spacing10
+    },
+    listArea: {
+        maxWidth: spacing90,
+        minWidth: spacing50,
+        padding: spacing60
     }
 });
 
@@ -37,6 +42,7 @@ const MyInfo = (props) => {
     const [personHolds, setPersonHolds] = useState();
     const [personTags, setPersonTags] = useState();
     const todayDate = new Date().toJSON().slice(0, 10);
+
     useEffect(() => {
         (async () => {
             setLoadingStatus(true);
@@ -50,10 +56,9 @@ const MyInfo = (props) => {
 
                 // Get person holds
                 const personHoldResult = await getEthosQuery({
-                    queryId: 'person-hold'
+                    queryId: 'person-hold', properties: { today: todayDate }
                 });
                 const personHoldData = (personHoldResult?.data?.personHolds?.edges.map(edge => edge.node));
-                console.log(personHoldResult);
 
                 // Get person tags
                 const personTagResult = await getEthosQuery({
@@ -78,33 +83,38 @@ const MyInfo = (props) => {
         }
         )();
     }, []);
-    const person = destructPersonData(persons, personHolds, personTags);
-    return (
-        <Fragment>
-            <div className={classes.card}>
-                <Typography>
-                    <Table className={classes.table} size="small">
-                        {person && (
-                            <TableBody>
-                                {person.map(n => {
-                                    return (
-                                        <TableRow key={n.id}>
-                                            <TableCell align="left">
-                                                <h5>{n.name}</h5>
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                {n.value}
-                                            </TableCell>
-                                        </TableRow>
-                                    )
-                                })}
-                            </TableBody>
-                        )}
-                    </Table>
-                </Typography>
-            </div>
-        </Fragment>
-    )
+    if (persons && personHolds && personTags) {
+        const person = destructPersonData(persons, personHolds, personTags);
+        return (
+            <Fragment>
+                <div className={classes.card}>
+                    <Typography>
+                        <Table className={classes.table} size="small">
+                            {person && (
+                                <TableBody>
+                                    {person.map(n => {
+                                        return (
+                                            <TableRow key={n.id}>
+                                                <TableCell align="left">
+                                                    <h5>{n.name}</h5>
+                                                </TableCell>
+                                                <TableCell align="right">
+                                                    {n.value}
+                                                </TableCell>
+                                            </TableRow>
+                                        )
+                                    })}
+                                </TableBody>
+                            )}
+                        </Table>
+                    </Typography>
+                </div>
+            </Fragment>
+        );
+    }
+    else {
+        return (null);
+    }
 };
 
 function destructPersonData(persons, personHolds, personTags) {
@@ -116,16 +126,16 @@ function destructPersonData(persons, personHolds, personTags) {
         return { id, name, value };
     }
 
-    if (personHolds) {
-        console.log(personHolds);
+    if (personHolds.length !== 0) {
         for (const i in personHolds) {
             if (i) {
                 const { type: { detail6: { title: holdType } } } = personHolds[i];
-                console.log(holdType);
-
                 holdList.push(holdType);
             }
         }
+    }
+    else {
+        holdList.push("No Hold");
     }
 
     if (persons || personTags) {
@@ -169,13 +179,35 @@ function destructPersonData(persons, personHolds, personTags) {
         }
 
         const outTitle = () => {
-            for (const i in personTags) {
-                if (i) {
-                    const { tag7: { code: tagCode, title: tagTitle } } = personTags[i];
-                    if (tagCode === "OUT") {
-                        return tagTitle;
+            if (personTags.length !== 0) {
+                for (const i in personTags) {
+                    if (i) {
+                        const { tag7: { code: tagCode, title: tagTitle } } = personTags[i];
+                        if (tagCode === "OUT") {
+                            return tagTitle;
+                        }
                     }
                 }
+            }
+            else {
+                return "Resident";
+            }
+
+        }
+
+        const vacTitle = () => {
+            if (personTags.length !== 0) {
+                for (const i in personTags) {
+                    if (i) {
+                        const { tag7: { code: tagCode, title: tagTitle } } = personTags[i];
+                        if (tagCode === "NVS") {
+                            return tagTitle;
+                        }
+                    }
+                }
+            }
+            else {
+                return "Vaccinated";
             }
         }
 
@@ -184,8 +216,9 @@ function destructPersonData(persons, personHolds, personTags) {
             createData("School Id", studentId()),
             createData("User Name", userName()),
             createData("Email", email()),
-            createData("Hold", holdList.join('\n')),
+            createData("Hold", holdList.join(";")),
             createData("Residency Status", outTitle()),
+            createData("Vaccination Status", vacTitle()),
             createData("Role", roles[0].role)
         ];
     }

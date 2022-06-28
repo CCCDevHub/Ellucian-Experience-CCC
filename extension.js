@@ -64,12 +64,12 @@ module.exports = {
                         "personHolds": { min: 6 }
                     },
                     "query":
-                        `query personHoldInfo($personId : ID, $todayDateTime: DateTime) {
+                        `query personHoldInfo($personId : ID, $today: Date) {
                             personHolds: {personHolds} (
                                 filter:{
-                                    {person@persons}: {
-                                        id: {EQ: $personId}
-                                    }
+                                    {person@persons}: { id: { EQ: $personId } }
+                                    endOn: {AFTER: $today} 
+                                    startOn: {BEFORE: $today}
                                 }
                             ) {
                                 edges {
