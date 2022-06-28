@@ -65,7 +65,6 @@ const GradeAssignmentCard = (props) => {
                 setLoadingStatus(true);
                 try {
                     const sectionResult = await getEthosQuery({ queryId: 'section-list', properties: { todayDate: todayDate } });
-                    console.log(sectionResult);
                     const sections = sectionResult?.data?.sections?.edges.map(edge => edge.node);
 
                     setSectionData(() => sections);
