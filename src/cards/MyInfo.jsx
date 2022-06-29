@@ -1,9 +1,9 @@
 import React, {Fragment, useEffect, useState} from "react";
 import PropTypes from "prop-types";
-import {spacing10, spacing40, spacing50, spacing60, spacing90} from '@ellucian/react-design-system/core/styles/tokens';
+import {spacing10, spacing40} from '@ellucian/react-design-system/core/styles/tokens';
 import {withStyles} from '@ellucian/react-design-system/core/styles';
-import {Table, TableBody, TableCell, TableRow, Typography, List, ListItem, ListItemText} from '@ellucian/react-design-system/core';
-
+import {Table, TableBody, TableCell, TableRow, Typography, IconButton, Tooltip, TextLink} from '@ellucian/react-design-system/core';
+import { Icon } from '@ellucian/ds-icons/lib';
 
 const styles = () => ({
     card: {
@@ -19,13 +19,12 @@ const styles = () => ({
         maxWidth: spacing10,
         maxHeight: spacing10,
         margin: spacing10
-    },
-    listArea: {
-        maxWidth: spacing90,
-        minWidth: spacing50,
-        padding: spacing60
     }
 });
+
+const handleClick = () => {
+    window.open("https://pasadena.edu/admissions-and-aid/admissions-and-records/fees-and-tuition/california-residency-requirements.php");
+}
 
 const MyInfo = (props) => {
     const {
@@ -34,7 +33,8 @@ const MyInfo = (props) => {
         data: { getEthosQuery },
         cardControl: {
             setLoadingStatus,
-            setErrorMessage
+            setErrorMessage,
+            setPreventRemove
         }
     } = props;
 
@@ -42,6 +42,8 @@ const MyInfo = (props) => {
     const [personHolds, setPersonHolds] = useState();
     const [personTags, setPersonTags] = useState();
     const todayDate = new Date().toJSON().slice(0, 10);
+
+    setPreventRemove(true);
 
     useEffect(() => {
         (async () => {
@@ -83,6 +85,8 @@ const MyInfo = (props) => {
         }
         )();
     }, []);
+
+    // Check if all the data is loaded
     if (persons && personHolds && personTags) {
         const person = destructPersonData(persons, personHolds, personTags);
         return (
@@ -131,6 +135,9 @@ function destructPersonData(persons, personHolds, personTags) {
             if (i) {
                 const { type: { detail6: { title: holdType } } } = personHolds[i];
                 holdList.push(holdType);
+            }
+            else {
+                holdList.push("No Hold");
             }
         }
     }
@@ -184,15 +191,30 @@ function destructPersonData(persons, personHolds, personTags) {
                     if (i) {
                         const { tag7: { code: tagCode, title: tagTitle } } = personTags[i];
                         if (tagCode === "OUT") {
-                            return tagTitle;
+                            return(
+                                <Typography>
+                                    <Tooltip color="blue" title="Please contact Admission & Records for more info">
+                                        <IconButton onClick={handleClick}>
+                                            <Icon name="info"/>
+                                        </IconButton>
+                                    </Tooltip>
+                                    <TextLink
+                                        href="https://pasadena.edu/admissions-and-aid/admissions-and-records/fees-and-tuition/california-residency-requirements.php">
+                                        {tagTitle}
+                                    </TextLink>
+
+                                </Typography>
+                            );
+                        }
+                        else {
+                            return "CA Resident";
                         }
                     }
                 }
             }
             else {
-                return "Resident";
+                return "CA Resident";
             }
-
         }
 
         const vacTitle = () => {
@@ -201,7 +223,23 @@ function destructPersonData(persons, personHolds, personTags) {
                     if (i) {
                         const { tag7: { code: tagCode, title: tagTitle } } = personTags[i];
                         if (tagCode === "NVS") {
-                            return tagTitle;
+                            return(
+                                <Typography>
+                                    <Tooltip color="blue" title="Please contact Covid Support Team for more info">
+                                        <IconButton onClick={handleClick}>
+                                            <Icon name="info"/>
+                                        </IconButton>
+                                    </Tooltip>
+                                    <TextLink
+                                        href="https://pasadena.edu/admissions-and-aid/admissions-and-records/fees-and-tuition/california-residency-requirements.php">
+                                        {tagTitle}
+                                    </TextLink>
+
+                                </Typography>
+                            );
+                        }
+                        else {
+                            return "Vaccinated";
                         }
                     }
                 }
@@ -216,7 +254,7 @@ function destructPersonData(persons, personHolds, personTags) {
             createData("School Id", studentId()),
             createData("User Name", userName()),
             createData("Email", email()),
-            createData("Hold", holdList.join(";")),
+            createData("Hold", holdList.join("; ")),
             createData("Residency Status", outTitle()),
             createData("Vaccination Status", vacTitle()),
             createData("Role", roles[0].role)
