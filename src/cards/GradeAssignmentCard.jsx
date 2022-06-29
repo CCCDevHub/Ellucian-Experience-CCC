@@ -38,13 +38,15 @@ const GradeAssignmentCard = (props) => {
         data: {getEthosQuery},
         cardControl: {
             setLoadingStatus,
-            setErrorMessage
+            setErrorMessage,
+            setPreventRemove
         },
         cache: {
             storeItem
              }
     } = props;
     const { cardId } = useCardInfo();
+    const [dashoardError, setDashoardError] = useState(false);
 
     let id = 0;
     const [sectionData, setSectionData] = useState();
@@ -60,6 +62,8 @@ const GradeAssignmentCard = (props) => {
     //     "9df38eb1-846e-4d1b-95a3-996068c0f153"];
 
     const todayDate = new Date().toJSON().slice(0, 10);
+    setPreventRemove(true);
+
     useEffect(() => {
         (async () => {
                 setLoadingStatus(true);
@@ -97,62 +101,71 @@ const GradeAssignmentCard = (props) => {
         id += 1;
         return {id, status, title, dept, csn, term, crn, enrolled, termCode};
     }
-
-    return (
-            <div className={classes.root}>
-                <Typography>
-                <Table layout={{ variant: 'card', breakpoint: 'sm'}}>
-                <TableHead>
-                    <TableRow>
-                        <TableCell>Status</TableCell>
-                        <TableCell>Course Title</TableCell>
-                        <TableCell>Dept</TableCell>
-                        <TableCell>CSN</TableCell>
-                        <TableCell>Term</TableCell>
-                        <TableCell>CRN</TableCell>
-                        <TableCell>Session</TableCell>
-                        <TableCell>Enrolled</TableCell>
-                    </TableRow>
-                </TableHead>
-                    <TableBody>
-                        {tableData.map(n => {
-                            return (
-                                <TableRow key={n.id}>
-                                    <TableCell columnName="Status">
-                                        {n.status}
-                                    </TableCell>
-                                    <TableCell columnName="Course Title">
-                                        <TextLink id="link"
-                                                  href={`https://ssb-prod.ec.pasadena.edu/PROD/bwlkffgd.P_FacFinGrd?TERM=${n.termCode}&CRN=${n.crn}`}>
-                                            {n.title}
-                                        </TextLink>
-                                    </TableCell>
-                                    <TableCell columnName="Dept">
-                                        {n.dept}
-                                    </TableCell>
-                                    <TableCell columnName="CSN">
-                                        {n.csn}
-                                    </TableCell>
-                                    <TableCell columnName="Term">
-                                        {n.term}
-                                    </TableCell>
-                                    <TableCell columnName="CRN">
-                                        {n.crn}
-                                    </TableCell>
-                                    <TableCell columnName="Session">
-                                        -
-                                    </TableCell>
-                                    <TableCell columnName="Enrolled">
-                                        {n.enrolled}
-                                    </TableCell>
-                                </TableRow>
-                            )
-                        })}
-                    </TableBody>
-                </Table>
-                </Typography>
-            </div>
-    )
+    if (tableData.length !== 0) {
+        return (
+                <div className={classes.root}>
+                    <Typography>
+                    <Table layout={{ variant: 'card', breakpoint: 'sm'}}>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Status</TableCell>
+                            <TableCell>Course Title</TableCell>
+                            <TableCell>Dept</TableCell>
+                            <TableCell>CSN</TableCell>
+                            <TableCell>Term</TableCell>
+                            <TableCell>CRN</TableCell>
+                            <TableCell>Session</TableCell>
+                            <TableCell>Enrolled</TableCell>
+                        </TableRow>
+                    </TableHead>
+                        <TableBody>
+                            {tableData.map(n => {
+                                return (
+                                    <TableRow key={n.id}>
+                                        <TableCell columnName="Status">
+                                            {n.status}
+                                        </TableCell>
+                                        <TableCell columnName="Course Title">
+                                            <TextLink id="link"
+                                                      href={`https://ssb-prod.ec.pasadena.edu/PROD/bwlkffgd.P_FacFinGrd?TERM=${n.termCode}&CRN=${n.crn}`}>
+                                                {n.title}
+                                            </TextLink>
+                                        </TableCell>
+                                        <TableCell columnName="Dept">
+                                            {n.dept}
+                                        </TableCell>
+                                        <TableCell columnName="CSN">
+                                            {n.csn}
+                                        </TableCell>
+                                        <TableCell columnName="Term">
+                                            {n.term}
+                                        </TableCell>
+                                        <TableCell columnName="CRN">
+                                            {n.crn}
+                                        </TableCell>
+                                        <TableCell columnName="Session">
+                                            -
+                                        </TableCell>
+                                        <TableCell columnName="Enrolled">
+                                            {n.enrolled}
+                                        </TableCell>
+                                    </TableRow>
+                                )
+                            })}
+                        </TableBody>
+                    </Table>
+                    </Typography>
+                </div>
+        );
+    }
+    else {
+        setErrorMessage({
+            headerMessage: "No Data Found",
+            textMessage: 'You Have No Available Classes',
+            iconName: 'info',
+            iconColor: 'blue'
+        });
+    }
 };
 
 GradeAssignmentCard.propTypes = {
