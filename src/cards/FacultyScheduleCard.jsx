@@ -41,15 +41,6 @@ const ViewMySchedule = (props) => {
     const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
     const onlineSections = [];
     const sectionsEvents = [];
-    // const sectionIdList = ["cb9475e2-69ee-437e-88ff-6e190f30d282",
-    //     "581fee9e-5e7d-41c8-8205-3929a47f411e",
-    //     "00531855-6397-441f-b876-8efd87ec8c65",
-    //     "ef1b341b-6776-4834-8447-462eac7fd5ad",
-    //     "0648f603-7196-48bb-9c45-c2f3863202a5",
-    //     "e1b808f7-2ec7-4b31-88c0-08c10ba0433b",
-    //     "3ec2dfc8-0147-418e-86b1-d4d1ad1aad3d",
-    //     "2367fc5c-75b9-4b4e-9c43-59c6f7bbcf1a"];
-
     const todayDate = new Date().toJSON().slice(0, 10);
 
     // Create set event function to get event object
@@ -160,16 +151,22 @@ const ViewMySchedule = (props) => {
 
 function destructClasses(schedule, sectionsEvents, days, onlineSections) {
     let counter = 0;
+    const sectionIdSet = new Set();
 
     for (const eachSchedule of schedule) {
-        const { instructionalMethod: { title: classType }, recurrence: { repeatRule: { type: repeatType, daysOfWeek }, timePeriod: { startOn, endOn } }, section: { code: crn, titles: classTitles, site, reportingAcademicPeriod16: { code: termCode }, course: { subject: { abbreviation: dept }, number: csn } }, locations } = eachSchedule;
+        const { instructionalMethod: { title: classType }, recurrence: { repeatRule: { type: repeatType, daysOfWeek }, timePeriod: { startOn, endOn } }, section: { id: sectionId, code: crn, titles: classTitles, site, reportingAcademicPeriod16: { code: termCode }, course }, locations } = eachSchedule;
         const location = destructBuildingRoom(locations);
+        const { subject, number: csn } = course || {};
+        const { abbreviation: dept } = subject || {};
         // Destruct location to get room and building
-
         // Get List of online Classes
         if (site.code === 'DE') {
-            onlineSections.push(createOnlineClassesData(dept, csn, crn, termCode));
+            if (!sectionIdSet.has(sectionId)) {
+                onlineSections.push(createOnlineClassesData(dept, csn, crn, termCode));
+            }
         }
+        sectionIdSet.add(sectionId);
+
         // Get List of day in each class
         const dayList = [];
         for (const day in daysOfWeek) {

@@ -32,7 +32,10 @@ module.exports = {
                                         instructor12: { id: { EQ: $personId } }
                                     }
                                     {section}: {
-                                        endOn:{AFTER: $todayDate} startOn:{BEFORE: $todayDate}
+                                        reportingAcademicPeriod16: {
+                                            startOn: { BEFORE: $todayDate }
+                                            endOn: { AFTER: $todayDate }
+                                        }
                                     }
                                 }
                             ) {
@@ -72,6 +75,7 @@ module.exports = {
                                             }
                                         }
                                         section: {section} {
+                                            id
                                             code
                                             startOn
                                             endOn
