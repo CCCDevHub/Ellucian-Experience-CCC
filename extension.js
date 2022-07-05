@@ -29,7 +29,9 @@ module.exports = {
                             	sectionInstructors: {sectionInstructors} (
                                     filter: {
                                         {instructor@persons} : { id: { EQ: $personId } }
-                                        {section@sections}: { startOn: { BEFORE: $todayDate } }
+                                        {section@sections}: { 
+                                                            startOn: {  LAST_DAYS: 90 }
+                                                            }
                                     }
                                     sort: {{section@sections}:{{reportingAcademicPeriod@academicPeriods}:{code:DESC}}}
                                 ) {
