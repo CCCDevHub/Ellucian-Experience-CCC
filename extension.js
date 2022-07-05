@@ -1,13 +1,13 @@
 module.exports = {
-    "name": "Grade Assignment",
+    "name": "Grades Assignment",
     "publisher": "Huey Phan",
     "version": "1.0.0",
     "cards": [{
         "type": "GraphQLQueryCard",
         "source": "./src/cards/GradeAssignmentCard",
-        "title": "Grade Assignment",
+        "title": "Grades Assignment",
         "displayCardType": "GraphQL Grade Assignment",
-        "description": "Grade Assignment",
+        "description": "Grades Assignment",
         "pageRoute" : {
             "route": "/",
             "excludeClickSelectors": ['#link']
