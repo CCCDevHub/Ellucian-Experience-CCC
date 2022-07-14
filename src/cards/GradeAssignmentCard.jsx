@@ -43,7 +43,7 @@ const GradeAssignmentCard = (props) => {
         },
         cache: {
             storeItem
-             }
+        }
     } = props;
     const { cardId } = useCardInfo();
 
@@ -58,9 +58,8 @@ const GradeAssignmentCard = (props) => {
         (async () => {
                 setLoadingStatus(true);
                 try {
-                    const sectionResult = await getEthosQuery({ queryId: 'section-list', properties: { todayDate: todayDate } });
-                    const sections = sectionResult?.data?.sections?.edges.map(edge => edge.node);
-
+                    const sectionResult = await getEthosQuery({ queryId: 'section-list' });
+                    const sections = sectionResult?.data?.sectionInstructors?.edges.map(edge => edge.node);
                     setSectionData(() => sections);
 
                     setLoadingStatus(false);
@@ -76,10 +75,18 @@ const GradeAssignmentCard = (props) => {
             }
         )();
     }, []);
-
     for (const i in sectionData) {
         if (i != null) {
-            const {alternateIds, code: crn, course:{number:csn, subject:{abbreviation:dept}}, maxEnrollment, reportingAcademicPeriod16: {code: termCode, registration, title: termName}, status: {detail11:{category, title:statusTitle}}, titles} = sectionData[i];
+            // const {section16: {code: crn}} = sectionData[i];
+            // console.log(crn);
+            // const {alternateIds, code: crn, course:{number:csn, subject:{abbreviation:dept}}, maxEnrollment, reportingAcademicPeriod16: {code: termCode, registration, title: termName}, status: {detail11:{category, title:statusTitle}}, titles} = sectionData[i];
+            // const {section16:{code: crn, course16: {subject, number: csn}, maxEnrollment, }}
+            const {section16: {code: crn, course16, maxEnrollment, reportingAcademicPeriod16, status, titles}} = sectionData[i] || {};
+            const { subject, number: csn } = course16 || {};
+            const {code: termCode, title: termName} = reportingAcademicPeriod16 || {};
+            const {detail11} = status || {};
+            const { title:statusTitle } = detail11 || {};
+            const { abbreviation: dept } = subject || {};
             tableData.push(createData(statusTitle, titles[1].value, dept, csn, termName, crn, maxEnrollment, termCode));
         }
     }
@@ -94,21 +101,21 @@ const GradeAssignmentCard = (props) => {
 
     if (tableData.length !== 0) {
         return (
-                <div className={classes.root}>
-                    <Typography>
+            <div className={classes.root}>
+                <Typography>
                     <Table layout={{ variant: 'card', breakpoint: 'sm'}}>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Status</TableCell>
-                            <TableCell>Course Title</TableCell>
-                            <TableCell>Dept</TableCell>
-                            <TableCell>CSN</TableCell>
-                            <TableCell>Term</TableCell>
-                            <TableCell>CRN</TableCell>
-                            <TableCell>Session</TableCell>
-                            <TableCell>Enrolled</TableCell>
-                        </TableRow>
-                    </TableHead>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Status</TableCell>
+                                <TableCell>Course Title</TableCell>
+                                <TableCell>Dept</TableCell>
+                                <TableCell>CSN</TableCell>
+                                <TableCell>Term</TableCell>
+                                <TableCell>CRN</TableCell>
+                                <TableCell>Session</TableCell>
+                                <TableCell>Enrolled</TableCell>
+                            </TableRow>
+                        </TableHead>
                         <TableBody>
                             {tableData.map(n => {
                                 return (
@@ -145,8 +152,8 @@ const GradeAssignmentCard = (props) => {
                             })}
                         </TableBody>
                     </Table>
-                    </Typography>
-                </div>
+                </Typography>
+            </div>
         );
     }
     else {
