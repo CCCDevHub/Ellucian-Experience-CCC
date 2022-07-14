@@ -25,7 +25,7 @@ module.exports = {
                         "persons": {min: 12}
                     },
                     "query":
-                        `query sectionList($personId: ID, $todayDate: Date){
+                        `query sectionList($personId: ID){
                             	sectionInstructors: {sectionInstructors} (
                                     filter: {
                                         {instructor@persons} : { id: { EQ: $personId } }
