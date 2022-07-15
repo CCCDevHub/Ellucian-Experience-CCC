@@ -77,7 +77,7 @@ const PropsPage = (props) => {
                     <TableBody>
                         {tableData?.map(n => {
                             function getHref() {
-                                return "https://ssb-prod.ec.pasadena.edu/PROD/bwlkffgd.P_FacFinGrd?TERM=" + n.termCode + "&CRN=" + n.crn;
+                                return "https://ssb-prod.ec.pasadena.edu/ssomanager/saml/login?relayState=/c/auth/SSB?pkg=bwlkffgd.P_FacFinGrd?TERM=" + n.termCode + "&CRN=" + n.crn;
                             }
                             return (
                                 <TableRow key={n.id}>
