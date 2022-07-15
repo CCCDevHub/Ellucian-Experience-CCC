@@ -98,7 +98,7 @@ const ViewMySchedule = (props) => {
                         {onlineSections.map(n => {
                             return (
                                 <TextLink key={n.id} target="_blank"
-                                    href={`https://ssb-prod.ec.pasadena.edu/PROD/bwlkifac.P_FacSched?term_in=${n.termCode}`}>
+                                    href={`https://ssb-prod.ec.pasadena.edu/ssomanager/saml/login?relayState=/c/auth/SSB?pkg=bwlkifac.P_FacSched?term_in=${n.termCode}`}>
                                     {n.dept} - {n.csn}
                                 </TextLink>
                             )
