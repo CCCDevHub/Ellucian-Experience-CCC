@@ -13,6 +13,7 @@ module.exports = {
         },
         "pageRoute": {
             "route": "/",
+            "excludeClickSelectors": ['a']
         }
     }],
     "page": {
