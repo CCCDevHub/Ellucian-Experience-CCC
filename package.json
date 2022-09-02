@@ -1,7 +1,7 @@
 {
-  "name": "EllucianExperience",
+  "name": "TestExt",
   "version": "1.0.0",
-  "description": "Description of EllucianExperience",
+  "description": "Description of TestExt",
   "main": "index.js",
   "license": "UNLICENSED",
   "scripts": {

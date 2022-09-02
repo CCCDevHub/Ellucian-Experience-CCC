@@ -1,16 +1,12 @@
 module.exports = {
     "name": "Extension Name",
     "publisher": "Your Name",
-    "version": "1.0.0",
     "cards": [{
-        "type": "GraphQLQueryCard",
-        "source": "./src/cards/JSXName",
-        "title": "Card Name",
-        "displayCardType": "GraphQL Query Card",
-        "description": "Card Description",
-        "queries": {
-            // Graph QL Query here
-        },
+        "type": "TestExtCard",
+        "source": "./src/cards/CardName",
+        "title": "Card Title",
+        "displayCardType": "Card Type",
+        "description": "This is an introductory card to the Ellucian Experience SDK",
         "pageRoute": {
             "route": "/",
             "excludeClickSelectors": ['a']
