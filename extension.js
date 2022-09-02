@@ -10,9 +10,13 @@ module.exports = {
         "description": "Card Description",
         "queries": {
             // Graph QL Query here
+        },
+        "pageRoute": {
+            "route": "/",
+            "excludeClickSelectors": ['a']
         }
     }],
     "page": {
-        "source": "./src/page/index.jsx"
+        "source": "./src/page/router.jsx"
     }
 }
