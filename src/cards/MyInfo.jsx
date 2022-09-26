@@ -2,7 +2,7 @@ import React, {Fragment, useEffect, useState} from "react";
 import PropTypes from "prop-types";
 import {spacing10, spacing40} from '@ellucian/react-design-system/core/styles/tokens';
 import {withStyles} from '@ellucian/react-design-system/core/styles';
-import {Table, TableBody, TableCell, TableRow, Typography, IconButton, Tooltip, TextLink} from '@ellucian/react-design-system/core';
+import {Table, TableBody, TableCell, TableRow, Typography, IconButton, Tooltip, TextLink, List, ListItem, ListItemText} from '@ellucian/react-design-system/core';
 import { Icon } from '@ellucian/ds-icons/lib';
 
 const styles = () => ({
@@ -14,11 +14,6 @@ const styles = () => ({
     text: {
         marginRight: spacing40,
         marginLeft: spacing40
-    },
-    table: {
-        maxWidth: spacing10,
-        maxHeight: spacing10,
-        margin: spacing10
     }
 });
 
@@ -85,7 +80,6 @@ const MyInfo = (props) => {
         }
         )();
     }, []);
-
     // Check if all the data is loaded
     if (persons && personHolds && personTags) {
         const person = destructPersonData(persons, personHolds, personTags);
@@ -93,14 +87,14 @@ const MyInfo = (props) => {
             <Fragment>
                 <div className={classes.card}>
                     <Typography>
-                        <Table className={classes.table} size="small">
+                        <Table>
                             {person && (
                                 <TableBody>
                                     {person.map(n => {
                                         return (
                                             <TableRow key={n.id}>
                                                 <TableCell align="left">
-                                                    <h5>{n.name}</h5>
+                                                    <b>{n.name}</b>
                                                 </TableCell>
                                                 <TableCell align="right">
                                                     {n.value}
