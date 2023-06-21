@@ -20,13 +20,22 @@ const styles = () => ({
     button: {
         marginLeft: -30,
         marginBottom: 10,
-        width: "310px",
+        width: "350px",
         paddingLeft: "20px",
         justifyContent: "left"
     },
     iconRoot: {
         marginRight: "10px",
         justifyContent: "flex-start"
+    },
+    completeBadge: {
+        textAlign: "center"
+    },
+    completeButton: {
+        marginLeft: -30,
+        marginBottom: 10,
+        paddingLeft: "20px",
+        justifyContent: "center"
     }
 });
 
@@ -91,12 +100,19 @@ const MyInfo = (props) => {
     // Check if all the data is loaded
     if (persons) {
         const person = destructPersonData(persons);
+        console.log('person-here', person);
 
         // check if all milestones are complete
         const c = person[0];
-
+        console.log('person-c', c);
         return (
         <div className={classes.card}>
+
+            {/* Comment: Display "Early Registration" badge if all milestones are completed */}
+            <div className={classes.completeBadge}>
+                <img src={c.complete ? "https://admin.pasadena.edu/dev/badges/images/reg_pri.png" : ""} alt=""></img>
+            </div>
+
             <ul>
                 {person.map(m => (
                     <li key={m.id}
@@ -107,18 +123,14 @@ const MyInfo = (props) => {
 
                         }}
                     >
-                        {/* Comment: Display "Early Registration" badge if all milestones are completed */}
-                        <img src={m.complete ? "https://admin.pasadena.edu/dev/badges/images/reg_pri.png" : ""} alt=""></img>
-
-
                         <Button
                             id={`${customId}_PrimaryButton`}
-                            style={styles.button}
-                            className={classes.button}
+                            className={m.complete ? classes.completeButton : classes.button}
                             href={m.linkURL}
                             color={m.buttoncolor}
+                            fullWidth
                         >
-                            <div className={classes.iconRoot}>
+                            <div>
                                 <Icon name={m.iconname} className={classes.iconRoot} color={m.iconcolor}/>
                                 {m.name}
                             </div>
@@ -186,7 +198,7 @@ function destructPersonData(persons) {
                 createData('Register',
                             'null',
                             'You have completed steps for early registration!',
-                            'https://pasadena.edu/academics/support/counseling/academic-planning/placement.php',
+                            'https://ssb-prod.ec.pasadena.edu/PROD/bwskflib.P_SelDefTerm',
                             'null',
                             'null',
                             'null',
@@ -215,7 +227,7 @@ function destructPersonData(persons) {
                 createData('Ed Plan',
                             extensions.milestonesEdplans,
                             extensions.milestonesEdplans ? <p>You have completed an educational plan. To view, please visit <a rel="noreferrer" target="_blank" href="https://pasadena.edu/academics/support/counseling/academic-planning/">https://pasadena.edu/academics/support/counseling/academic-planning/ </a>.</p>
-                                        : <p>You need to complete an educational plan to make sure you are taking the right courses.</p>,
+                                        : <p>Completing an educational plan will make sure you’re taking the correct classes. (You can register without a plan) To request a plan use this link: <a rel="noreferrer" target="_blank" href="https://pasadena.edu/academics/support/counseling/ask-a-counselor/new-students.php">https://pasadena.edu/academics/support/counseling/ask-a-counselor/new-students.php </a>.</p>,
                             'https://pasadena.edu/academics/support/counseling/academic-planning/',
                             extensions.milestonesEdplans ? 'secondary':'primary',
                             extensions.milestonesEdplans ? 'check-circle':'circle',
