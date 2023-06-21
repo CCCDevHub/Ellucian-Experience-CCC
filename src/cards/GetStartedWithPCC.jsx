@@ -96,15 +96,13 @@ const MyInfo = (props) => {
         )();
     }, []);
 
-    console.log('persons', persons);
     // Check if all the data is loaded
     if (persons) {
         const person = destructPersonData(persons);
-        console.log('person-here', person);
 
         // check if all milestones are complete
         const c = person[0];
-        console.log('person-c', c);
+
         return (
         <div className={classes.card}>
 
