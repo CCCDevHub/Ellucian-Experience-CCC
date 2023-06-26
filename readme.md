@@ -11,9 +11,8 @@ This module bootstraps your Ellucian Experience Extension development by creatin
 ## Workflow
 
 1. Branches
-   - **master** (Production Evnironment)
-   - **staging** (Testing Evnironment)
-   - **dev** (Development Evnironment)
+   - **master** (Base Ellucian Experience)
+   - **yourCardBranchName** (Development Environment)
 2. Procedure
    - Before your work do this to update master branch
         ```
@@ -21,18 +20,16 @@ This module bootstraps your Ellucian Experience Extension development by creatin
         $ git fetch --all
         $ git pull
         ```
-   - Create yourFeature branch from dev
+   - Create yourFeature branch from master
         ```
-        $ git checkout -b yourFeature origin/dev
+        $ git checkout -b yourFeature origin/master
         ```
-   - Update your current branch up to date with master
-        ```
-        $ git rebase master
-        ```
-   - Do your work, add the file
+   - Do your work, add the files
         ```
         $ git add path/to/the/file
         ```
+     - Your extension.js and cardName.jsx files
+   
    - Commit your work
         ```
         $ git commit -am "Your message"
@@ -42,14 +39,11 @@ This module bootstraps your Ellucian Experience Extension development by creatin
         $ git checkout dev
         $ git merge --no-ff yourFeature
         ```
-   - Now push changes to the server
+   - Now push changes to your branch
         ```
-        $ git push origin dev
-        $ git push origin yourFeature
+        $ git push origin yourBranchName
         ```
-   - Create PR to staging and assign for code review
-   - After merged will be testing
-   - After testing done create PR to master
+
 
 ## Create Extension Card
 
