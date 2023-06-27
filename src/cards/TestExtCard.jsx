@@ -13,9 +13,7 @@ const styles = () => ({
     }
 });
 
-const TestExtCard = (props) => {
-    const { classes } = props;
-
+function TestExtCard ({classes}) {
     return (
         <div className={classes.card}>
             <Typography variant="h2">
@@ -31,7 +29,7 @@ const TestExtCard = (props) => {
             </Typography>
         </div>
     );
-};
+}
 
 TestExtCard.propTypes = {
     classes: PropTypes.object.isRequired
