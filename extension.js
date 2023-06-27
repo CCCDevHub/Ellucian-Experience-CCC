@@ -1,16 +1,16 @@
 module.exports = {
-    "name": "Extension Name",
-    "publisher": "Your Name",
+    "name": "FreshService",
+    "publisher": "Huey Phan",
     "cards": [{
         "type": "TestExtCard",
-        "source": "./src/cards/CardName",
-        "title": "Card Title",
-        "displayCardType": "Card Type",
-        "description": "This is an introductory card to the Ellucian Experience SDK",
-        "pageRoute": {
-            "route": "/",
-            "excludeClickSelectors": ['a']
-        }
+        "source": "./src/cards/FreshService",
+        "title": "FreshService",
+        "displayCardType": "Custom Card",
+        "description": "View your freshservice tickets",
+        // "pageRoute": {
+        //     "route": "/",
+        //     "excludeClickSelectors": ['#viewButton']
+        // }
     }],
     "page": {
         "source": "./src/page/router.jsx"
