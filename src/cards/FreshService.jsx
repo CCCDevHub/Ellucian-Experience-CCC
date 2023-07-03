@@ -31,6 +31,8 @@ const styles = () => ({
     }
 });
 
+// Declaration for cache and ENUM
+
 const CACHE_KEY_API = 'local-cache:api';
 const CACHE_KEY_USER = 'local-cache:user'
 const CACHE_TICKET_IDS = 'local-cache:ticketIds';
@@ -58,6 +60,7 @@ function FreshService({
 
     const customId = 'freshService';
 
+    // Declare useStates
     const [keyTextBox, setKeyTextBox] = useState();
     const [userTextBox, setUserTextBox] = useState();
     const [errorAPIKeyMessage, setAPIKeyMessage] = useState();
@@ -67,6 +70,7 @@ function FreshService({
         anchorEl: null
     });
 
+    // Popover click handler for when api key and id not fill out
     const handleClickPopover = event => {
         if (userTextBox?.userId && keyTextBox?.apiKey) {
             storeItem({key: CACHE_KEY_USER, data: userTextBox?.userId, scope: cardId});
@@ -84,6 +88,8 @@ function FreshService({
             anchorEl: null
         });
     };
+
+    // Handler for API txtbox
     const handleChangeAPI = event => {
         const {name, value} = event.target;
 
@@ -103,6 +109,7 @@ function FreshService({
         }
     };
 
+    // Handler for UserId txtbox
     const handleChangeUser = event => {
         const {name, value} = event.target;
         if (!value || value.length <= 0) {
@@ -121,11 +128,12 @@ function FreshService({
         });
     };
 
-
+    // Get userId and APIKey from textbox using cache
     const userId = getItem({key: CACHE_KEY_USER, scope: cardId});
     const freshServiceAPIKey = getItem({key: CACHE_KEY_API, scope: cardId});
     // clear({key:CACHE_KEY_USER});
     // clear({key:CACHE_KEY_API});
+
     if (userId.data && freshServiceAPIKey.data) {
         // Get tickets that assigned to you and status Open or Pending
         useEffect(async () => {
@@ -144,8 +152,11 @@ function FreshService({
                 })
                 .catch(err => console.error(err));
         }, []);
+
+        // Store the ticket Ids to cache
         storeItem({key: CACHE_TICKET_IDS, data: freshServiceTickets?.tickets?.map(x => x.id), scope: cardId});
 
+        // Render the table with all the tickets
         return (
             <div className={classes.card}>
                 <Typography>
@@ -187,6 +198,7 @@ function FreshService({
             </div>
         );
 
+        // If the userId and API key are not fill. Render the textboxes again, until filled
     } else {
         return (
             <div className={classes.card} id={`${customId}_RequiredFields`}>

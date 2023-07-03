@@ -78,8 +78,11 @@ const HomePage = (props) => {
     const customId = 'freshServiceCard';
     const freshServiceAPIKey = getItem({key: CACHE_KEY_API, scope: cardId});
     const [ticketInfo, setTicketInfo] = useState([]);
+
+    // Get the ticket Ids from cache
     const freshServiceTicketIds = getItem({key: CACHE_TICKET_IDS, scope: cardId});
 
+    // Getting ticket info with conversations through API
     freshServiceTicketIds?.data.map( ticketId => {
         return (
         useEffect(async () => {
@@ -95,9 +98,13 @@ const HomePage = (props) => {
                 .catch(err => console.error(err));
             }, []));
     });
+
+    // Sort the tickets by created date Desc
     ticketInfo.sort((a, b) => {
         return new Date(b.ticket.created_at) - new Date(a.ticket.created_at)
-    } )
+    });
+
+    // Render each of the ticket as card
     return (
         <div className={classes.container} id={`${customId}_Container`}>
             {ticketInfo?.map(n => {
