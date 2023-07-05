@@ -61,11 +61,11 @@ function FreshService({
     const customId = 'freshService';
 
     // Declare useStates
-    const [keyTextBox, setKeyTextBox] = useState();
-    const [userTextBox, setUserTextBox] = useState();
-    const [errorAPIKeyMessage, setAPIKeyMessage] = useState();
-    const [errorUserIdMessage, setUserIdMessage] = useState();
-    const [freshServiceTickets, setFreshServiceTickets] = useState();
+    const [keyTextBox, setKeyTextBox] = useState('');
+    const [userTextBox, setUserTextBox] = useState('');
+    const [errorAPIKeyMessage, setAPIKeyMessage] = useState('');
+    const [errorUserIdMessage, setUserIdMessage] = useState('');
+    const [freshServiceTickets, setFreshServiceTickets] = useState([]);
     const [popoverAnchorEl, setPopoverAnchorEl] = useState({
         anchorEl: null
     });
@@ -76,8 +76,7 @@ function FreshService({
             storeItem({key: CACHE_KEY_USER, data: userTextBox?.userId, scope: cardId});
             storeItem({key: CACHE_KEY_API, data: keyTextBox?.apiKey, scope: cardId});
             window.location.reload();
-        }
-        else {
+        } else {
             setPopoverAnchorEl({
                 anchorEl: event.currentTarget
             });
@@ -136,31 +135,36 @@ function FreshService({
 
     if (userId.data && freshServiceAPIKey.data) {
         // Get tickets that assigned to you and status Open or Pending
-        useEffect(async () => {
-            await fetch(TICKET_FILTER_URL + new URLSearchParams({
-                query: `"agent_id:${userId.data} AND (status:2 OR status:3)"`
-            }), {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: 'Basic ' + btoa(freshServiceAPIKey.data)
+        useEffect( () => {
+            const fetchTickets = async () => {
+                try {
+                    const response = await fetch(TICKET_FILTER_URL + new URLSearchParams({
+                        query: `"agent_id:${userId.data} AND (status:2 OR status:3)"`
+                    }), {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: 'Basic ' + btoa(freshServiceAPIKey.data)
+                        }
+                    });
+                    const data = await response.json();
+                    setFreshServiceTickets(data);
+                } catch (error) {
+                    console.error(error);
                 }
-            })
-                .then(response => response.json())
-                .then(response  => {
-                    setFreshServiceTickets(() => response)
-                })
-                .catch(err => console.error(err));
+            };
+            fetchTickets();
+
         }, []);
 
         // Store the ticket Ids to cache
         storeItem({key: CACHE_TICKET_IDS, data: freshServiceTickets?.tickets?.map(x => x.id), scope: cardId});
-
-        // Render the table with all the tickets
+        // Render                                                                                                               the table with all the tickets
         return (
             <div className={classes.card}>
                 <Typography>
-                    You have {freshServiceTickets?.tickets?.filter(ticket => ticket.status === 2).length} Open and {freshServiceTickets?.tickets?.filter(ticket => ticket.status === 3).length} Pending Tickets
+                    You have {freshServiceTickets?.tickets?.filter(ticket => ticket.status === 2).length} Open
+                    and {freshServiceTickets?.tickets?.filter(ticket => ticket.status === 3).length} Pending Tickets
                     <Table layout={{variant: 'card', breakpoint: 'sm'}}>
                         <TableHead>
                             <TableRow>
@@ -228,26 +232,28 @@ function FreshService({
                     />
                 </div>
 
-                    <Button id={`${customId}_ContinueButton`} size="large" endIcon={<Icon name="chevron-right"/>}
-                            onClick={handleClickPopover} aria-controls={"popoverContent"} aria-expanded={popoverAnchorEl.anchorEl}>
-                        Continue
-                    </Button>
-                    <Popover
-                        id={"popoverContent"}
-                        open={popoverAnchorEl.anchorEl}
-                        anchorEl={popoverAnchorEl.anchorEl}
-                        onClose={handleClickPopoverClose}
-                        anchorOrigin={{
-                            vertical: 'bottom',
-                            horizontal: 'center'
-                        }}
-                        transformOrigin={{
-                            vertical: 'top',
-                            horizontal: 'center'
-                        }}
-                    >
-                        <Typography id="SimplePopoverText" className={classes.popoverText}>Please fill out User Id and API Key.</Typography>
-                    </Popover>
+                <Button id={`${customId}_ContinueButton`} size="large" endIcon={<Icon name="chevron-right"/>}
+                        onClick={handleClickPopover} aria-controls={"popoverContent"}
+                        aria-expanded={popoverAnchorEl.anchorEl}>
+                    Continue
+                </Button>
+                <Popover
+                    id={"popoverContent"}
+                    open={popoverAnchorEl.anchorEl}
+                    anchorEl={popoverAnchorEl.anchorEl}
+                    onClose={handleClickPopoverClose}
+                    anchorOrigin={{
+                        vertical: 'bottom',
+                        horizontal: 'center'
+                    }}
+                    transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'center'
+                    }}
+                >
+                    <Typography id="SimplePopoverText" className={classes.popoverText}>Please fill out User Id and API
+                        Key.</Typography>
+                </Popover>
             </div>
         );
     }

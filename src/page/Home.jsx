@@ -81,22 +81,19 @@ const HomePage = (props) => {
 
     // Get the ticket Ids from cache
     const freshServiceTicketIds = getItem({key: CACHE_TICKET_IDS, scope: cardId});
-
     // Getting ticket info with conversations through API
-    freshServiceTicketIds?.data.map( ticketId => {
-        return (
-        useEffect(async () => {
-            await fetch(`${TICKET_URL}${ticketId}?include=conversations`, {
+    freshServiceTicketIds?.data.forEach( ticketId => {
+       useEffect(async () => {
+            const response = await fetch(`${TICKET_URL}${ticketId}?include=conversations`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': 'Basic ' + btoa(freshServiceAPIKey.data)
                 }
-            })
-                .then(response => response.json())
-                .then(response  => setTicketInfo(ticketInfo => [...ticketInfo, response]))
-                .catch(err => console.error(err));
-            }, []));
+            });
+            const data = await response.json();
+            setTicketInfo(ticketInfo => [...ticketInfo, data]);
+            }, []);
     });
 
     // Sort the tickets by created date Desc
