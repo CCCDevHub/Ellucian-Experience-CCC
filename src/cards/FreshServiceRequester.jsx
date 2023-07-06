@@ -42,7 +42,7 @@ const TICKET_STATUS = {
     3: 'Pending'
 };
 const FRESH_SERVICE_AGENT_URL = 'https://pasadena.freshservice.com/api/v2/agents?';
-function FreshService({
+function FreshServiceRequester({
                           classes,
                           cache: {
                               getItem,
@@ -54,7 +54,7 @@ function FreshService({
                               configuration
                           }
                       }) {
-    const customId = 'freshService';
+    const customId = 'freshServiceRequested';
     const freshServiceKey = configuration['fresh-service-key'];
     storeItem({key: CACHE_KEY_API, data: freshServiceKey, scope: cardId});
 
@@ -109,6 +109,7 @@ function FreshService({
 
     if (userEmail.data) {
         // Get user freshService ID.
+        console.log(userEmail.data);
         useEffect( () => {
             const fetchId = async () => {
                 try {
@@ -125,14 +126,15 @@ function FreshService({
                         throw new Error('Request failed with status ' + response.status);
                     }
                     const data = await response.json();
-
-                    // Using the freshService agent Id to filter all the tickets that are open and pending
+                    console.log(data)
+                    // Using the freshService agent Id to filter all the requested tickets that are open and pending
                     if(data?.agents[0].id) {
+                        console.log(data?.agents);
                         const userId = data?.agents[0].id;
                         const fetchTickets = async () => {
                             try {
                                 const ticketsResponse = await fetch(TICKET_FILTER_URL + new URLSearchParams({
-                                    query: `"agent_id:${userId} AND (status:2 OR status:3)"`
+                                    query: `"requester_id:${userId} AND (status:2 OR status:3)"`
                                 }), {
                                     method: 'GET',
                                     headers: {
@@ -252,10 +254,10 @@ function FreshService({
 
 }
 
-FreshService.propTypes = {
+FreshServiceRequester.propTypes = {
     classes: PropTypes.object.isRequired,
     cache: PropTypes.object.isRequired,
     cardInfo: PropTypes.object.isRequired
 };
 
-export default withStyles(styles)(FreshService);
+export default withStyles(styles)(FreshServiceRequester);

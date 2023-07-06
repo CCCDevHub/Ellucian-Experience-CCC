@@ -1,12 +1,12 @@
 module.exports = {
-    "name": "Helpdeck Tickets",
+    "name": "Requester Helpdeck Tickets",
     "publisher": "PCC",
     "cards": [{
-        "type": "Helpdesk Tickets",
-        "source": "./src/cards/FreshService",
-        "title": "Helpdesk Ticket",
+        "type": "Requester Helpdesk Tickets",
+        "source": "./src/cards/FreshServiceRequester",
+        "title": "Requested Helpdesk Tickets",
         "displayCardType": "Custom Card",
-        "description": "View your freshservice tickets",
+        "description": "View your requested freshservice tickets",
 
         "configuration": {
             client: [{
@@ -17,7 +17,7 @@ module.exports = {
         },
         "pageRoute": {
             "route": "/",
-            "excludeClickSelectors": ['#freshService_TicketLink', '#freshService_RequiredUserEmail','#freshService_RequiredAPIKey','#freshService_ContinueButton', '#freshService_RequiredFields']
+            "excludeClickSelectors": ['#freshServiceRequested_TicketLink', '#freshServiceRequested_RequiredUserEmail','#freshServiceRequested_RequiredAPIKey','#freshServiceRequested_ContinueButton', '#freshServiceRequested_RequiredFields']
         }
     }],
     "page": {

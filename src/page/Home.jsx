@@ -53,7 +53,7 @@ const styles = () => ({
 const CACHE_KEY_API = 'local-cache:api';
 const CACHE_TICKET_IDS = 'local-cache:ticketIds';
 const TICKET_URL = 'https://pasadena.freshservice.com/api/v2/tickets/';
-const REQUESTER_URL = 'https://pasadena.freshservice.com/api/v2/requesters/';
+const AGENT_URL = 'https://pasadena.freshservice.com/api/v2/agents/';
 const TICKET_STATUS = {
     2: 'Open',
     3: 'Pending'
@@ -78,7 +78,7 @@ const HomePage = (props) => {
     setPageTitle("Open and Pending Helpdesk Tickets");
     const customId = 'freshServiceCard';
     const [ticketInfo, setTicketInfo] = useState([]);
-    const [requesterInfo, setRequesterInfo] = useState([]);
+    const [agentInfo, setAgentInfo] = useState([]);
 
     // Get the ticket Ids and key from cache
     const freshServiceTicketIds = getItem({key: CACHE_TICKET_IDS, scope: cardId});
@@ -106,11 +106,11 @@ const HomePage = (props) => {
                 const data = await response.json();
                 setTicketInfo((ticketInfo) => [...ticketInfo, data]);
 
-                const requesterId = data?.ticket?.requester_id;
-                if (requesterId) {
+                const agentId = data?.ticket?.responder_id;
+                if (agentId) {
                     try {
-                        const requesterResponse = await fetch(
-                            `${REQUESTER_URL}${requesterId}`,
+                        const agentResponse = await fetch(
+                            `${AGENT_URL}${agentId}`,
                             {
                                 method: 'GET',
                                 headers: {
@@ -120,16 +120,16 @@ const HomePage = (props) => {
                             }
                         );
 
-                        if (!requesterResponse.ok) {
+                        if (!agentResponse.ok) {
                             throw new Error(
-                                'Request failed with status ' + requesterResponse.status
+                                'Request failed with status ' + agentResponse.status
                             );
                         }
 
-                        const requesterData = await requesterResponse.json();
-                        setRequesterInfo((requesterInfo) => ({
+                        const agentData = await agentResponse.json();
+                        setAgentInfo((requesterInfo) => ({
                             ...requesterInfo,
-                            [requesterId]: requesterData.requester
+                            [agentId]: agentData.agent
                         }));
                     } catch (error) {
                         console.error('Error while fetching requester: ', error);
@@ -176,7 +176,7 @@ const HomePage = (props) => {
                                         <ListItemText primary={`Type: ${n?.ticket.type}`} />
                                     </ListItem>
                                     <ListItem divider>
-                                        <ListItemText primary={`Requester: ${requesterInfo[n?.ticket.requester_id]?.first_name} ${requesterInfo[n?.ticket.requester_id]?.last_name}`} />
+                                        <ListItemText primary={`Agent: ${agentInfo[n?.ticket.responder_id]?.first_name} ${agentInfo[n?.ticket.responder_id]?.last_name}`} />
                                     </ListItem>
                                     <ListItem divider>
                                         <ListItemText primary={`Created Date: ${new Date(n?.ticket.created_at).toDateString()}`} />
