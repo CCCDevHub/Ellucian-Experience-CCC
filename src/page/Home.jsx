@@ -53,6 +53,7 @@ const styles = () => ({
 const CACHE_KEY_API = 'local-cache:api';
 const CACHE_TICKET_IDS = 'local-cache:ticketIds';
 const TICKET_URL = 'https://pasadena.freshservice.com/api/v2/tickets/';
+const REQUESTER_URL = 'https://pasadena.freshservice.com/api/v2/requesters/';
 const TICKET_STATUS = {
     2: 'Open',
     3: 'Pending'
@@ -76,31 +77,80 @@ const HomePage = (props) => {
     const { setPageTitle } = usePageControl();
     setPageTitle("Open and Pending Helpdesk Tickets");
     const customId = 'freshServiceCard';
-    const freshServiceAPIKey = getItem({key: CACHE_KEY_API, scope: cardId});
     const [ticketInfo, setTicketInfo] = useState([]);
+    const [requesterInfo, setRequesterInfo] = useState([]);
 
-    // Get the ticket Ids from cache
+    // Get the ticket Ids and key from cache
     const freshServiceTicketIds = getItem({key: CACHE_TICKET_IDS, scope: cardId});
-    // Getting ticket info with conversations through API
-    freshServiceTicketIds?.data.forEach( ticketId => {
-       useEffect(async () => {
-            const response = await fetch(`${TICKET_URL}${ticketId}?include=conversations`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Basic ' + btoa(freshServiceAPIKey.data)
+    const freshServiceAPIKey = getItem({key: CACHE_KEY_API, scope: cardId});
+
+    // Getting ticket info with conversations
+    useEffect(() => {
+        const fetchTicketInfo = async (ticketId) => {
+            try {
+                const response = await fetch(
+                    `${TICKET_URL}${ticketId}?include=conversations`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: 'Basic ' + btoa(freshServiceAPIKey.data)
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error('Request failed with status ' + response.status);
                 }
+
+                const data = await response.json();
+                setTicketInfo((ticketInfo) => [...ticketInfo, data]);
+
+                const requesterId = data?.ticket?.requester_id;
+                if (requesterId) {
+                    try {
+                        const requesterResponse = await fetch(
+                            `${REQUESTER_URL}${requesterId}`,
+                            {
+                                method: 'GET',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    Authorization: 'Basic ' + btoa(freshServiceAPIKey.data)
+                                }
+                            }
+                        );
+
+                        if (!requesterResponse.ok) {
+                            throw new Error(
+                                'Request failed with status ' + requesterResponse.status
+                            );
+                        }
+
+                        const requesterData = await requesterResponse.json();
+                        setRequesterInfo((requesterInfo) => ({
+                            ...requesterInfo,
+                            [requesterId]: requesterData.requester
+                        }));
+                    } catch (error) {
+                        console.error('Error while fetching requester: ', error);
+                    }
+                }
+            } catch (error) {
+                console.error('Error while fetching ticket info: ', error);
+            }
+        };
+
+        if (freshServiceTicketIds?.data) {
+            freshServiceTicketIds.data.forEach((ticketId) => {
+                fetchTicketInfo(ticketId);
             });
-            const data = await response.json();
-            setTicketInfo(ticketInfo => [...ticketInfo, data]);
-            }, []);
-    });
+        }
+    }, []);
 
     // Sort the tickets by created date Desc
     ticketInfo.sort((a, b) => {
         return new Date(b.ticket.created_at) - new Date(a.ticket.created_at)
     });
-
     // Render each of the ticket as card
     return (
         <div className={classes.container} id={`${customId}_Container`}>
@@ -123,7 +173,10 @@ const HomePage = (props) => {
                                         <ListItemText primary={`Priority: ${TICKET_PRIORITIES[n?.ticket.priority]}`} />
                                     </ListItem>
                                     <ListItem divider>
-                                        <ListItemText primary={`Type: ${TICKET_PRIORITIES[n?.ticket.type]}`} />
+                                        <ListItemText primary={`Type: ${n?.ticket.type}`} />
+                                    </ListItem>
+                                    <ListItem divider>
+                                        <ListItemText primary={`Requester: ${requesterInfo[n?.ticket.requester_id]?.first_name} ${requesterInfo[n?.ticket.requester_id]?.last_name}`} />
                                     </ListItem>
                                     <ListItem divider>
                                         <ListItemText primary={`Created Date: ${new Date(n?.ticket.created_at).toDateString()}`} />

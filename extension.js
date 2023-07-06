@@ -7,9 +7,17 @@ module.exports = {
         "title": "Helpdesk Ticket",
         "displayCardType": "Custom Card",
         "description": "View your freshservice tickets",
+
+        "configuration": {
+            client: [{
+                key: 'fresh-service-key',
+                label: 'key',
+                type: 'password'
+            }]
+        },
         "pageRoute": {
             "route": "/",
-            "excludeClickSelectors": ['#freshService_TicketLink', '#freshService_RequiredUserId','#freshService_RequiredAPIKey','#freshService_ContinueButton', '#freshService_RequiredFields']
+            "excludeClickSelectors": ['#freshService_TicketLink', '#freshService_RequiredUserEmail','#freshService_RequiredAPIKey','#freshService_ContinueButton', '#freshService_RequiredFields']
         }
     }],
     "page": {

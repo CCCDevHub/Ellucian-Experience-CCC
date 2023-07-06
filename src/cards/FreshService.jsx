@@ -41,7 +41,7 @@ const TICKET_STATUS = {
     2: 'Open',
     3: 'Pending'
 };
-
+const FRESH_SERVICE_AGENT_URL = 'https://pasadena.freshservice.com/api/v2/agents?';
 function FreshService({
                           classes,
                           cache: {
@@ -50,31 +50,25 @@ function FreshService({
                               clear
                           },
                           cardInfo: {
-                              cardId
-                          },
-                          cardControl: {
-                              navigateToPage,
-                              setLoadingStatus
+                              cardId,
+                              configuration
                           }
                       }) {
-
     const customId = 'freshService';
+    const freshServiceKey = configuration['fresh-service-key'];
+    storeItem({key: CACHE_KEY_API, data: freshServiceKey, scope: cardId});
 
     // Declare useStates
-    const [keyTextBox, setKeyTextBox] = useState('');
-    const [userTextBox, setUserTextBox] = useState('');
-    const [errorAPIKeyMessage, setAPIKeyMessage] = useState('');
-    const [errorUserIdMessage, setUserIdMessage] = useState('');
+    const [userEmailTextBox, setUserEmailTextBox] = useState('');
+    const [errorUserEmailMessage, setUserEmailMessage] = useState('');
     const [freshServiceTickets, setFreshServiceTickets] = useState([]);
     const [popoverAnchorEl, setPopoverAnchorEl] = useState({
         anchorEl: null
     });
-
     // Popover click handler for when api key and id not fill out
     const handleClickPopover = event => {
-        if (userTextBox?.userId && keyTextBox?.apiKey) {
-            storeItem({key: CACHE_KEY_USER, data: userTextBox?.userId, scope: cardId});
-            storeItem({key: CACHE_KEY_API, data: keyTextBox?.apiKey, scope: cardId});
+        if (userEmailTextBox?.email) {
+            storeItem({key: CACHE_KEY_USER, data: userEmailTextBox?.email, scope: cardId});
             window.location.reload();
         } else {
             setPopoverAnchorEl({
@@ -88,78 +82,89 @@ function FreshService({
         });
     };
 
-    // Handler for API txtbox
-    const handleChangeAPI = event => {
-        const {name, value} = event.target;
 
-        if (!value || value.length <= 0) {
-            setAPIKeyMessage({
-                apiError: true,
-                apiErrorMessage: 'API Key is required'
-            });
-        } else if (value.length > 0) {
-            setAPIKeyMessage({
-                apiError: false,
-                apiErrorMessage: ''
-            });
-            setKeyTextBox({
-                [name]: value
-            });
-        }
-    };
-
-    // Handler for UserId txtbox
-    const handleChangeUser = event => {
+    // Handler for Email txtbox
+    const handleChangeUserEmail = event => {
         const {name, value} = event.target;
         if (!value || value.length <= 0) {
-            setUserIdMessage({
+            setUserEmailMessage({
                 apiError: true,
-                apiErrorMessage: 'User Id is required'
+                apiErrorMessage: 'Email is required'
             });
         } else if (value.length > 0) {
-            setUserIdMessage({
+            setUserEmailMessage({
                 apiError: false,
                 apiErrorMessage: ''
             });
         }
-        setUserTextBox({
+        setUserEmailTextBox({
             [name]: value
         });
     };
 
     // Get userId and APIKey from textbox using cache
-    const userId = getItem({key: CACHE_KEY_USER, scope: cardId});
-    const freshServiceAPIKey = getItem({key: CACHE_KEY_API, scope: cardId});
+    const userEmail = getItem({key: CACHE_KEY_USER, scope: cardId});
     // clear({key:CACHE_KEY_USER});
     // clear({key:CACHE_KEY_API});
 
-    if (userId.data && freshServiceAPIKey.data) {
-        // Get tickets that assigned to you and status Open or Pending
+    if (userEmail.data) {
+        // Get user freshService ID.
         useEffect( () => {
-            const fetchTickets = async () => {
+            const fetchId = async () => {
                 try {
-                    const response = await fetch(TICKET_FILTER_URL + new URLSearchParams({
-                        query: `"agent_id:${userId.data} AND (status:2 OR status:3)"`
+                    const response = await fetch(FRESH_SERVICE_AGENT_URL + new URLSearchParams( {
+                        email: `${userEmail.data}`
                     }), {
                         method: 'GET',
                         headers: {
                             'Content-Type': 'application/json',
-                            Authorization: 'Basic ' + btoa(freshServiceAPIKey.data)
+                            Authorization: 'Basic ' + btoa(freshServiceKey)
                         }
                     });
+                    if (!response.ok) {
+                        throw new Error('Request failed with status ' + response.status);
+                    }
                     const data = await response.json();
-                    setFreshServiceTickets(data);
+
+                    // Using the freshService agent Id to filter all the tickets that are open and pending
+                    if(data?.agents[0].id) {
+                        const userId = data?.agents[0].id;
+                        const fetchTickets = async () => {
+                            try {
+                                const ticketsResponse = await fetch(TICKET_FILTER_URL + new URLSearchParams({
+                                    query: `"agent_id:${userId} AND (status:2 OR status:3)"`
+                                }), {
+                                    method: 'GET',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        Authorization: 'Basic ' + btoa(freshServiceKey)
+                                    }
+                                });
+
+                                if(!ticketsResponse.ok) {
+                                    throw new Error(
+                                        'Request failed with status ' + ticketsResponse.status
+                                    );
+                                }
+                                const ticketsData = await ticketsResponse.json();
+                                setFreshServiceTickets(ticketsData);
+                            } catch (error) {
+                                console.error('Error fetching tickets:', error);
+                            }
+                        };
+                        fetchTickets();
+                    }
                 } catch (error) {
-                    console.error(error);
+                    console.error('Error fetching user Id:', error);
                 }
             };
-            fetchTickets();
-
+            fetchId();
         }, []);
+
 
         // Store the ticket Ids to cache
         storeItem({key: CACHE_TICKET_IDS, data: freshServiceTickets?.tickets?.map(x => x.id), scope: cardId});
-        // Render                                                                                                               the table with all the tickets
+        // Render the table with all the tickets
         return (
             <div className={classes.card}>
                 <Typography>
@@ -202,35 +207,23 @@ function FreshService({
             </div>
         );
 
-        // If the userId and API key are not fill. Render the textboxes again, until filled
+        // If the email txtbox not fill. Render the textbox again, until filled
     } else {
         return (
             <div className={classes.card} id={`${customId}_RequiredFields`}>
                 <div className={classes.textBox}>
                     <TextField
-                        id={`${customId}_RequiredUserId`}
-                        label="User Id"
-                        name="userId"
+                        id={`${customId}_RequiredUserEmail`}
+                        label="Enter your Email"
+                        name="email"
                         required={true}
-                        onChange={handleChangeUser}
-                        error={errorUserIdMessage?.apiError}
-                        helperText={errorUserIdMessage?.apiErrorMessage}
+                        onChange={handleChangeUserEmail}
+                        error={errorUserEmailMessage?.apiError}
+                        helperText={errorUserEmailMessage?.apiErrorMessage}
                         fullWidth={true}
                     />
                 </div>
-                <div className={classes.textBox}>
-                    <TextField
-                        id={`${customId}_RequiredAPIKey`}
-                        label="API Key"
-                        name="apiKey"
-                        type="password"
-                        required={true}
-                        onChange={handleChangeAPI}
-                        error={errorAPIKeyMessage?.apiError}
-                        helperText={errorAPIKeyMessage?.apiErrorMessage}
-                        fullWidth={true}
-                    />
-                </div>
+
 
                 <Button id={`${customId}_ContinueButton`} size="large" endIcon={<Icon name="chevron-right"/>}
                         onClick={handleClickPopover} aria-controls={"popoverContent"}
@@ -251,8 +244,7 @@ function FreshService({
                         horizontal: 'center'
                     }}
                 >
-                    <Typography id="SimplePopoverText" className={classes.popoverText}>Please fill out User Id and API
-                        Key.</Typography>
+                    <Typography id="SimplePopoverText" className={classes.popoverText}>Please fill out your Email.</Typography>
                 </Popover>
             </div>
         );
@@ -263,8 +255,7 @@ function FreshService({
 FreshService.propTypes = {
     classes: PropTypes.object.isRequired,
     cache: PropTypes.object.isRequired,
-    cardInfo: PropTypes.object.isRequired,
-    cardControl: PropTypes.object.isRequired
+    cardInfo: PropTypes.object.isRequired
 };
 
 export default withStyles(styles)(FreshService);
