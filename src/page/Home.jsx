@@ -105,8 +105,8 @@ const HomePage = (props) => {
 
                 const data = await response.json();
                 setTicketInfo((ticketInfo) => [...ticketInfo, data]);
-
                 const agentId = data?.ticket?.responder_id;
+
                 if (agentId) {
                     try {
                         const agentResponse = await fetch(
@@ -176,7 +176,7 @@ const HomePage = (props) => {
                                         <ListItemText primary={`Type: ${n?.ticket.type}`} />
                                     </ListItem>
                                     <ListItem divider>
-                                        <ListItemText primary={`Agent: ${agentInfo[n?.ticket.responder_id]?.first_name} ${agentInfo[n?.ticket.responder_id]?.last_name}`} />
+                                        <ListItemText primary={`Agent: ${agentInfo[n?.ticket.responder_id]?.first_name??'No'} ${agentInfo[n?.ticket.responder_id]?.last_name??'Agent'}`} />
                                     </ListItem>
                                     <ListItem divider>
                                         <ListItemText primary={`Created Date: ${new Date(n?.ticket.created_at).toDateString()}`} />

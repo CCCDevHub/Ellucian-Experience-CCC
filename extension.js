@@ -7,7 +7,36 @@ module.exports = {
         "title": "Requested Helpdesk Tickets",
         "displayCardType": "Custom Card",
         "description": "View your requested freshservice tickets",
-
+        "queries": {
+            "person-email": [
+                {
+                    "resourceVersions": {
+                        "persons": { min: 12}
+                    },
+                    "query":
+                        `query personEmail($personId: ID) {
+                        persons: {persons}(
+                            filter: {
+                                id: { EQ: $personId }
+                                emails: { type: { emailType: { IN: [school, hr] } } }
+                            }
+                        ) {
+                            edges {
+                                node {
+                                    id
+                                    emails {
+                                        address
+                                        type {
+                                            emailType
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }`
+                }
+            ]
+        },
         "configuration": {
             client: [{
                 key: 'fresh-service-key',
