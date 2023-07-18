@@ -66,13 +66,20 @@ const GradeAssignmentCard = (props) => {
                     const sectionResult = await getEthosQuery({ queryId: 'section-list' });
                     const sections = sectionResult?.data?.sectionInstructors?.edges.map(edge => edge.node);
                     setSectionData(() => sections);
-
+                    if(sections.length === 0) {
+                        setErrorMessage({
+                            headerMessage: ('No Classes Available'),
+                            textMessage: (`You don't have any available classes`),
+                            iconName: 'warning',
+                            iconColor: 'blue'
+                        });
+                    }
                     setLoadingStatus(false);
                 } catch (error) {
                     console.log('ethosQuery failed', error);
                     setErrorMessage({
-                        headerMessage: ({id: 'GraphQLQueryCard-fetchFailed'}),
-                        textMessage: ({id: 'GraphQLQueryCard-classesFetchFailed'}),
+                        headerMessage: ('GraphQL Fetch Failed'),
+                        textMessage: ('GraphQL Fetch Failed'),
                         iconName: 'error',
                         iconColor: '#D42828'
                     });
