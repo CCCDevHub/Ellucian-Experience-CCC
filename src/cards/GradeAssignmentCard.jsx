@@ -1,6 +1,6 @@
 import React, {useState, useEffect, Fragment} from "react";
 import PropTypes from "prop-types";
-import {spacing10, spacing40, widthFluid} from '@ellucian/react-design-system/core/styles/tokens';
+import {spacing10, spacing40, widthFluid, spacing80} from '@ellucian/react-design-system/core/styles/tokens';
 import {withStyles} from '@ellucian/react-design-system/core/styles';
 import {
     Table,
@@ -11,7 +11,7 @@ import {
     Typography,
     TextLink
 } from '@ellucian/react-design-system/core';
-import {useCardInfo} from "@ellucian/experience-extension/extension-utilities";
+import {useCardInfo} from "@ellucian/experience-extension-utils";
 
 const cacheKey = 'section-table-data';
 
@@ -29,6 +29,12 @@ const styles = () => ({
         width: widthFluid,
         paddingTop: spacing10,
         overflowX: 'auto'
+    },
+    message: {
+        paddingTop:spacing80,
+        marginLeft: spacing80,
+        marginRight: spacing80,
+        textAlign: 'center'
     }
 });
 
@@ -46,7 +52,6 @@ const GradeAssignmentCard = (props) => {
         }
     } = props;
     const { cardId } = useCardInfo();
-
     let id = 0;
     const [sectionData, setSectionData] = useState();
     const tableData = [];
@@ -157,7 +162,13 @@ const GradeAssignmentCard = (props) => {
         );
     }
     else {
-        return(null);
+        return(
+            <div className={classes.card}>
+                <Typography className={classes.message} variant="body1" component="div">
+                    {`You don't have any classes at the moment.`}
+                </Typography>
+            </div>
+            );
     }
 };
 
