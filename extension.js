@@ -22,7 +22,8 @@ module.exports = {
                         "sectionStatuses" : {min: 11},
                         "academicPeriods": { min: 16},
                         "sectionInstructors": {min: 10},
-                        "persons": {min: 12}
+                        "persons": {min: 12},
+                        "instructionalMethods": {min:6}
                     },
                     "query":
                         `query sectionList($personId: ID){
@@ -30,7 +31,7 @@ module.exports = {
                                     filter: {
                                         {instructor@persons} : { id: { EQ: $personId } }
                                         {section@sections}: { 
-                                                            startOn: {  LAST_DAYS: 90 }
+                                                            reportingAcademicPeriod16: { registration: { EQ: open } }
                                                             }
                                     }
                                     sort: {{section@sections}:{{reportingAcademicPeriod@academicPeriods}:{code:DESC}}}
@@ -38,6 +39,10 @@ module.exports = {
                                     edges {
                                         node {
                                             id
+                                            instructionalMethod6 {
+                                                title
+                                                abbreviation
+                                            }
                                             section16 {
                                                 id
                                                 startOn

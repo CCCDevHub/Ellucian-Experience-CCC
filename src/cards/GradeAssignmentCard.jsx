@@ -64,6 +64,7 @@ const GradeAssignmentCard = (props) => {
                 setLoadingStatus(true);
                 try {
                     const sectionResult = await getEthosQuery({ queryId: 'section-list' });
+
                     const sections = sectionResult?.data?.sectionInstructors?.edges.map(edge => edge.node);
                     setSectionData(() => sections);
                     if(sections.length === 0) {
@@ -99,16 +100,18 @@ const GradeAssignmentCard = (props) => {
             const {detail11} = status || {};
             const { title:statusTitle } = detail11 || {};
             const { abbreviation: dept } = subject || {};
-            tableData.push(createData(statusTitle, titles[1].value, dept, csn, termName, crn, maxEnrollment, termCode));
+            const {instructionalMethod6: { title: classType }} = sectionData[i] || {};
+            tableData.push(createData(statusTitle, titles[1].value, dept, csn, termName, crn, maxEnrollment, termCode, classType));
         }
     }
+    // console.log(classType);
     if (tableData !== undefined || tableData.length !== 0){
         storeItem({ key: cacheKey, data: tableData, scope: cardId });
     }
 
-    function createData(status, title, dept, csn, term, crn, enrolled, termCode) {
+    function createData(status, title, dept, csn, term, crn, enrolled, termCode, classType) {
         id += 1;
-        return {id, status, title, dept, csn, term, crn, enrolled, termCode};
+        return {id, status, title, dept, csn, term, crn, enrolled, termCode, classType};
     }
 
     if (tableData.length !== 0) {
@@ -124,7 +127,7 @@ const GradeAssignmentCard = (props) => {
                                 <TableCell>CSN</TableCell>
                                 <TableCell>Term</TableCell>
                                 <TableCell>CRN</TableCell>
-                                <TableCell>Session</TableCell>
+                                <TableCell>Class Type</TableCell>
                                 <TableCell>Enrolled</TableCell>
                             </TableRow>
                         </TableHead>
@@ -153,8 +156,8 @@ const GradeAssignmentCard = (props) => {
                                         <TableCell columnName="CRN">
                                             {n.crn}
                                         </TableCell>
-                                        <TableCell columnName="Session">
-                                            -
+                                        <TableCell columnName="Class Type">
+                                            {n.classType}
                                         </TableCell>
                                         <TableCell columnName="Enrolled">
                                             {n.enrolled}
