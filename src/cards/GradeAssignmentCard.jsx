@@ -57,6 +57,8 @@ const GradeAssignmentCard = (props) => {
 
     const todayDate = new Date().toJSON().slice(0, 10);
 
+    const crnSet = new Set();
+
     useEffect(() => {
         (async () => {
                 setLoadingStatus(true);
@@ -99,7 +101,10 @@ const GradeAssignmentCard = (props) => {
             const { title:statusTitle } = detail11 || {};
             const { abbreviation: dept } = subject || {};
             const {instructionalMethod6: { title: classType }} = sectionData[i] || {};
-            tableData.push(createData(statusTitle, titles[1].value, dept, csn, termName, crn, maxEnrollment, termCode, classType));
+            if (!crnSet.has(crn)) {
+                tableData.push(createData(statusTitle, titles[1].value, dept, csn, termName, crn, maxEnrollment, termCode, classType));
+            }
+            crnSet.add(crn);
         }
     }
     // console.log(classType);
@@ -125,7 +130,6 @@ const GradeAssignmentCard = (props) => {
                                 <TableCell>CSN</TableCell>
                                 <TableCell>Term</TableCell>
                                 <TableCell>CRN</TableCell>
-                                <TableCell>Class Type</TableCell>
                                 <TableCell>Enrolled</TableCell>
                             </TableRow>
                         </TableHead>
@@ -153,9 +157,6 @@ const GradeAssignmentCard = (props) => {
                                         </TableCell>
                                         <TableCell columnName="CRN">
                                             {n.crn}
-                                        </TableCell>
-                                        <TableCell columnName="Class Type">
-                                            {n.classType}
                                         </TableCell>
                                         <TableCell columnName="Enrolled">
                                             {n.enrolled}

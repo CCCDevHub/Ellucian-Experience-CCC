@@ -84,7 +84,6 @@ const PropsPage = (props) => {
                                <TableCell>CSN</TableCell>
                                <TableCell>Term</TableCell>
                                <TableCell>CRN</TableCell>
-                               <TableCell>Class Type</TableCell>
                                <TableCell>Enrolled</TableCell>
                            </TableRow>
                        </TableHead>
@@ -116,9 +115,6 @@ const PropsPage = (props) => {
                                        </TableCell>
                                        <TableCell columnName="CRN">
                                            {n.crn}
-                                       </TableCell>
-                                       <TableCell columnName="Session">
-                                           {n.classType}
                                        </TableCell>
                                        <TableCell columnName="Enrolled">
                                            {n.enrolled}
