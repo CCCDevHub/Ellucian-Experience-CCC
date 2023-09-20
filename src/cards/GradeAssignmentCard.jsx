@@ -44,8 +44,7 @@ const GradeAssignmentCard = (props) => {
         data: {getEthosQuery},
         cardControl: {
             setLoadingStatus,
-            setErrorMessage,
-            setPreventRemove
+            setErrorMessage
         },
         cache: {
             storeItem
@@ -57,7 +56,6 @@ const GradeAssignmentCard = (props) => {
     const tableData = [];
 
     const todayDate = new Date().toJSON().slice(0, 10);
-    setPreventRemove(true);
 
     useEffect(() => {
         (async () => {
