@@ -1,5 +1,5 @@
 module.exports = {
-    "name": "Requester Helpdeck Tickets",
+    "name": "Requester Helpdesk Tickets",
     "publisher": "PCC",
     "cards": [{
         "type": "Requester Helpdesk Tickets",
