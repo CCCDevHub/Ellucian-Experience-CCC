@@ -15,7 +15,7 @@ import {
 } from '@ellucian/react-design-system/core';
 import PropTypes from 'prop-types';
 import React, {useState, useEffect} from "react";
-import { usePageControl } from '@ellucian/experience-extension/extension-utilities'
+import { usePageControl } from '@ellucian/experience-extension-utils'
 
 const styles = () => ({
     card: {
