@@ -36,53 +36,60 @@ const MyInfo = (props) => {
     const [persons, setPersons] = useState();
     const [personHolds, setPersonHolds] = useState();
     const [personTags, setPersonTags] = useState();
+    const [residency, setResidency] = useState();
     const todayDate = new Date().toJSON().slice(0, 10);
 
     setPreventRemove(true);
 
     useEffect(() => {
         (async () => {
-            setLoadingStatus(true);
-            try {
+                setLoadingStatus(true);
+                try {
 
-                // Get person info
-                const personResult = await getEthosQuery({
-                    queryId: 'person-info'
-                });
-                const personData = (personResult?.data?.persons?.edges.map(edge => edge.node));
+                    // Get person info
+                    const personResult = await getEthosQuery({
+                        queryId: 'person-info'
+                    });
+                    const personData = (personResult?.data?.persons?.edges.map(edge => edge.node));
 
-                // Get person holds
-                const personHoldResult = await getEthosQuery({
-                    queryId: 'person-hold', properties: { today: todayDate }
-                });
-                const personHoldData = (personHoldResult?.data?.personHolds?.edges.map(edge => edge.node));
+                    // Get person info
+                    const residencyResult = await getEthosQuery({
+                        queryId: 'residency-info'
+                    });
+                    const residencyData = (residencyResult?.data?.students?.edges.map(edge => edge.node));
 
-                // Get person tags
-                const personTagResult = await getEthosQuery({
-                    queryId: 'student-tags', properties: { today: todayDate }
-                });
-                const personTagData = (personTagResult?.data?.studentTagAssignments?.edges.map(edge => edge.node));
+                    // Get person holds
+                    const personHoldResult = await getEthosQuery({
+                        queryId: 'person-hold', properties: { today: todayDate }
+                    });
+                    const personHoldData = (personHoldResult?.data?.personHolds?.edges.map(edge => edge.node));
 
-                setPersons(() => personData);
-                setPersonHolds(() => personHoldData);
-                setPersonTags(() => personTagData);
+                    // Get person tags
+                    const personTagResult = await getEthosQuery({
+                        queryId: 'student-tags', properties: { today: todayDate }
+                    });
+                    const personTagData = (personTagResult?.data?.studentTagAssignments?.edges.map(edge => edge.node));
 
-                setLoadingStatus(false);
-            } catch (error) {
-                console.log('ethosQuery failed', error);
-                setErrorMessage({
-                    headerMessage: ({ id: 'GraphQLQueryCard-fetchFailed' }),
-                    textMessage: ({ id: 'GraphQLQueryCard-classesFetchFailed' }),
-                    iconName: 'error',
-                    iconColor: '#D42828'
-                });
+                    setPersons(() => personData);
+                    setPersonHolds(() => personHoldData);
+                    setPersonTags(() => personTagData);
+                    setResidency(() => residencyData);
+                    setLoadingStatus(false);
+                } catch (error) {
+                    console.log('ethosQuery failed', error);
+                    setErrorMessage({
+                        headerMessage: ({ id: 'GraphQLQueryCard-fetchFailed' }),
+                        textMessage: ({ id: 'GraphQLQueryCard-classesFetchFailed' }),
+                        iconName: 'error',
+                        iconColor: '#D42828'
+                    });
+                }
             }
-        }
         )();
     }, []);
     // Check if all the data is loaded
-    if (persons && personHolds && personTags) {
-        const person = destructPersonData(persons, personHolds, personTags);
+    if (persons && personHolds && personTags && residency) {
+        const person = destructPersonData(persons, personHolds, personTags, residency);
         return (
             <Fragment>
                 <div className={classes.card}>
@@ -115,7 +122,7 @@ const MyInfo = (props) => {
     }
 };
 
-function destructPersonData(persons, personHolds, personTags) {
+function destructPersonData(persons, personHolds, personTags, residency) {
     let id = 0;
     const holdList = [];
 
@@ -178,32 +185,29 @@ function destructPersonData(persons, personHolds, personTags) {
                 }
             }
         }
-
         const outTitle = () => {
-            if (personTags.length !== 0) {
-                for (const i in personTags) {
-                    if (i) {
-                        const { tag7: { code: tagCode, title: tagTitle } } = personTags[i];
-                        if (tagCode === "OUT") {
-                            return(
-                                <Typography>
-                                    <Tooltip color="blue" title="Please contact Admission & Records for more info">
-                                        <IconButton onClick={handleClick}>
-                                            <Icon name="info"/>
-                                        </IconButton>
-                                    </Tooltip>
-                                    <TextLink
-                                        href="https://pasadena.edu/admissions-and-aid/admissions-and-records/fees-and-tuition/california-residency-requirements.php">
-                                        {tagTitle}
-                                    </TextLink>
+            if (residency.length !== 0) {
+                const lastResidency = residency[0].residencies[residency[0].residencies.length - 1];
+                const { residency: { code: residencyCode, title: residencyTitle } } = lastResidency;
 
-                                </Typography>
-                            );
-                        }
-                        else {
-                            return "CA Resident";
-                        }
-                    }
+                if (residencyCode === "O") {
+                    return(
+                        <Typography>
+                            <Tooltip color="blue" title="Please contact Admission & Records for more info">
+                                <IconButton onClick={handleClick}>
+                                    <Icon name="info"/>
+                                </IconButton>
+                            </Tooltip>
+                            <TextLink
+                                href="https://pasadena.edu/admissions-and-aid/admissions-and-records/fees-and-tuition/california-residency-requirements.php">
+                                {residencyTitle}
+                            </TextLink>
+
+                        </Typography>
+                    );
+                }
+                else {
+                    return residencyTitle;
                 }
             }
             else {

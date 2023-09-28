@@ -57,6 +57,38 @@ module.exports = {
                         }`
                 }
             ],
+            "residency-info": [
+                {
+                    "resourceVersions": {
+                        "students": { min: 16 },
+                        "persons": {min: 12},
+                        "residencyTypes": { min: 7}
+                    },
+                    "query":
+                        `query studentInfo($personId: ID){
+                            students: {students} (
+                                    filter: {
+                                       {person@persons}: { id: {EQ: $personId} }
+                                    }
+                                )
+                                {
+                                    edges {
+                                        node {
+                                            id
+                                            residencies {
+                                                  startOn
+                                                  residency: {residency@residencyTypes} {
+                                                    title
+                                                    code
+                                                    description
+                                                  }
+                                            }
+                                        }
+                                    }
+                                }
+                        }`
+                }
+            ],
             "person-hold": [
                 {
                     "resourceVersions": {
