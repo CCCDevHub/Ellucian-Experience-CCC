@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Fragment } from "react";
+import React, { useState, useEffect } from "react";
 import { Icon } from "@ellucian/ds-icons/lib";
 import PropTypes from "prop-types";
 import { spacing10, spacing40, widthFluid, spacing80 } from '@ellucian/react-design-system/core/styles/tokens';
@@ -11,9 +11,7 @@ import {
     TableBody,
     Typography,
     TextLink,
-    ListItemIcon,
-    Dropdown,
-    DropdownItem
+    ListItemIcon
 } from '@ellucian/react-design-system/core';
 import classNames from "classnames";
 import { useCardInfo } from "@ellucian/experience-extension-utils";
@@ -61,7 +59,7 @@ const GradeAssignmentCard = (props) => {
     const tableData = [];
     const terms = new Set();
 
-    const todayDate = new Date().toJSON().slice(0, 10);
+    // const todayDate = new Date().toJSON().slice(0, 10);
 
     const crnSet = new Set();
 
@@ -150,13 +148,15 @@ const GradeAssignmentCard = (props) => {
                                             {n.gradeSubmitted === 1 ? <ListItemIcon className={classes.itemText}>
                                                 <Icon
                                                     name="check-circle"
-                                                    color="gray"
+                                                    color="blue"
+                                                    large="true"
                                                     className={classNames(classes.check, classes.icon)}
                                                 />
                                             </ListItemIcon> : <ListItemIcon className={classes.itemText}>
                                                 <Icon
                                                     name="times-circle"
-                                                    color="gray"
+                                                    color="red"
+                                                    large="true"
                                                     className={classNames(classes.check, classes.icon)}
                                                 />
                                             </ListItemIcon>

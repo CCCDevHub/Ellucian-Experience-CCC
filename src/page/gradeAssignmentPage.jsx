@@ -1,5 +1,5 @@
 import { withStyles } from '@ellucian/react-design-system/core/styles';
-import { spacing10, spacing40, spacingSmall, widthFluid } from '@ellucian/react-design-system/core/styles/tokens';
+import { spacing10, spacing40, widthFluid } from '@ellucian/react-design-system/core/styles/tokens';
 import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
 import { useCardInfo } from "@ellucian/experience-extension-utils";
@@ -101,13 +101,15 @@ const PropsPage = (props) => {
                                             {n.gradeSubmitted === 1 ? <ListItemIcon className={classes.itemText}>
                                                 <Icon
                                                     name="check-circle"
-                                                    color="gray"
+                                                    color="blue"
+                                                    large="true"
                                                     className={classNames(classes.check, classes.icon)}
                                                 />
                                             </ListItemIcon> : <ListItemIcon className={classes.itemText}>
                                                 <Icon
                                                     name="times-circle"
-                                                    color="gray"
+                                                    color="red"
+                                                    large="true"
                                                     className={classNames(classes.check, classes.icon)}
                                                 />
                                             </ListItemIcon>
