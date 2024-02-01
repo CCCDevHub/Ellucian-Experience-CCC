@@ -8,7 +8,7 @@ module.exports = {
         "title": "Grades Assignment",
         "displayCardType": "GraphQL Grade Assignment",
         "description": "Grades Assignment",
-        "pageRoute" : {
+        "pageRoute": {
             "route": "/",
             "excludeClickSelectors": ['#link']
         },
@@ -16,21 +16,21 @@ module.exports = {
             "section-list": [
                 {
                     "resourceVersions": {
-                        "sections": {min: 16},
-                        "courses": {min: 16},
-                        "subjects": {min: 6},
-                        "sectionStatuses" : {min: 11},
-                        "academicPeriods": { min: 16},
-                        "sectionInstructors": {min: 10},
-                        "persons": {min: 12},
-                        "instructionalMethods": {min:6}
+                        "sections": { min: 16 },
+                        "courses": { min: 16 },
+                        "subjects": { min: 6 },
+                        "sectionStatuses": { min: 11 },
+                        "academicPeriods": { min: 16 },
+                        "sectionInstructors": { min: 10 },
+                        "persons": { min: 12 },
+                        "instructionalMethods": { min: 6 }
                     },
                     "query":
                         `query sectionList($personId: ID){
                             	sectionInstructors: {sectionInstructors} (
                                     filter: {
                                         {instructor@persons} : { id: { EQ: $personId } }
-                                        {section@sections}: { 
+                                        {section@sections}: {
                                                             reportingAcademicPeriod16: { registration: { EQ: open } }
                                                             }
                                     }
@@ -47,6 +47,7 @@ module.exports = {
                                                 id
                                                 startOn
                                                 endOn
+                                                gradeSubmitted
                                                 titles {
                                                     value
                                                 }

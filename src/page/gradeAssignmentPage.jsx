@@ -1,8 +1,8 @@
 import { withStyles } from '@ellucian/react-design-system/core/styles';
-import {spacing10, spacing40, spacingSmall, widthFluid} from '@ellucian/react-design-system/core/styles/tokens';
+import { spacing10, spacing40, spacingSmall, widthFluid } from '@ellucian/react-design-system/core/styles/tokens';
 import PropTypes from 'prop-types';
-import React, {useEffect, useState} from 'react';
-import {useCardInfo} from "@ellucian/experience-extension-utils";
+import React, { useEffect, useState } from 'react';
+import { useCardInfo } from "@ellucian/experience-extension-utils";
 import {
     Table,
     TableBody,
@@ -11,8 +11,11 @@ import {
     TableRow,
     TextLink,
     Typography,
-    ErrorPage
+    ErrorPage,
+    ListItemIcon
 } from "@ellucian/react-design-system/core";
+import classNames from "classnames";
+import { Icon } from "@ellucian/ds-icons/lib";
 
 
 const cacheKey = 'section-table-data';
@@ -39,10 +42,10 @@ const styles = () => ({
 
 const PropsPage = (props) => {
     const { classes,
-            cache: {
-                getItem,
-                storeItem
-            },
+        cache: {
+            getItem,
+            storeItem
+        },
         cardControl: {
             setLoadingStatus,
             setErrorMessage,
@@ -61,73 +64,85 @@ const PropsPage = (props) => {
         // load and increment view count
 
     }, []);
-   console.log(tableData?.length === 0 || tableData?.length === undefined);
-   if (tableData?.length === 0 || tableData?.length === undefined) {
-       return (
-           <div id={`Error`} className={classes.sectionHeaders}>
-               <ErrorPage id={`Classes_errorPage`}
-                          errorType={`404`}
-                          noHeader={true}
-               />
-           </div>
-       );
-   } else {
-       return (
-           <div className={classes.root}>
-               <Typography>
-                   <Table layout={{variant: 'card', breakpoint: 'sm'}}>
-                       <TableHead>
-                           <TableRow>
-                               <TableCell>Status</TableCell>
-                               <TableCell>Course Title</TableCell>
-                               <TableCell>Dept</TableCell>
-                               <TableCell>CSN</TableCell>
-                               <TableCell>Term</TableCell>
-                               <TableCell>CRN</TableCell>
-                               <TableCell>Enrolled</TableCell>
-                           </TableRow>
-                       </TableHead>
-                       <TableBody>
-                           {tableData?.map(n => {
-                               function getHref() {
-                                   return "https://ssb-prod.ec.pasadena.edu/ssomanager/saml/login?relayState=/c/auth/SSB?pkg=bwlkffgd.P_FacFinGrd?TERM=" + n.termCode + "&CRN=" + n.crn;
-                               }
+    if (tableData?.length === 0 || tableData?.length === undefined) {
+        return (
+            <div id={`Error`} className={classes.sectionHeaders}>
+                <ErrorPage id={`Classes_errorPage`}
+                    errorType={`404`}
+                    noHeader={true}
+                />
+            </div>
+        );
+    } else {
+        return (
+            <div className={classes.root}>
+                <Typography>
+                    <Table layout={{ variant: 'card', breakpoint: 'sm' }}>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Status</TableCell>
+                                <TableCell>Course Title</TableCell>
+                                <TableCell>Dept</TableCell>
+                                <TableCell>CSN</TableCell>
+                                <TableCell>Term</TableCell>
+                                <TableCell>CRN</TableCell>
+                                <TableCell>Enrolled</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {tableData?.map(n => {
+                                function getHref() {
+                                    return "https://ssb-prod.ec.pasadena.edu/ssomanager/saml/login?relayState=/c/auth/SSB?pkg=bwlkffgd.P_FacFinGrd?TERM=" + n.termCode + "&CRN=" + n.crn;
+                                }
 
-                               return (
-                                   <TableRow key={n.id}>
-                                       <TableCell columnName="Status">
-                                           {n.status}
-                                       </TableCell>
-                                       <TableCell columnName="Course Title">
-                                           <TextLink id="link"
-                                                     href={getHref()}>
-                                               {n.title}
-                                           </TextLink>
-                                       </TableCell>
-                                       <TableCell columnName="Dept">
-                                           {n.dept}
-                                       </TableCell>
-                                       <TableCell columnName="CSN">
-                                           {n.csn}
-                                       </TableCell>
-                                       <TableCell columnName="Term">
-                                           {n.term}
-                                       </TableCell>
-                                       <TableCell columnName="CRN">
-                                           {n.crn}
-                                       </TableCell>
-                                       <TableCell columnName="Enrolled">
-                                           {n.enrolled}
-                                       </TableCell>
-                                   </TableRow>
-                               )
-                           })}
-                       </TableBody>
-                   </Table>
-               </Typography>
-           </div>
-       );
-   }
+                                return (
+                                    <TableRow key={n.id}>
+                                        <TableCell columnName="Status">
+                                            {n.gradeSubmitted === 1 ? <ListItemIcon className={classes.itemText}>
+                                                <Icon
+                                                    name="check-circle"
+                                                    color="gray"
+                                                    className={classNames(classes.check, classes.icon)}
+                                                />
+                                            </ListItemIcon> : <ListItemIcon className={classes.itemText}>
+                                                <Icon
+                                                    name="times-circle"
+                                                    color="gray"
+                                                    className={classNames(classes.check, classes.icon)}
+                                                />
+                                            </ListItemIcon>
+                                            }
+                                        </TableCell>
+                                        <TableCell columnName="Course Title">
+                                            <TextLink id="link"
+                                                href={getHref()}>
+                                                {n.title}
+                                            </TextLink>
+                                        </TableCell>
+                                        <TableCell columnName="Dept">
+                                            {n.dept}
+                                        </TableCell>
+                                        <TableCell columnName="CSN">
+                                            {n.csn}
+                                        </TableCell>
+                                        <TableCell columnName="Term">
+                                            {n.term}
+                                        </TableCell>
+                                        <TableCell columnName="CRN">
+                                            {n.crn}
+                                        </TableCell>
+                                        <TableCell columnName="Enrolled">
+                                            {n.enrolled}
+                                        </TableCell>
+                                    </TableRow>
+                                )
+                            })}
+                        </TableBody>
+                    </Table>
+                </Typography>
+            </div>
+        );
+    }
 
 };
 
