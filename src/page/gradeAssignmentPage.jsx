@@ -64,10 +64,12 @@ const PropsPage = (props) => {
         return (
             <div id={`Error`} className={classes.sectionHeaders}>
                 <ErrorPage id={`Classes_errorPage`}
+                    errorTitle={`No Classes Available`}
                     errorType={`404`}
                     noHeader={true}
+                    message={`You don't have any available classes`}
                 />
-            </div>
+            </div >
         );
     } else {
         return (

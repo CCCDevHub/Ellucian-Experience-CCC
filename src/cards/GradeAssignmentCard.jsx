@@ -67,8 +67,6 @@ const GradeAssignmentCard = (props) => {
                 const sectionResult = await getEthosQuery({ queryId: 'section-list' });
 
                 const sections = sectionResult?.data?.sectionInstructors?.edges.map(edge => edge.node);
-                // const sections = sectionResult1?.data?.sectionInstructors10?.edges.map(edge => edge.node);
-
                 setSectionData(() => sections);
                 if (sections === undefined || sections.length === 0) {
                     setErrorMessage({
@@ -91,21 +89,19 @@ const GradeAssignmentCard = (props) => {
         }
         )();
     }, []);
+
     for (const i in sectionData) {
         if (i != null) {
             // const {section16: {code: crn}} = sectionData[i];
             // console.log(crn);
             // const {alternateIds, code: crn, course:{number:csn, subject:{abbreviation:dept}}, maxEnrollment, reportingAcademicPeriod16: {code: termCode, registration, title: termName}, status: {detail11:{category, title:statusTitle}}, titles} = sectionData[i];
             // const {section16:{code: crn, course16: {subject, number: csn}, maxEnrollment, }}
-            const { section16: { code: crn, course16, maxEnrollment, reportingAcademicPeriod16, status, titles, gradeSubmitted } } = sectionData[i] || {};
+            const { section16: { code: crn, course16, maxEnrollment, reportingAcademicPeriod16, titles, gradeSubmitted } } = sectionData[i] || {};
             const { subject, number: csn } = course16 || {};
             const { code: termCode, title: termName } = reportingAcademicPeriod16 || {};
-            const { detail11 } = status || {};
-            const { title: statusTitle } = detail11 || {};
             const { abbreviation: dept } = subject || {};
-            const { instructionalMethod6: { title: classType } } = sectionData[i] || {};
             if (!crnSet.has(crn)) {
-                tableData.push(createData(statusTitle, titles[1].value, dept, csn, termName, crn, maxEnrollment, termCode, classType, gradeSubmitted));
+                tableData.push(createData(titles[1].value, dept, csn, termName, crn, maxEnrollment, termCode, gradeSubmitted));
             }
             crnSet.add(crn);
             terms.add(termName);
@@ -116,9 +112,11 @@ const GradeAssignmentCard = (props) => {
         localStorage.setItem(cacheKey, JSON.stringify(tableData));
     }
 
-    function createData(status, title, dept, csn, term, crn, enrolled, termCode, classType, gradeSubmitted) {
+    function createData(title, dept, csn, term, crn, enrolled, termCode, gradeSubmitted) {
+
         id += 1;
-        return { id, status, title, dept, csn, term, crn, enrolled, termCode, classType, gradeSubmitted };
+        return { id, title, dept, csn, term, crn, enrolled, termCode, gradeSubmitted };
+
     }
 
     if (tableData.length !== 0) {
