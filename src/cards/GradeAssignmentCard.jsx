@@ -14,7 +14,7 @@ import {
     ListItemIcon
 } from '@ellucian/react-design-system/core';
 import classNames from "classnames";
-import { useCardInfo } from "@ellucian/experience-extension-utils";
+import { useCache, useCardInfo } from "@ellucian/experience-extension-utils";
 
 const cacheKey = 'section-table-data';
 
@@ -48,12 +48,10 @@ const GradeAssignmentCard = (props) => {
         cardControl: {
             setLoadingStatus,
             setErrorMessage
-        },
-        cache: {
-            storeItem
         }
     } = props;
     const { cardId } = useCardInfo();
+    const { storeItem, getItem } = useCache();
     let id = 0;
     const [sectionData, setSectionData] = useState();
     const tableData = [];
@@ -70,7 +68,7 @@ const GradeAssignmentCard = (props) => {
                 const sectionResult = await getEthosQuery({ queryId: 'section-list' });
 
                 const sections = sectionResult?.data?.sectionInstructors?.edges.map(edge => edge.node);
-                // const sections = sectionResult?.data?.sectionInstructors10?.edges.map(edge => edge.node);
+                // const sections = sectionResult1?.data?.sectionInstructors10?.edges.map(edge => edge.node);
 
                 setSectionData(() => sections);
                 if (sections === undefined || sections.length === 0) {
@@ -116,7 +114,7 @@ const GradeAssignmentCard = (props) => {
     }
     // console.log(classType);
     if (tableData !== undefined || tableData.length !== 0) {
-        storeItem({ key: cacheKey, data: tableData, scope: cardId });
+        localStorage.setItem(cacheKey, JSON.stringify(tableData));
     }
 
     function createData(status, title, dept, csn, term, crn, enrolled, termCode, classType, gradeSubmitted) {
@@ -133,10 +131,10 @@ const GradeAssignmentCard = (props) => {
                             <TableRow>
                                 <TableCell>Status</TableCell>
                                 <TableCell>Course Title</TableCell>
+                                <TableCell>CRN</TableCell>
                                 <TableCell>Dept</TableCell>
                                 <TableCell>CSN</TableCell>
                                 <TableCell>Term</TableCell>
-                                <TableCell>CRN</TableCell>
                                 <TableCell>Enrolled</TableCell>
                             </TableRow>
                         </TableHead>
@@ -168,6 +166,9 @@ const GradeAssignmentCard = (props) => {
                                                 {n.title}
                                             </TextLink>
                                         </TableCell>
+                                        <TableCell columnName="CRN">
+                                            {n.crn}
+                                        </TableCell>
                                         <TableCell columnName="Dept">
                                             {n.dept}
                                         </TableCell>
@@ -176,9 +177,6 @@ const GradeAssignmentCard = (props) => {
                                         </TableCell>
                                         <TableCell columnName="Term">
                                             {n.term}
-                                        </TableCell>
-                                        <TableCell columnName="CRN">
-                                            {n.crn}
                                         </TableCell>
                                         <TableCell columnName="Enrolled">
                                             {n.enrolled}

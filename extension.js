@@ -1,11 +1,11 @@
 module.exports = {
     "name": "Grades Assignment",
-    "publisher": "Huey Phan",
-    "version": "1.0.0",
+    "publisher": "Pasadena City College",
+    "version": "1.1.0",
     "cards": [{
         "type": "GraphQLQueryCard",
         "source": "./src/cards/GradeAssignmentCard",
-        "title": "Grades Assignment",
+        "title": "Falcuty Grades Assignment",
         "displayCardType": "GraphQL Grade Assignment",
         "description": "Grades Assignment",
         "pageRoute": {
@@ -56,14 +56,6 @@ module.exports = {
                                                     code
                                                     title
                                                     registration
-                                                }
-                                                status {
-                                                    category
-                                                    detail11 {
-                                                        title
-                                                        category
-                                                        description
-                                                    }
                                                 }
                                                 maxEnrollment
                                                 crossListed

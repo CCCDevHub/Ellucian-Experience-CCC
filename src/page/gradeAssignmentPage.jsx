@@ -2,7 +2,7 @@ import { withStyles } from '@ellucian/react-design-system/core/styles';
 import { spacing10, spacing40, widthFluid } from '@ellucian/react-design-system/core/styles/tokens';
 import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
-import { useCardInfo } from "@ellucian/experience-extension-utils";
+import { useCache, useCardInfo } from "@ellucian/experience-extension-utils";
 import {
     Table,
     TableBody,
@@ -42,10 +42,6 @@ const styles = () => ({
 
 const PropsPage = (props) => {
     const { classes,
-        cache: {
-            getItem,
-            storeItem
-        },
         cardControl: {
             setLoadingStatus,
             setErrorMessage,
@@ -53,11 +49,12 @@ const PropsPage = (props) => {
         }
     } = props;
     const { cardId } = useCardInfo();
+    const { getItem } = useCache();
     const [tableData, setTableData] = useState();
 
     useEffect(() => {
         (async () => {
-            const { data } = await getItem({ key: cacheKey, scope: cardId });
+            const data = await JSON.parse(localStorage.getItem(cacheKey));
             setTableData(() => data);
         })();
 
@@ -150,7 +147,6 @@ const PropsPage = (props) => {
 
 PropsPage.propTypes = {
     classes: PropTypes.object.isRequired,
-    cache: PropTypes.object.isRequired,
     cardControl: PropTypes.object.isRequired
 
 };
