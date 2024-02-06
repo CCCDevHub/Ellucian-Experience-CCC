@@ -2,7 +2,6 @@ import { withStyles } from '@ellucian/react-design-system/core/styles';
 import { spacing10, spacing40, widthFluid } from '@ellucian/react-design-system/core/styles/tokens';
 import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
-import { useCache, useCardInfo } from "@ellucian/experience-extension-utils";
 import {
     Table,
     TableBody,
@@ -48,8 +47,8 @@ const PropsPage = (props) => {
             navigateToPage
         }
     } = props;
-    const { cardId } = useCardInfo();
-    const { getItem } = useCache();
+    // const { cardId } = useCardInfo();
+    // const { getItem } = useCache();
     const [tableData, setTableData] = useState();
 
     useEffect(() => {

@@ -14,7 +14,6 @@ import {
     ListItemIcon
 } from '@ellucian/react-design-system/core';
 import classNames from "classnames";
-import { useCache, useCardInfo } from "@ellucian/experience-extension-utils";
 
 const cacheKey = 'section-table-data';
 
@@ -50,8 +49,8 @@ const GradeAssignmentCard = (props) => {
             setErrorMessage
         }
     } = props;
-    const { cardId } = useCardInfo();
-    const { storeItem, getItem } = useCache();
+    // const { cardId } = useCardInfo();
+    // const { storeItem, getItem } = useCache();
     let id = 0;
     const [sectionData, setSectionData] = useState();
     const tableData = [];
@@ -204,8 +203,7 @@ const GradeAssignmentCard = (props) => {
 GradeAssignmentCard.propTypes = {
     classes: PropTypes.object.isRequired,
     cardControl: PropTypes.object.isRequired,
-    data: PropTypes.object.isRequired,
-    cache: PropTypes.object.isRequired
+    data: PropTypes.object.isRequired
 }
 
 export default withStyles(styles)(GradeAssignmentCard);
