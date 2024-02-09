@@ -5,7 +5,7 @@ module.exports = {
     "cards": [{
         "type": "GraphQLQueryCard",
         "source": "./src/cards/GradeAssignmentCard",
-        "title": "Falcuty Grades Assignment",
+        "title": "Faculty Grades Assignment",
         "displayCardType": "GraphQL Grade Assignment",
         "description": "Grades Assignment",
         "pageRoute": {
