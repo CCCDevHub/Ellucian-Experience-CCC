@@ -1,13 +1,13 @@
 module.exports = {
-    "name": "Grades Assignment",
+    "name": "Grade Assignment",
     "publisher": "Pasadena City College",
     "version": "1.1.0",
     "cards": [{
         "type": "GraphQLQueryCard",
         "source": "./src/cards/GradeAssignmentCard",
-        "title": "Faculty Grades Assignment",
+        "title": "Faculty Grade Assignment",
         "displayCardType": "GraphQL Grade Assignment",
-        "description": "Grades Assignment",
+        "description": "Grade Assignment",
         "pageRoute": {
             "route": "/",
             "excludeClickSelectors": ['#link']
