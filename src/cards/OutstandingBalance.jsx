@@ -17,37 +17,71 @@ const styles = () => ({
 function OutstandingBalance({ classes }) {
     const { authenticatedEthosFetch } = useData();
     const { setLoadingStatus, setErrorMessage } = useCardControl();
-    const { cardId } = useCardControl
-    const [mydata, setMydata] = useState();
+    const { configuration: {
+        pipelineAPI
+    }, cardId } = useCardInfo();
+    const { roles } = useUserInfo();
+    const seasonMap = {
+        '70': 'Fall',
+        '30': 'Spring',
+        '50': 'Summer',
+        '20': 'Winter'
+    };
+    // const personId = roles.pop();
+    const personId = 'bbde9273-eacc-40d4-ab54-41b1ff3d8e35';
+    const [summarize, setSumarize] = useState()
+    const [balanceDetails, setBalanceDetails] = useState();
+    const [groupByTerm, setGroupByTerm] = useState();
     useEffect(() => {
-        fetchData();
-    }, []);
+        (async () => {
+            setLoadingStatus(true);
+            try {
+                const response = await authenticatedEthosFetch(`${pipelineAPI}?cardId=${cardId}&testPersonId=${personId}`);
+                const balanceResult = await response.json();
+                const [{ TBRACCD_CTRL, TBRACCD }] = balanceResult;
+                setSumarize(() => TBRACCD_CTRL);
+                setBalanceDetails(() => TBRACCD);
 
-    const fetchData = () => {
-        authenticatedEthosFetch(`Outstanding-Balance?cardId=${cardId}`)
-            .then((response) => response.json())
-            .then((data) => {
-                console.log(data);
-            })
-            .catch((error) => {
+                setLoadingStatus(false);
+            } catch (error) {
                 console.error(error)
-            });
+            }
+        })();
+    }, []);
+    if (balanceDetails) {
+        const groupByTermCode = balanceDetails.reduce((acc, item) => {
+            const key = item.termCode;
+            const lastTwo = key.slice(-2);
+            if (seasonMap[lastTwo]) {
+                item.termDesc = seasonMap[lastTwo] + ' ' + key.slice(0, 4);
+            }
+            if (!acc[key]) {
+                acc[key] = [];
+            }
+            acc[key].push(item);
+            return acc;
+        }, {});
     }
-    return (
-        <div className={classes.card}>
-            <Typography variant="h2">
-                Hello TestExt World
-            </Typography>
-            <Typography>
-                <span>
-                    For sample extensions, visit the Ellucian Developer
-                </span>
-                <TextLink href="https://github.com/ellucian-developer/experience-extension-sdk-samples" target="_blank">
-                    GitHub
-                </TextLink>
-            </Typography>
-        </div>
-    );
+
+    if (summarize) {
+        const [{ accountBalance, amountDue }] = summarize;
+        return (
+            <div className={classes.card}>
+                <Typography variant="h2">
+                    Hello TestExt World
+                </Typography>
+            </div>
+        );
+    } else {
+        return (
+            <div className={classes.card}>
+                <Typography className={classes.message} variant="body1" component="div">
+                    {`You don't have any outstanding Balance`}
+                </Typography>
+            </div>
+        );
+    }
+
 }
 
 OutstandingBalance.propTypes = {

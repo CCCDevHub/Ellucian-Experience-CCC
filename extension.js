@@ -1,6 +1,7 @@
 module.exports = {
     name: 'Outstanding Balance',
     publisher: 'Huey Phan',
+    version: '1.0.0',
     cards: [{
         type: 'OutstandingBalanceCard',
         source: './src/cards/OutstandingBalance',
