@@ -1,6 +1,11 @@
 import { withStyles } from '@ellucian/react-design-system/core/styles';
 import { spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
-import { Typography, TextLink } from '@ellucian/react-design-system/core';
+import {
+    Typography,
+    TextLink,
+    Dropdown,
+    DropdownItem
+} from '@ellucian/react-design-system/core';
 import { useCardControl, useCardInfo, useExtensionControl, useUserInfo, useData, useDashboardInfo } from '@ellucian/experience-extension-utils';
 import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
@@ -27,11 +32,30 @@ function OutstandingBalance({ classes }) {
         '50': 'Summer',
         '20': 'Winter'
     };
+    const state = {
+        termCode: '',
+        initialValue: '',
+        open: false
+    };
+    const handleChange = event => {
+        const valueIsNone = event.target.value === 'None';
+        if (valueIsNone) {
+            this.setState({
+                termCode: this.state.initialValue
+            });
+        } else {
+            this.setState({
+                termCode: event.target.value
+            });
+        }
+    }
     // const personId = roles.pop();
     const personId = 'bbde9273-eacc-40d4-ab54-41b1ff3d8e35';
+    const customId = 'OutstandingBalance';
     const [summarize, setSumarize] = useState()
     const [balanceDetails, setBalanceDetails] = useState();
     const [groupByTerm, setGroupByTerm] = useState();
+    const [dropdownState, setDropdownState] = useState();
     useEffect(() => {
         (async () => {
             setLoadingStatus(true);
@@ -39,15 +63,27 @@ function OutstandingBalance({ classes }) {
                 const response = await authenticatedEthosFetch(`${pipelineAPI}?cardId=${cardId}&testPersonId=${personId}`);
                 const balanceResult = await response.json();
                 const [{ TBRACCD_CTRL, TBRACCD }] = balanceResult;
+                const groupByTermCode = TBRACCD.reduce((acc, item) => {
+                    const key = item.termCode;
+                    const lastTwo = key.slice(-2);
+                    if (seasonMap[lastTwo]) {
+                        item.termDesc = seasonMap[lastTwo] + ' ' + key.slice(0, 4);
+                    }
+                    if (!acc[key]) {
+                        acc[key] = [];
+                    }
+                    acc[key].push(item);
+                    return acc;
+                }, {});
                 setSumarize(() => TBRACCD_CTRL);
-                setBalanceDetails(() => TBRACCD);
-
+                setGroupByTerm(() => groupByTermCode);
                 setLoadingStatus(false);
             } catch (error) {
                 console.error(error)
             }
         })();
     }, []);
+    console.log(groupByTerm);
     if (balanceDetails) {
         const groupByTermCode = balanceDetails.reduce((acc, item) => {
             const key = item.termCode;
@@ -67,6 +103,34 @@ function OutstandingBalance({ classes }) {
         const [{ accountBalance, amountDue }] = summarize;
         return (
             <div className={classes.card}>
+                <Dropdown
+                    id={`${customId}_Dropdown`}
+                    label="Term"
+                    onChange={handleChange}
+                    value={state.termCode}
+                    open={state.open}
+                    onOpen={(event) => {
+                        setDropdownState({ open: true });
+                    }}
+                    onClose={(event) => {
+                        console.log('*** onClose handler called ***', event);
+                        setDropdownState({ open: false });
+                    }}
+                >
+                    <DropdownItem
+                        label="None"
+                        value="None"
+                    />
+                    {/* {groupByTerm.map(option => {
+                        return (
+                            <DropdownItem
+                                key={option}
+                                label={option}
+                                value={option}
+                            />
+                        );
+                    })} */}
+                </Dropdown>
                 <Typography variant="h2">
                     Hello TestExt World
                 </Typography>
