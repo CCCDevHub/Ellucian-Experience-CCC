@@ -1,18 +1,28 @@
 module.exports = {
-    "name": "Extension Name",
-    "publisher": "Your Name",
-    "cards": [{
-        "type": "TestExtCard",
-        "source": "./src/cards/CardName",
-        "title": "Card Title",
-        "displayCardType": "Card Type",
-        "description": "This is an introductory card to the Ellucian Experience SDK",
-        "pageRoute": {
-            "route": "/",
-            "excludeClickSelectors": ['a']
+    name: 'Outstanding Balance',
+    publisher: 'Huey Phan',
+    cards: [{
+        type: 'OutstandingBalanceCard',
+        source: './src/cards/OutstandingBalance',
+        title: 'Outstanding Balance',
+        displayCardType: 'GraphQL Card',
+        description: 'Transaction Details and Outstanding Balance',
+        configuration: {
+            client: [{
+                key: 'pipelineAPI',
+                label: 'Pipeline API',
+                type: 'text'
+            }
+            ],
+            server: [{
+                key: 'ethosApiKey',
+                label: 'Ethos API',
+                type: 'password',
+                required: true
+            }]
         }
     }],
-    "page": {
-        "source": "./src/page/router.jsx"
+    page: {
+        source: './src/page/router.jsx'
     }
 }

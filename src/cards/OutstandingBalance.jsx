@@ -1,8 +1,9 @@
 import { withStyles } from '@ellucian/react-design-system/core/styles';
 import { spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
 import { Typography, TextLink } from '@ellucian/react-design-system/core';
+import { useCardControl, useCardInfo, useExtensionControl, useUserInfo, useData, useDashboardInfo } from '@ellucian/experience-extension-utils';
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 const styles = () => ({
     card: {
@@ -13,7 +14,25 @@ const styles = () => ({
     }
 });
 
-function TestExtCard ({classes}) {
+function OutstandingBalance({ classes }) {
+    const { authenticatedEthosFetch } = useData();
+    const { setLoadingStatus, setErrorMessage } = useCardControl();
+    const { cardId } = useCardControl
+    const [mydata, setMydata] = useState();
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = () => {
+        authenticatedEthosFetch(`Outstanding-Balance?cardId=${cardId}`)
+            .then((response) => response.json())
+            .then((data) => {
+                console.log(data);
+            })
+            .catch((error) => {
+                console.error(error)
+            });
+    }
     return (
         <div className={classes.card}>
             <Typography variant="h2">
@@ -24,15 +43,15 @@ function TestExtCard ({classes}) {
                     For sample extensions, visit the Ellucian Developer
                 </span>
                 <TextLink href="https://github.com/ellucian-developer/experience-extension-sdk-samples" target="_blank">
-                     GitHub
+                    GitHub
                 </TextLink>
             </Typography>
         </div>
     );
 }
 
-TestExtCard.propTypes = {
+OutstandingBalance.propTypes = {
     classes: PropTypes.object.isRequired
 };
 
-export default withStyles(styles)(TestExtCard);
+export default withStyles(styles)(OutstandingBalance);
