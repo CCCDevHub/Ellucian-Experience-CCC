@@ -32,30 +32,20 @@ function OutstandingBalance({ classes }) {
         '50': 'Summer',
         '20': 'Winter'
     };
-    const state = {
-        termCode: '',
-        initialValue: '',
-        open: false
-    };
-    const handleChange = event => {
-        const valueIsNone = event.target.value === 'None';
-        if (valueIsNone) {
-            this.setState({
-                termCode: this.state.initialValue
-            });
-        } else {
-            this.setState({
-                termCode: event.target.value
-            });
-        }
-    }
+
     // const personId = roles.pop();
     const personId = 'bbde9273-eacc-40d4-ab54-41b1ff3d8e35';
     const customId = 'OutstandingBalance';
     const [summarize, setSumarize] = useState()
     const [balanceDetails, setBalanceDetails] = useState();
-    const [groupByTerm, setGroupByTerm] = useState();
-    const [dropdownState, setDropdownState] = useState();
+    const [groupTransByTerm, setGroupTransByTerm] = useState();
+    const [dropdownStateTerm, setDropdownStateTerm] = useState({
+        term: '',
+        initialValue: '',
+        open: false
+    });
+
+
     useEffect(() => {
         (async () => {
             setLoadingStatus(true);
@@ -66,71 +56,81 @@ function OutstandingBalance({ classes }) {
                 const groupByTermCode = TBRACCD.reduce((acc, item) => {
                     const key = item.termCode;
                     const lastTwo = key.slice(-2);
+                    let termDesc = '';
                     if (seasonMap[lastTwo]) {
-                        item.termDesc = seasonMap[lastTwo] + ' ' + key.slice(0, 4);
+                        termDesc = seasonMap[lastTwo] + ' ' + key.slice(0, 4);
                     }
-                    if (!acc[key]) {
-                        acc[key] = [];
+                    const existingTerm = acc.find(term => term.termCode === key);
+                    if (!existingTerm) {
+                        acc.push({
+                            termDesc: termDesc,
+                            termCode: key,
+                            transactions: [item]
+                        });
+                    } else {
+                        existingTerm.transactions.push(item);
                     }
-                    acc[key].push(item);
                     return acc;
-                }, {});
+                }, []);
+
                 setSumarize(() => TBRACCD_CTRL);
-                setGroupByTerm(() => groupByTermCode);
+                setGroupTransByTerm(() => Object.values(groupByTermCode));
                 setLoadingStatus(false);
+
             } catch (error) {
                 console.error(error)
             }
         })();
     }, []);
-    console.log(groupByTerm);
-    if (balanceDetails) {
-        const groupByTermCode = balanceDetails.reduce((acc, item) => {
-            const key = item.termCode;
-            const lastTwo = key.slice(-2);
-            if (seasonMap[lastTwo]) {
-                item.termDesc = seasonMap[lastTwo] + ' ' + key.slice(0, 4);
-            }
-            if (!acc[key]) {
-                acc[key] = [];
-            }
-            acc[key].push(item);
-            return acc;
-        }, {});
-    }
 
-    if (summarize) {
+    const handleChangeTerm = event => {
+        const valueIsNone = event.target.value === 'None';
+        console.log(event.target)
+        setDropdownStateTerm(prevState => ({
+            ...prevState,
+            term: valueIsNone ? prevState.initialValue : event.target.value
+        }));
+    };
+
+    if (summarize && groupTransByTerm) {
         const [{ accountBalance, amountDue }] = summarize;
+
         return (
             <div className={classes.card}>
                 <Dropdown
-                    id={`${customId}_Dropdown`}
-                    label="Term"
-                    onChange={handleChange}
-                    value={state.termCode}
-                    open={state.open}
+                    id={`${customId}_DropdownTerm}`}
+                    label={'Select Term'}
+                    onChange={handleChangeTerm}
+                    value={dropdownStateTerm.term}
+                    open={dropdownStateTerm.open}
                     onOpen={(event) => {
-                        setDropdownState({ open: true });
-                    }}
+                        setDropdownStateTerm({ open: true });
+                    }
+                    }
                     onClose={(event) => {
-                        console.log('*** onClose handler called ***', event);
-                        setDropdownState({ open: false });
-                    }}
+                        setDropdownStateTerm({ open: false });
+                    }
+                    }
                 >
-                    <DropdownItem
-                        label="None"
-                        value="None"
-                    />
-                    {/* {groupByTerm.map(option => {
+                    {groupTransByTerm.map(item => {
                         return (
-                            <DropdownItem
-                                key={option}
-                                label={option}
-                                value={option}
+                            <DropdownItem key={item.termCode}
+                                label={item.termDesc}
+                                value={item.termCode}
                             />
-                        );
-                    })} */}
+                        )
+                    })}
                 </Dropdown>
+                {groupTransByTerm.map(item => {
+                    if (dropdownStateTerm.term == item.termCode) {
+                        console.log(item);
+                        return (
+                            null
+                        );
+                    } else {
+                        return (null);
+                    }
+                })}
                 <Typography variant="h2">
                     Hello TestExt World
                 </Typography>
