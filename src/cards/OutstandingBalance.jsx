@@ -3,12 +3,16 @@ import { spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
 import {
     Typography,
     TextLink,
+    Table,
+    TableBody,
+    TableCell,
+    TableRow,
     Dropdown,
     DropdownItem
 } from '@ellucian/react-design-system/core';
 import { useCardControl, useCardInfo, useExtensionControl, useUserInfo, useData, useDashboardInfo } from '@ellucian/experience-extension-utils';
 import PropTypes from 'prop-types';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 const styles = () => ({
     card: {
@@ -39,11 +43,7 @@ function OutstandingBalance({ classes }) {
     const [summarize, setSumarize] = useState()
     const [balanceDetails, setBalanceDetails] = useState();
     const [groupTransByTerm, setGroupTransByTerm] = useState();
-    const [dropdownStateTerm, setDropdownStateTerm] = useState({
-        term: '',
-        initialValue: '',
-        open: false
-    });
+    const [dropdownStateTerm, setDropdownStateTerm] = useState();
 
 
     useEffect(() => {
@@ -56,25 +56,26 @@ function OutstandingBalance({ classes }) {
                 const groupByTermCode = TBRACCD.reduce((acc, item) => {
                     const key = item.termCode;
                     const lastTwo = key.slice(-2);
-                    let termDesc = '';
+                    let termDesc;
                     if (seasonMap[lastTwo]) {
                         termDesc = seasonMap[lastTwo] + ' ' + key.slice(0, 4);
                     }
-                    const existingTerm = acc.find(term => term.termCode === key);
-                    if (!existingTerm) {
-                        acc.push({
+                    if (!acc[key]) {
+                        // If it doesn't exist, initialize it with termDesc and transactions array
+                        acc[key] = {
                             termDesc: termDesc,
                             termCode: key,
                             transactions: [item]
-                        });
+                        };
                     } else {
-                        existingTerm.transactions.push(item);
+                        // If it exists, just push the new item into the transactions array
+                        acc[key].transactions.push(item);
                     }
                     return acc;
                 }, []);
 
                 setSumarize(() => TBRACCD_CTRL);
-                setGroupTransByTerm(() => Object.values(groupByTermCode));
+                setGroupTransByTerm(() => groupByTermCode);
                 setLoadingStatus(false);
 
             } catch (error) {
@@ -82,14 +83,28 @@ function OutstandingBalance({ classes }) {
             }
         })();
     }, []);
+    const dropDownItems = useMemo(() => {
+        if (groupTransByTerm) {
+            // Convert groupTransByTerm object to an array of [termCode, item] pairs
+            const entries = Object.entries(groupTransByTerm);
 
-    const handleChangeTerm = event => {
-        const valueIsNone = event.target.value === 'None';
-        console.log(event.target)
-        setDropdownStateTerm(prevState => ({
-            ...prevState,
-            term: valueIsNone ? prevState.initialValue : event.target.value
-        }));
+            // Sort the entries by termCode in descending order
+            entries.sort(([termCodeA], [termCodeB]) => termCodeB.localeCompare(termCodeA));
+
+            // Map over the sorted entries to generate the dropdown items
+            return entries.map(([termCode, item]) => {
+                return (
+                    <DropdownItem key={termCode}
+                        label={item.termDesc}
+                        value={termCode}
+                    />
+                );
+            });
+        }
+    }, [groupTransByTerm]);
+
+    const handleChangeTerm = (event) => {
+        setDropdownStateTerm(() => event.target.value);
     };
 
     if (summarize && groupTransByTerm) {
@@ -101,39 +116,39 @@ function OutstandingBalance({ classes }) {
                     id={`${customId}_DropdownTerm}`}
                     label={'Select Term'}
                     onChange={handleChangeTerm}
-                    value={dropdownStateTerm.term}
-                    open={dropdownStateTerm.open}
-                    onOpen={(event) => {
-                        setDropdownStateTerm({ open: true });
-                    }
-                    }
-                    onClose={(event) => {
-                        setDropdownStateTerm({ open: false });
-                    }
-                    }
+                    value={dropdownStateTerm}
                 >
-                    {groupTransByTerm.map(item => {
-                        return (
-                            <DropdownItem key={item.termCode}
-                                label={item.termDesc}
-                                value={item.termCode}
-                            />
-                        )
-                    })}
+                    {dropDownItems}
                 </Dropdown>
-                {groupTransByTerm.map(item => {
-                    if (dropdownStateTerm.term == item.termCode) {
-                        console.log(item);
-                        return (
-                            null
-                        );
-                    } else {
-                        return (null);
-                    }
-                })}
-                <Typography variant="h2">
-                    Hello TestExt World
-                </Typography>
+                {dropdownStateTerm && (
+                    <Table>
+                        <TableBody>
+                            {groupTransByTerm[dropdownStateTerm].transactions
+                                .filter(item => item.chargeAmount)
+                                .map(item => {
+                                    return (
+                                        <TableRow TableRow key={item.termCode} >
+                                            <TableCell>
+                                                <Typography variant={'body3'}>
+                                                    {item.transDate}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Typography variant={'body3'}>
+                                                    {item.desc}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Typography variant={'body3'}>
+                                                    {item.chargeAmount}
+                                                </Typography>
+                                            </TableCell>
+                                        </TableRow >
+                                    )
+                                })}
+                        </TableBody>
+                    </Table>
+                )}
             </div>
         );
     } else {
