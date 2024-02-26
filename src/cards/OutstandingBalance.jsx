@@ -1,5 +1,6 @@
 import { withStyles } from '@ellucian/react-design-system/core/styles';
-import { spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
+import classnames from 'classnames';
+import { spacing40, spacing30 } from '@ellucian/react-design-system/core/styles/tokens';
 import {
     Typography,
     TextLink,
@@ -8,18 +9,45 @@ import {
     TableCell,
     TableRow,
     Dropdown,
-    DropdownItem
+    DropdownItem,
+    Button
 } from '@ellucian/react-design-system/core';
 import { useCardControl, useCardInfo, useExtensionControl, useUserInfo, useData, useDashboardInfo } from '@ellucian/experience-extension-utils';
 import PropTypes from 'prop-types';
 import React, { useEffect, useMemo, useState } from 'react';
+import { Icon } from '@ellucian/ds-icons/lib';
 
 const styles = () => ({
-    card: {
+    root: {
+        height: '100%',
+        overflowY: 'auto',
+        marginRight: spacing40,
+        marginLeft: spacing40
+    },
+    content: {
+        height: '100%',
         marginTop: 0,
         marginRight: spacing40,
         marginBottom: 0,
-        marginLeft: spacing40
+        marginLeft: spacing40,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'flex-start'
+    },
+    transactionsTableRow: {
+        height: 'auto'
+    },
+    balanceContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: '100%',
+        marginTop: spacing30,
+        marginBottom: spacing30
+    },
+
+    balanceContainerSpan: {
+        margin: '0'
     }
 });
 
@@ -44,12 +72,14 @@ function OutstandingBalance({ classes }) {
     const [balanceDetails, setBalanceDetails] = useState();
     const [groupTransByTerm, setGroupTransByTerm] = useState();
     const [dropdownStateTerm, setDropdownStateTerm] = useState();
-
+    const [formatTransDate, setFormatTransDate] = useState();
+    const payLink = 'https://test.secure.touchnet.net:8443/C21220test_tsa/web/caslogin.jsp';
 
     useEffect(() => {
         (async () => {
             setLoadingStatus(true);
             try {
+                setFormatTransDate(() => new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: '2-digit' }));
                 const response = await authenticatedEthosFetch(`${pipelineAPI}?cardId=${cardId}&testPersonId=${personId}`);
                 const balanceResult = await response.json();
                 const [{ TBRACCD_CTRL, TBRACCD }] = balanceResult;
@@ -90,7 +120,7 @@ function OutstandingBalance({ classes }) {
 
             // Sort the entries by termCode in descending order
             entries.sort(([termCodeA], [termCodeB]) => termCodeB.localeCompare(termCodeA));
-
+            setDropdownStateTerm(groupTransByTerm[groupTransByTerm.length - 1].termCode);
             // Map over the sorted entries to generate the dropdown items
             return entries.map(([termCode, item]) => {
                 return (
@@ -107,49 +137,82 @@ function OutstandingBalance({ classes }) {
         setDropdownStateTerm(() => event.target.value);
     };
 
+    function buttonClicked() {
+        window.open(payLink, '_blank');
+    }
+
+
     if (summarize && groupTransByTerm) {
         const [{ accountBalance, amountDue }] = summarize;
-
         return (
-            <div className={classes.card}>
-                <Dropdown
-                    id={`${customId}_DropdownTerm}`}
-                    label={'Select Term'}
-                    onChange={handleChangeTerm}
-                    value={dropdownStateTerm}
-                >
-                    {dropDownItems}
-                </Dropdown>
-                {dropdownStateTerm && (
-                    <Table>
-                        <TableBody>
-                            {groupTransByTerm[dropdownStateTerm].transactions
-                                .filter(item => item.chargeAmount)
-                                .map(item => {
-                                    return (
-                                        <TableRow TableRow key={item.termCode} >
-                                            <TableCell>
-                                                <Typography variant={'body3'}>
-                                                    {item.transDate}
-                                                </Typography>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Typography variant={'body3'}>
-                                                    {item.desc}
-                                                </Typography>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Typography variant={'body3'}>
-                                                    {item.chargeAmount}
-                                                </Typography>
-                                            </TableCell>
-                                        </TableRow >
-                                    )
-                                })}
-                        </TableBody>
-                    </Table>
-                )}
-            </div>
+            <div className={classes.root}>
+                <div className={classes.content}>
+                    <div>
+                        <Dropdown
+                            id={`${customId}_DropdownTerm}`}
+                            label={'Select Term'}
+                            onChange={handleChangeTerm}
+                            value={dropdownStateTerm}
+                            fullWidth
+                        >
+                            {dropDownItems}
+                        </Dropdown>
+                    </div>
+                    {accountBalance > 0 && (
+                        <div className={classes.balanceContainer}>
+                            <Typography variant={'h4'}>
+                                Outstanding Balance: ${accountBalance}
+                            </Typography>
+
+                            <Button
+                                color='secondary'
+                                startIcon={<Icon name="cart" />}
+                                onClick={buttonClicked}
+                            >
+                                <Typography variant={'h4'}>Pay Now</Typography>
+                            </Button>
+                        </div>
+
+
+                    )}
+
+                    <div>
+                        {dropdownStateTerm && (
+                            <Table>
+                                <TableBody>
+                                    <Typography variant={"h6"}>
+                                        Transaction History
+                                    </Typography>
+                                    {groupTransByTerm[dropdownStateTerm].transactions
+                                        // .filter(item => item.chargeAmount)
+                                        .map((item, index) => {
+                                            const transactionDate = formatTransDate.format(new Date(item.transDate));
+                                            return (
+                                                <TableRow TableRow key={`${item.termCode} - ${index}`} className={classes.transactionsTableRow}>
+                                                    <TableCell align='left' padding='none'>
+                                                        <Typography variant={'body3'}>
+                                                            {transactionDate}
+                                                        </Typography>
+                                                    </TableCell>
+                                                    <TableCell align='left' padding='none'>
+                                                        <Typography variant={'body3'} component={'div'}>
+                                                            {item.desc}
+                                                        </Typography>
+                                                    </TableCell>
+                                                    <TableCell align="right" padding='none'>
+                                                        <Typography variant={'body3'} component={'div'}>
+                                                            ${item.chargeAmount || item.paymentAmount}
+                                                        </Typography>
+                                                    </TableCell>
+                                                </TableRow >
+                                            )
+                                        })}
+                                </TableBody>
+                            </Table>
+                        )}
+                    </div>
+                </div>
+            </div >
         );
     } else {
         return (
