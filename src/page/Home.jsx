@@ -1,5 +1,5 @@
 import { withStyles } from '@ellucian/react-design-system/core/styles';
-import {spacing20, spacing40} from '@ellucian/react-design-system/core/styles/tokens';
+import { spacing20, spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
 import {
     Typography,
     TextLink,
@@ -14,7 +14,7 @@ import {
     ExpansionPanelDetails
 } from '@ellucian/react-design-system/core';
 import PropTypes from 'prop-types';
-import React, {useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { usePageControl } from '@ellucian/experience-extension-utils'
 
 const styles = () => ({
@@ -81,8 +81,10 @@ const HomePage = (props) => {
     const [agentInfo, setAgentInfo] = useState([]);
 
     // Get the ticket Ids and key from cache
-    const freshServiceTicketIds = getItem({key: CACHE_TICKET_IDS, scope: cardId});
-    const freshServiceAPIKey = getItem({key: CACHE_KEY_API, scope: cardId});
+    const freshServiceTicketIds = JSON.parse(localStorage.getItem(CACHE_TICKET_IDS))
+    // const freshServiceTicketIds = getItem({ key: CACHE_TICKET_IDS, scope: cardId });
+    // const freshServiceAPIKey = getItem({ key: CACHE_KEY_API, scope: cardId });
+    const freshServiceAPIKey = JSON.parse(localStorage.getItem(CACHE_KEY_API));
 
     // Getting ticket info with conversations
     useEffect(() => {
@@ -94,7 +96,7 @@ const HomePage = (props) => {
                         method: 'GET',
                         headers: {
                             'Content-Type': 'application/json',
-                            Authorization: 'Basic ' + btoa(freshServiceAPIKey.data)
+                            Authorization: 'Basic ' + btoa(freshServiceAPIKey)
                         }
                     }
                 );
@@ -115,7 +117,7 @@ const HomePage = (props) => {
                                 method: 'GET',
                                 headers: {
                                     'Content-Type': 'application/json',
-                                    Authorization: 'Basic ' + btoa(freshServiceAPIKey.data)
+                                    Authorization: 'Basic ' + btoa(freshServiceAPIKey)
                                 }
                             }
                         );
@@ -140,8 +142,8 @@ const HomePage = (props) => {
             }
         };
 
-        if (freshServiceTicketIds?.data) {
-            freshServiceTicketIds.data.forEach((ticketId) => {
+        if (freshServiceTicketIds) {
+            freshServiceTicketIds.forEach((ticketId) => {
                 fetchTicketInfo(ticketId);
             });
         }
@@ -176,7 +178,7 @@ const HomePage = (props) => {
                                         <ListItemText primary={`Type: ${n?.ticket.type}`} />
                                     </ListItem>
                                     <ListItem divider>
-                                        <ListItemText primary={`Agent: ${agentInfo[n?.ticket.responder_id]?.first_name??'No'} ${agentInfo[n?.ticket.responder_id]?.last_name??'Agent'}`} />
+                                        <ListItemText primary={`Agent: ${agentInfo[n?.ticket.responder_id]?.first_name ?? 'No'} ${agentInfo[n?.ticket.responder_id]?.last_name ?? 'Agent'}`} />
                                     </ListItem>
                                     <ListItem divider>
                                         <ListItemText primary={`Created Date: ${new Date(n?.ticket.created_at).toDateString()}`} />
@@ -185,9 +187,9 @@ const HomePage = (props) => {
                                         <ListItemText primary={`Last Updated: ${new Date(n?.ticket.updated_at).toDateString()}`} />
                                     </ListItem>
                                     <ListItem divider className={classes.expansionItem}>
-                                        <ExpansionPanel  className={classes.expansionPanel}>
+                                        <ExpansionPanel className={classes.expansionPanel}>
                                             <ExpansionPanelSummary className={classes.panelSummary}>
-                                               <Typography variant={'body1'}>Detail</Typography>
+                                                <Typography variant={'body1'}>Detail</Typography>
                                             </ExpansionPanelSummary>
                                             <ExpansionPanelDetails>
                                                 <div dangerouslySetInnerHTML={{ __html: n?.ticket.description }} />
@@ -195,12 +197,12 @@ const HomePage = (props) => {
                                         </ExpansionPanel>
                                     </ListItem>
                                     <ListItem divider className={classes.expansionItem}>
-                                        <ExpansionPanel  className={classes.expansionPanel}>
+                                        <ExpansionPanel className={classes.expansionPanel}>
                                             <ExpansionPanelSummary className={classes.panelSummary}>
                                                 <Typography variant={'body1'}>Last Comment</Typography>
                                             </ExpansionPanelSummary>
                                             <ExpansionPanelDetails>
-                                                <div dangerouslySetInnerHTML={{ __html: n?.ticket.conversations.slice(-1)[0]?.body}} />
+                                                <div dangerouslySetInnerHTML={{ __html: n?.ticket.conversations.slice(-1)[0]?.body }} />
                                             </ExpansionPanelDetails>
                                         </ExpansionPanel>
                                     </ListItem>

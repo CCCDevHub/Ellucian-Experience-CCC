@@ -11,7 +11,7 @@ module.exports = {
             "person-email": [
                 {
                     "resourceVersions": {
-                        "persons": { min: 12}
+                        "persons": { min: 12 }
                     },
                     "query":
                         `query personEmail($personId: ID) {
@@ -38,7 +38,7 @@ module.exports = {
             ]
         },
         "configuration": {
-            client: [{
+            server: [{
                 key: 'fresh-service-key',
                 label: 'key',
                 type: 'password'
@@ -46,7 +46,7 @@ module.exports = {
         },
         "pageRoute": {
             "route": "/",
-            "excludeClickSelectors": ['#freshServiceRequested_TicketLink', '#freshServiceRequested_RequiredUserEmail','#freshServiceRequested_RequiredAPIKey','#freshServiceRequested_ContinueButton', '#freshServiceRequested_RequiredFields']
+            "excludeClickSelectors": ['#freshServiceRequested_TicketLink', '#freshServiceRequested_RequiredUserEmail', '#freshServiceRequested_RequiredAPIKey', '#freshServiceRequested_ContinueButton', '#freshServiceRequested_RequiredFields']
         }
     }],
     "page": {

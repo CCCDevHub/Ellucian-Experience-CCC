@@ -1,6 +1,6 @@
-import {withStyles} from '@ellucian/react-design-system/core/styles';
-import React, {useState, useEffect} from "react";
-import {spacing30, spacing40, spacing50} from '@ellucian/react-design-system/core/styles/tokens';
+import { withStyles } from '@ellucian/react-design-system/core/styles';
+import React, { useState, useEffect } from "react";
+import { spacing30, spacing40, spacing50 } from '@ellucian/react-design-system/core/styles/tokens';
 import {
     Typography,
     TextLink,
@@ -38,23 +38,24 @@ const TICKET_STATUS = {
 };
 const FRESH_SERVICE_AGENT_URL = 'https://pasadena.freshservice.com/api/v2/agents?';
 function FreshServiceRequester({
-                                   classes,
-                                   cache: {
-                                       storeItem
-                                   },
-                                   cardInfo: {
-                                       cardId,
-                                       configuration
-                                   },
-                                   data: { getEthosQuery },
-                                   cardControl: {
-                                       setLoadingStatus
-                                   }
-                               }) {
+    classes,
+    cache: {
+        storeItem
+    },
+    cardInfo: {
+        cardId,
+        configuration
+    },
+    data: { getEthosQuery },
+    cardControl: {
+        setLoadingStatus
+    }
+}) {
     const customId = 'freshServiceRequested';
     const freshServiceKey = configuration['fresh-service-key'];
-    storeItem({key: CACHE_KEY_API, data: freshServiceKey, scope: cardId});
-
+    // storeItem({ key: CACHE_KEY_API, data: freshServiceKey, scope: cardId });
+    localStorage.setItem(CACHE_KEY_API, JSON.stringify(freshServiceKey));
+    console.log(freshServiceKey);
     // Declare useStates
 
     const [freshServiceTickets, setFreshServiceTickets] = useState([]);
@@ -63,15 +64,15 @@ function FreshServiceRequester({
     // clear({key:CACHE_KEY_USER});
     // clear({key:CACHE_KEY_API});
 
-    useEffect( () => {
+    useEffect(() => {
         setLoadingStatus(true);
         const fetchUserEmail = async () => {
             try {
-                const personData = await getEthosQuery({queryId: 'person-email'});
+                const personData = await getEthosQuery({ queryId: 'person-email' });
                 const personEmail = personData?.data?.persons?.edges[0]?.node?.emails[0]?.address;
                 const fetchId = async () => {
                     try {
-                        const response = await fetch(FRESH_SERVICE_AGENT_URL + new URLSearchParams( {
+                        const response = await fetch(FRESH_SERVICE_AGENT_URL + new URLSearchParams({
                             email: `${personEmail}`
                         }), {
                             method: 'GET',
@@ -85,7 +86,7 @@ function FreshServiceRequester({
                         }
                         const data = await response.json();
                         // Using the freshService agent Id to filter all the requested tickets that are open and pending
-                        if(data?.agents[0].id) {
+                        if (data?.agents[0].id) {
                             const userId = data?.agents[0].id;
                             const fetchTickets = async () => {
                                 try {
@@ -99,7 +100,7 @@ function FreshServiceRequester({
                                         }
                                     });
 
-                                    if(!ticketsResponse.ok) {
+                                    if (!ticketsResponse.ok) {
                                         throw new Error(
                                             'Request failed with status ' + ticketsResponse.status
                                         );
@@ -123,53 +124,54 @@ function FreshServiceRequester({
             }
         }
         fetchUserEmail();
-        }, []);
+    }, []);
+    console.log(freshServiceTickets);
 
-
-        // Store the ticket Ids to cache
-        storeItem({key: CACHE_TICKET_IDS, data: freshServiceTickets?.tickets?.map(x => x.id), scope: cardId});
-        // Render the table with all the tickets
-        return (
-            <div className={classes.card}>
-                <Typography>
-                    You have {freshServiceTickets?.tickets?.filter(ticket => ticket.status === 2).length} Open
-                    and {freshServiceTickets?.tickets?.filter(ticket => ticket.status === 3).length} Pending Tickets
-                    <Table layout={{variant: 'card', breakpoint: 'sm'}}>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Ticket Number</TableCell>
-                                <TableCell>Subject</TableCell>
-                                <TableCell>Type</TableCell>
-                                <TableCell>Status</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {freshServiceTickets?.tickets?.map(n => {
-                                return (
-                                    <TableRow key={n?.id}>
-                                        <TableCell columnName={"Ticket Number"}>
-                                            {n?.id}
-                                        </TableCell>
-                                        <TableCell columnName={"Subject"}>
-                                            <TextLink id={`${customId}_TicketLink`}
-                                                      href={`https://helpdesk.pasadena.edu/a/tickets/${n?.id}`}>
-                                                {n?.subject}
-                                            </TextLink>
-                                        </TableCell>
-                                        <TableCell columnName={"Type"}>
-                                            {n?.type}
-                                        </TableCell>
-                                        <TableCell columnName={"Status"}>
-                                            {TICKET_STATUS[n?.status]}
-                                        </TableCell>
-                                    </TableRow>
-                                )
-                            })}
-                        </TableBody>
-                    </Table>
-                </Typography>
-            </div>
-        );
+    // Store the ticket Ids to cache
+    // storeItem({ key: CACHE_TICKET_IDS, data: freshServiceTickets?.tickets?.map(x => x.id), scope: cardId });
+    localStorage.setItem(CACHE_TICKET_IDS, JSON.stringify(freshServiceTickets?.tickets?.map(x => x.id)))
+    // Render the table with all the tickets
+    return (
+        <div className={classes.card}>
+            <Typography>
+                You have {freshServiceTickets?.tickets?.filter(ticket => ticket.status === 2).length} Open
+                and {freshServiceTickets?.tickets?.filter(ticket => ticket.status === 3).length} Pending Tickets
+                <Table layout={{ variant: 'card', breakpoint: 'sm' }}>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Ticket Number</TableCell>
+                            <TableCell>Subject</TableCell>
+                            <TableCell>Type</TableCell>
+                            <TableCell>Status</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {freshServiceTickets?.tickets?.map(n => {
+                            return (
+                                <TableRow key={n?.id}>
+                                    <TableCell columnName={"Ticket Number"}>
+                                        {n?.id}
+                                    </TableCell>
+                                    <TableCell columnName={"Subject"}>
+                                        <TextLink id={`${customId}_TicketLink`}
+                                            href={`https://helpdesk.pasadena.edu/a/tickets/${n?.id}`}>
+                                            {n?.subject}
+                                        </TextLink>
+                                    </TableCell>
+                                    <TableCell columnName={"Type"}>
+                                        {n?.type}
+                                    </TableCell>
+                                    <TableCell columnName={"Status"}>
+                                        {TICKET_STATUS[n?.status]}
+                                    </TableCell>
+                                </TableRow>
+                            )
+                        })}
+                    </TableBody>
+                </Table>
+            </Typography>
+        </div>
+    );
 
 }
 
