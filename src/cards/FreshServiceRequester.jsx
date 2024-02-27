@@ -55,7 +55,6 @@ function FreshServiceRequester({
     const freshServiceKey = configuration['fresh-service-key'];
     // storeItem({ key: CACHE_KEY_API, data: freshServiceKey, scope: cardId });
     localStorage.setItem(CACHE_KEY_API, JSON.stringify(freshServiceKey));
-    console.log(freshServiceKey);
     // Declare useStates
 
     const [freshServiceTickets, setFreshServiceTickets] = useState([]);
@@ -125,7 +124,6 @@ function FreshServiceRequester({
         }
         fetchUserEmail();
     }, []);
-    console.log(freshServiceTickets);
 
     // Store the ticket Ids to cache
     // storeItem({ key: CACHE_TICKET_IDS, data: freshServiceTickets?.tickets?.map(x => x.id), scope: cardId });
