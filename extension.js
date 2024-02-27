@@ -38,7 +38,7 @@ module.exports = {
             ]
         },
         "configuration": {
-            server: [{
+            client: [{
                 key: 'fresh-service-key',
                 label: 'key',
                 type: 'password'
