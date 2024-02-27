@@ -50,8 +50,8 @@ const styles = () => ({
         padding: `0rem ${spacing40}`
     }
 });
-const CACHE_KEY_API = 'local-cache:api';
-const CACHE_TICKET_IDS = 'local-cache:ticketIds';
+const CACHE_AGENTS = 'local-cache:agents';
+const CACHE_TICKET_INFO = 'local-cache:ticketInfo';
 const TICKET_URL = 'https://pasadena.freshservice.com/api/v2/tickets/';
 const AGENT_URL = 'https://pasadena.freshservice.com/api/v2/agents/';
 const TICKET_STATUS = {
@@ -81,82 +81,19 @@ const HomePage = (props) => {
     const [agentInfo, setAgentInfo] = useState([]);
 
     // Get the ticket Ids and key from cache
-    const freshServiceTicketIds = JSON.parse(localStorage.getItem(CACHE_TICKET_IDS))
+    const freshServiceTicketInfo = JSON.parse(localStorage.getItem(CACHE_TICKET_INFO))
     // const freshServiceTicketIds = getItem({ key: CACHE_TICKET_IDS, scope: cardId });
     // const freshServiceAPIKey = getItem({ key: CACHE_KEY_API, scope: cardId });
-    const freshServiceAPIKey = JSON.parse(localStorage.getItem(CACHE_KEY_API));
-
-    // Getting ticket info with conversations
-    useEffect(() => {
-        const fetchTicketInfo = async (ticketId) => {
-            try {
-                const response = await fetch(
-                    `${TICKET_URL}${ticketId}?include=conversations`,
-                    {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            Authorization: 'Basic ' + btoa(freshServiceAPIKey)
-                        }
-                    }
-                );
-
-                if (!response.ok) {
-                    throw new Error('Request failed with status ' + response.status);
-                }
-
-                const data = await response.json();
-                setTicketInfo((ticketInfo) => [...ticketInfo, data]);
-                const agentId = data?.ticket?.responder_id;
-
-                if (agentId) {
-                    try {
-                        const agentResponse = await fetch(
-                            `${AGENT_URL}${agentId}`,
-                            {
-                                method: 'GET',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    Authorization: 'Basic ' + btoa(freshServiceAPIKey)
-                                }
-                            }
-                        );
-
-                        if (!agentResponse.ok) {
-                            throw new Error(
-                                'Request failed with status ' + agentResponse.status
-                            );
-                        }
-
-                        const agentData = await agentResponse.json();
-                        setAgentInfo((requesterInfo) => ({
-                            ...requesterInfo,
-                            [agentId]: agentData.agent
-                        }));
-                    } catch (error) {
-                        console.error('Error while fetching requester: ', error);
-                    }
-                }
-            } catch (error) {
-                console.error('Error while fetching ticket info: ', error);
-            }
-        };
-
-        if (freshServiceTicketIds) {
-            freshServiceTicketIds.forEach((ticketId) => {
-                fetchTicketInfo(ticketId);
-            });
-        }
-    }, []);
+    const freshServiceAgentInfo = JSON.parse(localStorage.getItem(CACHE_AGENTS));
 
     // Sort the tickets by created date Desc
-    ticketInfo.sort((a, b) => {
+    freshServiceTicketInfo.sort((a, b) => {
         return new Date(b.ticket.created_at) - new Date(a.ticket.created_at)
     });
     // Render each of the ticket as card
     return (
         <div className={classes.container} id={`${customId}_Container`}>
-            {ticketInfo?.map(n => {
+            {freshServiceTicketInfo?.map(n => {
                 return (
                     <Card className={classes.card} id={`${customId}_FreshServiceTicket`} key={n?.ticket.id} responsive={true}>
                         <CardHeader
@@ -178,7 +115,7 @@ const HomePage = (props) => {
                                         <ListItemText primary={`Type: ${n?.ticket.type}`} />
                                     </ListItem>
                                     <ListItem divider>
-                                        <ListItemText primary={`Agent: ${agentInfo[n?.ticket.responder_id]?.first_name ?? 'No'} ${agentInfo[n?.ticket.responder_id]?.last_name ?? 'Agent'}`} />
+                                        <ListItemText primary={`Agent: ${freshServiceAgentInfo[n?.ticket.responder_id]?.first_name ?? 'No'} ${freshServiceAgentInfo[n?.ticket.responder_id]?.last_name ?? 'Agent'}`} />
                                     </ListItem>
                                     <ListItem divider>
                                         <ListItemText primary={`Created Date: ${new Date(n?.ticket.created_at).toDateString()}`} />

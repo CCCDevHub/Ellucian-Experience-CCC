@@ -30,13 +30,17 @@ const styles = () => ({
 // Declaration for cache and ENUM
 
 const CACHE_KEY_API = 'local-cache:api';
-const CACHE_TICKET_IDS = 'local-cache:ticketIds';
+const CACHE_AGENTS = 'local-cache:agents';
+const CACHE_TICKET_INFO = 'local-cache:ticketInfo';
 const TICKET_FILTER_URL = 'https://pasadena.freshservice.com/api/v2/tickets/filter?';
 const TICKET_STATUS = {
     2: 'Open',
     3: 'Pending'
 };
 const FRESH_SERVICE_AGENT_URL = 'https://pasadena.freshservice.com/api/v2/agents?';
+const TICKET_URL = 'https://pasadena.freshservice.com/api/v2/tickets/';
+const AGENT_URL = 'https://pasadena.freshservice.com/api/v2/agents/';
+
 function FreshServiceRequester({
     classes,
     cache: {
@@ -54,10 +58,11 @@ function FreshServiceRequester({
     const customId = 'freshServiceRequested';
     const freshServiceKey = configuration['fresh-service-key'];
     // storeItem({ key: CACHE_KEY_API, data: freshServiceKey, scope: cardId });
-    localStorage.setItem(CACHE_KEY_API, JSON.stringify(freshServiceKey));
-    // Declare useStates
 
+    // Declare useStates
     const [freshServiceTickets, setFreshServiceTickets] = useState([]);
+    const [ticketInfo, setTicketInfo] = useState([]);
+    const [agentInfo, setAgentInfo] = useState([]);
 
 
     // clear({key:CACHE_KEY_USER});
@@ -69,6 +74,59 @@ function FreshServiceRequester({
             try {
                 const personData = await getEthosQuery({ queryId: 'person-email' });
                 const personEmail = personData?.data?.persons?.edges[0]?.node?.emails[0]?.address;
+                const fetchTicketInfo = async (ticketId) => {
+                    try {
+                        const response = await fetch(
+                            `${TICKET_URL}${ticketId}?include=conversations`,
+                            {
+                                method: 'GET',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    Authorization: 'Basic ' + btoa(freshServiceKey)
+                                }
+                            }
+                        );
+
+                        if (!response.ok) {
+                            throw new Error('Request failed with status ' + response.status);
+                        }
+
+                        const data = await response.json();
+                        setTicketInfo((ticketInfo) => [...ticketInfo, data]);
+                        const agentId = data?.ticket?.responder_id;
+
+                        if (agentId) {
+                            try {
+                                const agentResponse = await fetch(
+                                    `${AGENT_URL}${agentId}`,
+                                    {
+                                        method: 'GET',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            Authorization: 'Basic ' + btoa(freshServiceKey)
+                                        }
+                                    }
+                                );
+
+                                if (!agentResponse.ok) {
+                                    throw new Error(
+                                        'Request failed with status ' + agentResponse.status
+                                    );
+                                }
+
+                                const agentData = await agentResponse.json();
+                                setAgentInfo((requesterInfo) => ({
+                                    ...requesterInfo,
+                                    [agentId]: agentData.agent
+                                }));
+                            } catch (error) {
+                                console.error('Error while fetching requester: ', error);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error while fetching ticket info: ', error);
+                    }
+                };
                 const fetchId = async () => {
                     try {
                         const response = await fetch(FRESH_SERVICE_AGENT_URL + new URLSearchParams({
@@ -106,17 +164,22 @@ function FreshServiceRequester({
                                     }
                                     const ticketsData = await ticketsResponse.json();
                                     setFreshServiceTickets(ticketsData);
+                                    ticketsData?.tickets.forEach(ticket => {
+                                        fetchTicketInfo(ticket.id);
+                                    });
                                 } catch (error) {
                                     console.error('Error fetching tickets:', error);
                                 }
                             };
                             fetchTickets();
                         }
+
                     } catch (error) {
                         console.error('Error fetching user Id:', error);
                     }
                 };
                 fetchId();
+
                 setLoadingStatus(false);
             } catch (error) {
                 console.error(error);
@@ -124,10 +187,10 @@ function FreshServiceRequester({
         }
         fetchUserEmail();
     }, []);
-
     // Store the ticket Ids to cache
-    // storeItem({ key: CACHE_TICKET_IDS, data: freshServiceTickets?.tickets?.map(x => x.id), scope: cardId });
-    localStorage.setItem(CACHE_TICKET_IDS, JSON.stringify(freshServiceTickets?.tickets?.map(x => x.id)))
+    // storeItem({ key: CACHE_TICKET_INFO, data: freshServiceTickets?.tickets?.map(x => x.id), scope: cardId });
+    localStorage.setItem(CACHE_TICKET_INFO, JSON.stringify(ticketInfo));
+    localStorage.setItem(CACHE_AGENTS, JSON.stringify(agentInfo));
     // Render the table with all the tickets
     return (
         <div className={classes.card}>
