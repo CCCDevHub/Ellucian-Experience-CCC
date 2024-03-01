@@ -3,7 +3,7 @@ module.exports = {
     "publisher": "Your Name",
     "cards": [{
         "type": "TestExtCard",
-        "source": "./src/cards/CardName",
+        "source": "./src/cards/TestExtCard",
         "title": "Card Title",
         "displayCardType": "Card Type",
         "description": "Card Description",
