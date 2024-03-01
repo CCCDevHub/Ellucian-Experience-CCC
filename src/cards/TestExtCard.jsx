@@ -1,8 +1,11 @@
 import { withStyles } from '@ellucian/react-design-system/core/styles';
 import { spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
 import { Typography, TextLink } from '@ellucian/react-design-system/core';
+import { useCardControl, useCardInfo, useExtensionControl, useUserInfo, useData, useDashboardInfo } from '@ellucian/experience-extension-utils';
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import classnames from 'classnames';
+import { Icon } from '@ellucian/ds-icons/lib';
 
 const styles = () => ({
     card: {
@@ -13,19 +16,11 @@ const styles = () => ({
     }
 });
 
-function TestExtCard ({classes}) {
+function TestExtCard({ classes }) {
     return (
         <div className={classes.card}>
             <Typography variant="h2">
                 Hello TestExt World
-            </Typography>
-            <Typography>
-                <span>
-                    For sample extensions, visit the Ellucian Developer
-                </span>
-                <TextLink href="https://github.com/ellucian-developer/experience-extension-sdk-samples" target="_blank">
-                     GitHub
-                </TextLink>
             </Typography>
         </div>
     );

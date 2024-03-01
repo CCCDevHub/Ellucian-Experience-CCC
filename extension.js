@@ -6,7 +6,7 @@ module.exports = {
         "source": "./src/cards/CardName",
         "title": "Card Title",
         "displayCardType": "Card Type",
-        "description": "This is an introductory card to the Ellucian Experience SDK",
+        "description": "Card Description",
         "pageRoute": {
             "route": "/",
             "excludeClickSelectors": ['a']
