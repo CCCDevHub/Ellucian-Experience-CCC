@@ -1,59 +1,94 @@
-# Create Experience Extension
+# Experience Extension CCC
 
-This module bootstraps your Ellucian Experience Extension development by creating an extension project. This module is primarily used to create your initial project. From this, you would add cards and make modifications. This project should be placed under your source control.
+The Ellucian Experience CCC Project facilitates a collaborative effort among colleges to jointly develop and enhance Ellucian Experience cards. This initiative aims to foster a shared platform for innovation and community engagement.
 
 # Table of Contents
 1. [Workflow](#workflow)
+    - [Branches](#branches)
+    - [Procedure](#procedure)
+    - [Pull the Latest SDK from master branch](#pull-the-latest-sdk-from-master-branch)
 2. [Create Extension Card](#create-extension-card)
 3. [Live Reloading The Extensions](#live-reloading-the-extensions)
 4. [Developers Resoureces](#developers-resources)
 
 ## Workflow
+### Branches
+- **master:** Base Ellucian Experience, with the latest SDK. Create branches from master to get the latest SDK.
+- **Branch Name Format:** `Institution/githubUsername-CardName`. This is your Development branch
+    - Example: `PCC/hphan10-Test-Card`
+- **Code Review Process:**
+    - Create your development branch using the format `Institution/githubUsername-CardName`.
+    - Create a sub-branch for development: `Institution/githubUsername-CardName-Development`.
+    - Create a Pull Request to merge into your main branch.
+    - Assign reviewers for your code.
+- **Branch Structure Example:**
+    ```
+    └── master
+        ├── PCC
+        │   ├── hphan10-Example-CardName
+        │   │   └── hphan10-Example-CardName-Development
+        │   └── hphan10-Another-Example-CardName
+        │       └── hphan10-Another-Example-CardName-Development
+        ├── Mt.Sac
+        │   └── hphan20-Sample-CardName
+        │       └── hphan20-Sample-CardName-Development
+        └── Citrus
+            └── hphan30-New-CardName
+                └── hphan30-New-CardName-Development
+    ```
+### Procedure
+- **To update the master branch:**
+    ```
+    $ git checkout master
+    $ git fetch --all
+    $ git pull
+    ```
+- **Create your EE card branch from master:**
+    ```
+    $ git checkout -b Institution/githubUsername-CardName origin/master
+    ```
+- **Add your files:**
+    ```
+    $ git add path/to/the/file
+    ```
+    - Your extension.js and cardName.jsx/page.jsx files
 
-1. Branches
-   - **master** (Base Ellucian Experience)
-   - **yourCardBranchName** (Development Environment)
-2. Procedure
-   - Before your work do this to update master branch
-        ```
-        $ git checkout master
-        $ git fetch --all
-        $ git pull
-        ```
-   - Create yourFeature branch from master
-        ```
-        $ git checkout -b yourFeature origin/master
-        ```
-   - Do your work, add the files
-        ```
-        $ git add path/to/the/file
-        ```
-     - Your extension.js and cardName.jsx files
-   
-   - Commit your work
-        ```
-        $ git commit -am "Your message"
-        ```
-   - Now merge your changes to dev without a fast-forward
-        ```
-        $ git checkout dev
-        $ git merge --no-ff yourFeature
-        ```
-   - Now push changes to your branch
-        ```
-        $ git push origin yourBranchName
-        ```
+- **Commit your work:**
+    ```
+    $ git commit -am "Your message"
+    ```
+- **Push changes to your branch:**
+    ```
+    $ git push origin Institution/githubUsername-CardName
+    ```
 
+### Pull the latest SDK from master branch
+- **Check out master branch:**
+    ```
+    $ git checkout master
+    ```
+- **Pull the latest changes for the master:**
+    ```
+    $ git pull origin master
+    ```
+- **Switch back to your current branch:**
+    ```
+    $ git checkout Institution/githubUsername-CardName
+    ```
+- **Merge the changes from master:**
+    ```
+    $ git merge master
+    ```
 
 ## Create Extension Card
 
-1. Run this before working on the card
+1. **Initial setup (if you haven't installed anything yet):**
 
     ```
     npm install
     ```
 
-2. Copy sample.env
+2. **Copy the `sample.env` file:**
 
     - For Unix based systems:
 
@@ -67,29 +102,36 @@ This module bootstraps your Ellucian Experience Extension development by creatin
         copy sample.env .env
         ```
 
-3. In the .env replace <upload-token> with an extension token from Experience Setup.
+3. **Configure the .env file:**
+    - Replace the `<upload-token>` with an extension token from Experience Setup.
 
 4. Example of a card:
     ```
-    import React from 'react';
     import { withStyles } from '@ellucian/react-design-system/core/styles';
+    import { spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
+    import { Typography, TextLink } from '@ellucian/react-design-system/core';
+    import { useCardControl, useCardInfo, useExtensionControl, useUserInfo, useData, useDashboardInfo } from '@ellucian/experience-extension-utils';
     import PropTypes from 'prop-types';
+    import React, { useEffect, useMemo, useState } from 'react';
+    import classnames from 'classnames';
+    import { Icon } from '@ellucian/ds-icons/lib';
 
     // Your Style Sheet
     const styles = () => ({
         card: {
-            marginLef: '1rem',
-            marginRight: '1rem'
+            marginTop: 0,
+            marginRight: spacing40,
+            marginBottom: 0,
+            marginLeft: spacing40
         },
         image: {
             width: '100%',
             height: 'auto'
         }
-    })
+    });
 
     // Your Main Function
-    function ViewMySchedule(props) {
-        const { classes } = props;
+    function ViewMySchedule(classes) {
         return (
             <div className={classes.card}>
                 <h1>View My Schedule</h1>
@@ -119,11 +161,11 @@ This module bootstraps your Ellucian Experience Extension development by creatin
 
         ```
         {
-                "type": "SampleCard",
-                "source": "./path/to/card",
-                "title": "Sample",
-                "displayCardType": "Sample Card",
-                "description": "This card is a sample card",
+            "type": "SampleCard",
+            "source": "./path/to/card",
+            "title": "Sample",
+            "displayCardType": "Sample Card",
+            "description": "This card is a sample card",
         }
         ```
 
@@ -131,37 +173,37 @@ This module bootstraps your Ellucian Experience Extension development by creatin
 
         ```
         {
-                "type": "CardName",
-                "source": "./path/to/card",
-                "title": "Card Title",
-                "displayCardType": "GraphQL Query",
-                "description": "CardName GraphQL Query",
-                "queries": {
-                    "getPerson": [
-                        {
-                            "resourceVersions": {
-                                "persons": {min: 12}
-                            },
-                            "query":
-                                `query getPerson($personId: ID){
-                                    persons: {persons} (
-                                            filter: {
-                                                id: {EQ: $personId}
-                                            }
-                                        )
-                                        {
-                                            edges {
-                                                node {
-                                                    id
-                                                    gender
-                                                    dateOfBirth
-                                                }
+            "type": "CardName",
+            "source": "./path/to/card",
+            "title": "Card Title",
+            "displayCardType": "GraphQL Query",
+            "description": "CardName GraphQL Query",
+            "queries": {
+                "getPerson": [
+                    {
+                        "resourceVersions": {
+                            "persons": {min: 12}
+                        },
+                        "query":
+                            `query getPerson($personId: ID){
+                                persons: {persons} (
+                                        filter: {
+                                            id: {EQ: $personId}
+                                        }
+                                    )
+                                    {
+                                        edges {
+                                            node {
+                                                id
+                                                gender
+                                                dateOfBirth
                                             }
                                         }
-                                }`
-                        }
-                    ]
-                }
+                                    }
+                            }`
+                    }
+                ]
+            }
         }
         ```
 
@@ -176,8 +218,6 @@ This module bootstraps your Ellucian Experience Extension development by creatin
     - Got to Ellucian Experience to make the card available
 
     - At this point, you have deployed the updated builds. Please re-run `npm run deploy-dev` if you update `extension.js`, `package.json`, or add a new card.
-
-**NOTE:** This is using the real Experience Dashboard so your extension will not be visible until it is fully set up. This means you must enable your extension in Experience Setup and configure your card(s) in the Dashboard. This will be required each time you change your extension's version number.
 
 ## Live Reloading The Extensions
 
