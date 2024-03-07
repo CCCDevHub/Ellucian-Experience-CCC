@@ -10,6 +10,7 @@ The Ellucian Experience CCC Project facilitates a collaborative effort among col
 2. [Create Extension Card](#create-extension-card)
 3. [Live Reloading The Extensions](#live-reloading-the-extensions)
 4. [Developers Resoureces](#developers-resources)
+5. [ToDo](#todo)
 
 ## Workflow
 ### Branches
@@ -219,7 +220,7 @@ The Ellucian Experience CCC Project facilitates a collaborative effort among col
 
     - At this point, you have deployed the updated builds. Please re-run `npm run deploy-dev` if you update `extension.js`, `package.json`, or add a new card.
 
-## Live Reloading The Extensions
+### Live Reloading The Extensions
 
 1. After deployed and enabled, you can live reload the extension by running
 
@@ -252,7 +253,7 @@ To disable live reload, run this function `disableLiveReload()` from console tab
 npm run deploy-dev -- --env forceUpload
 ```
 
-## Developers Resoureces
+### Developers Resoureces
 
 - [Path Design Systems](https://path-designsystem.elluciancloud.com/#/)
 - [Ethos Integration API](https://resources.elluciancloud.com/bundle/ethos_integration_gov_standards/page/c_ethos_int_standards.html)
@@ -264,7 +265,7 @@ npm run deploy-dev -- --env forceUpload
   - [Build a Card From Start to Finish](https://training.ellucian.com/share/asset/view/282)
   - [Card & Page](https://training.ellucian.com/share/asset/view/284)
 
-### Watch and upload extensions
+#### Watch and upload extensions
 
 The command `npm start` has been repurposed to put the extension app into live-reload mode. To watch the changes and automatically deploy the updated builds, you can run the below command.
 
@@ -274,7 +275,7 @@ npm run watch-and-upload
 
 **NOTE:** This is using the real Experience Dashboard so your extension will not be visible until it is fully set up. This means you must enable your extension in Experience Setup and configure your card(s) in the Dashboard. This will be required each time you change your extension's version number.
 
-## Extension Manifest
+### Extension Manifest
 
 When an Extension is bundled for uploading to Ellucian Experience, the information specified in the src folder (cards and i18n), package.json, and extension.js file are used to generate a manifest.json file which provides the Ellucian Experience framework the information it needs to handle the creation and management of the Extension and its Cards.
 
@@ -298,7 +299,7 @@ Each card in the cards array has several required attributes.
 | source          | The file system path to the Card's source, relative from the Extension root folder. Example: './src/cards/HelloWorldCard' (with or without the .jsx)                                      |
 | displayCardType | The type of the card as displayed to card managers on the Card Management page of Experience Dashboard. Example: "Hello World Card"                                                       |
 
-## Utilizing the Setup API
+### Utilizing the Setup API
 
 Any of the scripts which deploy the extension can also be used to configure the extension in setup. This is done through additional environment variables in the .env which are:
 
@@ -310,7 +311,7 @@ Any of the scripts which deploy the extension can also be used to configure the 
 
 You can define any combination of these, none are required. These features correspond to the same toggles present in the Setup Application's UI.
 
-## Package Scripts
+### Package Scripts
 
 Below is a short description of the scripts found in package.json.
 
@@ -325,10 +326,15 @@ Below is a short description of the scripts found in package.json.
 | lint             | Run eslint to check code against linting rules.                                                                                                |
 | test             | Run unit tests via Jest                                                                                                                        |
 
-## Sample cards
+### Sample cards
 
 Creating an experience extension will also create a sample card, with a page to help demonstrate how props and hooks can be used in the Ellucian Experience Software Development Kit (SDK). For more of our sample cards, visit: https://github.com/ellucian-developer/experience-extension-sdk-samples
 
-## Code checking
+### Code checking
 
 The project is also set up to check for coding errors and best practices. By running eslint (npm run lint), the code will be statically analyzed to find problems based on the rules established in .eslinitrc.json.
+
+## ToDo
+- [x] Update readme.md with git branch structure
+- [ ] Update Folder Strucre to include extension sql and data-connect
+- [ ] Add instruction on how to create extension
