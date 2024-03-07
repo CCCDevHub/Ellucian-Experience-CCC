@@ -65,8 +65,7 @@ function OutstandingBalance({ classes }) {
         '20': 'Winter'
     };
 
-    // const personId = roles.pop();
-    const personId = 'bbde9273-eacc-40d4-ab54-41b1ff3d8e35';
+    const personId = roles.pop();
     const customId = 'OutstandingBalance';
     const [summarize, setSumarize] = useState()
     const [balanceDetails, setBalanceDetails] = useState();
