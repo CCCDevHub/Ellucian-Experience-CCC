@@ -7,6 +7,7 @@ The Ellucian Experience CCC Project facilitates a collaborative effort among col
     - [Branches](#branches)
     - [Procedure](#procedure)
     - [Pull the Latest SDK from master branch](#pull-the-latest-sdk-from-master-branch)
+    - [Handleing Sensitive Information](#handling-sensitive-information)
 2. [Create Extension Card](#create-extension-card)
 3. [Live Reloading The Extensions](#live-reloading-the-extensions)
 4. [Developers Resoureces](#developers-resources)
@@ -80,6 +81,19 @@ The Ellucian Experience CCC Project facilitates a collaborative effort among col
     ```
     $ git merge master
     ```
+
+### Handling Sensitive Information
+
+- **Environment Variables:** Utilize environment variables or configuration files that are excluded from version control for storing sensitive information. This approach is essential for maintaining security and flexibility across different deployment environments.
+- **.env File for Local Development:**
+    - For local development, leverage a .env file to manage your environment variables securely.
+    - Refer to the [Create Extension Card](#create-extension-card) section on how to configure your `.env` file.
+    - Remember to add `.env` to your `.gitignore` file to avoid accidentally pushing it to the repository.
+- **Card Configuration in extension.js**
+    - Implement card configuration within your extension.js file to securely incorporate API keys. This method allows for secure API key storage and usage within your extensions.
+    - Configuration Example in extension.js: [extension.js](https://github.com/PasadenaCC/Ellucian-Experience-CCC/blob/PCC/hphan10-FreshServiceRequester/extension.js#L40-L45)
+    - Utilizing Configuration in Card.jsx: [FreshServiceRequester.jsx](https://github.com/PasadenaCC/Ellucian-Experience-CCC/blob/PCC/hphan10-FreshServiceRequester/src/cards/FreshServiceRequester.jsx#L59)
+- **Conduct code reviews** with a focus on security practices, including the handling of sensitive information.
 
 ## Create Extension Card
 
