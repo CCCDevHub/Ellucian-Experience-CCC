@@ -1,59 +1,135 @@
-# Create Experience Extension
+# Experience Extension CCC
 
-This module bootstraps your Ellucian Experience Extension development by creating an extension project. This module is primarily used to create your initial project. From this, you would add cards and make modifications. This project should be placed under your source control.
+The Ellucian Experience CCC Project facilitates a collaborative effort among colleges to jointly develop and enhance Ellucian Experience cards. This initiative aims to foster a shared platform for innovation and community engagement.
 
 # Table of Contents
 1. [Workflow](#workflow)
+    - [Branches](#branches)
+    - [Procedure](#procedure)
+    - [Folder Structure](#folder-structure)
+    - [Pull the latest changes/SDK from master branchh](#pull-the-latest-changessdk-from-master-branch)
+    - [Handleing Sensitive Information](#handling-sensitive-information)
 2. [Create Extension Card](#create-extension-card)
 3. [Live Reloading The Extensions](#live-reloading-the-extensions)
 4. [Developers Resoureces](#developers-resources)
+5. [ToDo](#todo)
 
 ## Workflow
+### Branches
+- **master:** Base Ellucian Experience, with the latest SDK. Create branches from master to get the latest SDK.
+- **Branch Name Format:** `Institution/githubUsername-CardName`. This is your Development branch
+    - Example: `PCC/hphan10-Test-Card`
+- **Code Review Process:**
+    - Create your development branch using the format `Institution/githubUsername-CardName`.
+    - Create a sub-branch for development: `Institution/githubUsername-CardName-Development`.
+    - Create a Pull Request to merge into your main branch.
+    - Assign reviewers for your code.
+- **Branch Structure Example:**
+    ```
+    └── master
+        ├── PCC
+        │   ├── hphan10-Example-CardName
+        │   │   └── hphan10-Example-CardName-Development
+        │   └── hphan10-Another-Example-CardName
+        │       └── hphan10-Another-Example-CardName-Development
+        ├── Mt.Sac
+        │   └── hphan20-Sample-CardName
+        │       └── hphan20-Sample-CardName-Development
+        └── Citrus
+            └── hphan30-New-CardName
+                └── hphan30-New-CardName-Development
+    ```
+### Procedure
+- **To update the master branch:**
+    ```
+    $ git checkout master
+    $ git fetch --all
+    $ git pull
+    ```
+- **Create your EE card branch from master:**
+    ```
+    $ git checkout -b Institution/githubUsername-CardName origin/master
+    ```
+- **Add your files:**
+    ```
+    $ git add path/to/the/file
+    ```
+    - Your extension.js and cardName.jsx/page.jsx files
 
-1. Branches
-   - **master** (Base Ellucian Experience)
-   - **yourCardBranchName** (Development Environment)
-2. Procedure
-   - Before your work do this to update master branch
-        ```
-        $ git checkout master
-        $ git fetch --all
-        $ git pull
-        ```
-   - Create yourFeature branch from master
-        ```
-        $ git checkout -b yourFeature origin/master
-        ```
-   - Do your work, add the files
-        ```
-        $ git add path/to/the/file
-        ```
-     - Your extension.js and cardName.jsx files
-   
-   - Commit your work
-        ```
-        $ git commit -am "Your message"
-        ```
-   - Now merge your changes to dev without a fast-forward
-        ```
-        $ git checkout dev
-        $ git merge --no-ff yourFeature
-        ```
-   - Now push changes to your branch
-        ```
-        $ git push origin yourBranchName
-        ```
+- **Commit your work:**
+    ```
+    $ git commit -am "Your message"
+    ```
+- **Push changes to your branch:**
+    ```
+    $ git push origin Institution/githubUsername-CardName
+    ```
 
+### Pull the latest changes/SDK from master branch
+- **Check out master branch:**
+    ```
+    $ git checkout master
+    ```
+- **Pull the latest changes for the master:**
+    ```
+    $ git pull origin master
+    ```
+- **Switch back to your current branch:**
+    ```
+    $ git checkout Institution/githubUsername-CardName
+    ```
+- **Merge the changes from master:**
+    ```
+    $ git merge master
+    ```
+
+### Folder Structure
+The folder structure of the project is organized as follows:
+
+
+```shell
+.
+├── extension.js
+├── package.json
+├── src
+│   ├── GORRSQL
+│   │   └── PIDM_Extenstion.sql
+│   ├── cards
+│   │   └── TestExtCard.jsx
+│   ├── data-connect
+│   │   └── Outstanding-Balance_0.0.4.json
+│   └── page
+│       ├── Home.jsx
+│       └── router.jsx
+└── webpack.config.js
+```
+- **src/cards:** This directory contains the card you build.
+- **src/page:** This directory is for the pages of the card, including the Detail View. Pages are essentially the UI components that render the full-screen views or detailed views for a given card.
+- **src/data-connect:** This directory holds configurations for data connections, including integration designer pipelines. These JSON files define how your extension communicates with external data sources.
+- **src/GORRSQL:** Contains SQL queries for the extensions built within the cards. This is particularly useful for retrieving data that is not available through the Ethos API, allowing for customized data solutions that extend beyond the standard Ethos data models.
+
+### Handling Sensitive Information
+
+- **Environment Variables:** Utilize environment variables or configuration files that are excluded from version control for storing sensitive information. This approach is essential for maintaining security and flexibility across different deployment environments.
+- **.env File for Local Development:**
+    - For local development, leverage a .env file to manage your environment variables securely.
+    - Refer to the [Create Extension Card](#create-extension-card) section on how to configure your `.env` file.
+    - Remember to add `.env` to your `.gitignore` file to avoid accidentally pushing it to the repository.
+- **Card Configuration in extension.js**
+    - Implement card configuration within your extension.js file to securely incorporate API keys. This method allows for secure API key storage and usage within your extensions.
+    - Configuration Example in extension.js: [extension.js](https://github.com/PasadenaCC/Ellucian-Experience-CCC/blob/PCC/hphan10-FreshServiceRequester/extension.js#L40-L45)
+    - Utilizing Configuration in Card.jsx: [FreshServiceRequester.jsx](https://github.com/PasadenaCC/Ellucian-Experience-CCC/blob/PCC/hphan10-FreshServiceRequester/src/cards/FreshServiceRequester.jsx#L59)
+- **Conduct code reviews** with a focus on security practices, including the handling of sensitive information.
 
 ## Create Extension Card
 
-1. Run this before working on the card
+1. **Initial setup (if you haven't installed anything yet):**
 
     ```
     npm install
     ```
 
-2. Copy sample.env
+2. **Copy the `sample.env` file:**
 
     - For Unix based systems:
 
@@ -67,29 +143,36 @@ This module bootstraps your Ellucian Experience Extension development by creatin
         copy sample.env .env
         ```
 
-3. In the .env replace <upload-token> with an extension token from Experience Setup.
+3. **Configure the .env file:**
+    - Replace the `<upload-token>` with an extension token from Experience Setup.
 
 4. Example of a card:
     ```
-    import React from 'react';
     import { withStyles } from '@ellucian/react-design-system/core/styles';
+    import { spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
+    import { Typography, TextLink } from '@ellucian/react-design-system/core';
+    import { useCardControl, useCardInfo, useExtensionControl, useUserInfo, useData, useDashboardInfo } from '@ellucian/experience-extension-utils';
     import PropTypes from 'prop-types';
+    import React, { useEffect, useMemo, useState } from 'react';
+    import classnames from 'classnames';
+    import { Icon } from '@ellucian/ds-icons/lib';
 
     // Your Style Sheet
     const styles = () => ({
         card: {
-            marginLef: '1rem',
-            marginRight: '1rem'
+            marginTop: 0,
+            marginRight: spacing40,
+            marginBottom: 0,
+            marginLeft: spacing40
         },
         image: {
             width: '100%',
             height: 'auto'
         }
-    })
+    });
 
     // Your Main Function
-    function ViewMySchedule(props) {
-        const { classes } = props;
+    function ViewMySchedule(classes) {
         return (
             <div className={classes.card}>
                 <h1>View My Schedule</h1>
@@ -119,11 +202,11 @@ This module bootstraps your Ellucian Experience Extension development by creatin
 
         ```
         {
-                "type": "SampleCard",
-                "source": "./path/to/card",
-                "title": "Sample",
-                "displayCardType": "Sample Card",
-                "description": "This card is a sample card",
+            "type": "SampleCard",
+            "source": "./path/to/card",
+            "title": "Sample",
+            "displayCardType": "Sample Card",
+            "description": "This card is a sample card",
         }
         ```
 
@@ -131,37 +214,37 @@ This module bootstraps your Ellucian Experience Extension development by creatin
 
         ```
         {
-                "type": "CardName",
-                "source": "./path/to/card",
-                "title": "Card Title",
-                "displayCardType": "GraphQL Query",
-                "description": "CardName GraphQL Query",
-                "queries": {
-                    "getPerson": [
-                        {
-                            "resourceVersions": {
-                                "persons": {min: 12}
-                            },
-                            "query":
-                                `query getPerson($personId: ID){
-                                    persons: {persons} (
-                                            filter: {
-                                                id: {EQ: $personId}
-                                            }
-                                        )
-                                        {
-                                            edges {
-                                                node {
-                                                    id
-                                                    gender
-                                                    dateOfBirth
-                                                }
+            "type": "CardName",
+            "source": "./path/to/card",
+            "title": "Card Title",
+            "displayCardType": "GraphQL Query",
+            "description": "CardName GraphQL Query",
+            "queries": {
+                "getPerson": [
+                    {
+                        "resourceVersions": {
+                            "persons": {min: 12}
+                        },
+                        "query":
+                            `query getPerson($personId: ID){
+                                persons: {persons} (
+                                        filter: {
+                                            id: {EQ: $personId}
+                                        }
+                                    )
+                                    {
+                                        edges {
+                                            node {
+                                                id
+                                                gender
+                                                dateOfBirth
                                             }
                                         }
-                                }`
-                        }
-                    ]
-                }
+                                    }
+                            }`
+                    }
+                ]
+            }
         }
         ```
 
@@ -177,9 +260,7 @@ This module bootstraps your Ellucian Experience Extension development by creatin
 
     - At this point, you have deployed the updated builds. Please re-run `npm run deploy-dev` if you update `extension.js`, `package.json`, or add a new card.
 
-**NOTE:** This is using the real Experience Dashboard so your extension will not be visible until it is fully set up. This means you must enable your extension in Experience Setup and configure your card(s) in the Dashboard. This will be required each time you change your extension's version number.
-
-## Live Reloading The Extensions
+### Live Reloading The Extensions
 
 1. After deployed and enabled, you can live reload the extension by running
 
@@ -212,7 +293,7 @@ To disable live reload, run this function `disableLiveReload()` from console tab
 npm run deploy-dev -- --env forceUpload
 ```
 
-## Developers Resoureces
+### Developers Resoureces
 
 - [Path Design Systems](https://path-designsystem.elluciancloud.com/#/)
 - [Ethos Integration API](https://resources.elluciancloud.com/bundle/ethos_integration_gov_standards/page/c_ethos_int_standards.html)
@@ -224,7 +305,7 @@ npm run deploy-dev -- --env forceUpload
   - [Build a Card From Start to Finish](https://training.ellucian.com/share/asset/view/282)
   - [Card & Page](https://training.ellucian.com/share/asset/view/284)
 
-### Watch and upload extensions
+#### Watch and upload extensions
 
 The command `npm start` has been repurposed to put the extension app into live-reload mode. To watch the changes and automatically deploy the updated builds, you can run the below command.
 
@@ -234,7 +315,7 @@ npm run watch-and-upload
 
 **NOTE:** This is using the real Experience Dashboard so your extension will not be visible until it is fully set up. This means you must enable your extension in Experience Setup and configure your card(s) in the Dashboard. This will be required each time you change your extension's version number.
 
-## Extension Manifest
+### Extension Manifest
 
 When an Extension is bundled for uploading to Ellucian Experience, the information specified in the src folder (cards and i18n), package.json, and extension.js file are used to generate a manifest.json file which provides the Ellucian Experience framework the information it needs to handle the creation and management of the Extension and its Cards.
 
@@ -258,7 +339,7 @@ Each card in the cards array has several required attributes.
 | source          | The file system path to the Card's source, relative from the Extension root folder. Example: './src/cards/HelloWorldCard' (with or without the .jsx)                                      |
 | displayCardType | The type of the card as displayed to card managers on the Card Management page of Experience Dashboard. Example: "Hello World Card"                                                       |
 
-## Utilizing the Setup API
+### Utilizing the Setup API
 
 Any of the scripts which deploy the extension can also be used to configure the extension in setup. This is done through additional environment variables in the .env which are:
 
@@ -270,7 +351,7 @@ Any of the scripts which deploy the extension can also be used to configure the 
 
 You can define any combination of these, none are required. These features correspond to the same toggles present in the Setup Application's UI.
 
-## Package Scripts
+### Package Scripts
 
 Below is a short description of the scripts found in package.json.
 
@@ -285,10 +366,15 @@ Below is a short description of the scripts found in package.json.
 | lint             | Run eslint to check code against linting rules.                                                                                                |
 | test             | Run unit tests via Jest                                                                                                                        |
 
-## Sample cards
+### Sample cards
 
 Creating an experience extension will also create a sample card, with a page to help demonstrate how props and hooks can be used in the Ellucian Experience Software Development Kit (SDK). For more of our sample cards, visit: https://github.com/ellucian-developer/experience-extension-sdk-samples
 
-## Code checking
+### Code checking
 
 The project is also set up to check for coding errors and best practices. By running eslint (npm run lint), the code will be statically analyzed to find problems based on the rules established in .eslinitrc.json.
+
+## ToDo
+- [x] Update readme.md with git branch structure
+- [X] Update Folder Strucre to include extension sql and data-connect
+- [ ] Add instruction on how to create extension
