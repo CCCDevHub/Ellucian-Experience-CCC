@@ -6,6 +6,7 @@ The Ellucian Experience CCC Project facilitates a collaborative effort among col
 1. [Workflow](#workflow)
     - [Branches](#branches)
     - [Procedure](#procedure)
+    - [Folder Structure](#folder-structure)
     - [Pull the Latest SDK from master branch](#pull-the-latest-sdk-from-master-branch)
     - [Handleing Sensitive Information](#handling-sensitive-information)
 2. [Create Extension Card](#create-extension-card)
@@ -375,5 +376,5 @@ The project is also set up to check for coding errors and best practices. By run
 
 ## ToDo
 - [x] Update readme.md with git branch structure
-- [ ] Update Folder Strucre to include extension sql and data-connect
+- [X] Update Folder Strucre to include extension sql and data-connect
 - [ ] Add instruction on how to create extension
