@@ -7,7 +7,7 @@ The Ellucian Experience CCC Project facilitates a collaborative effort among col
     - [Branches](#branches)
     - [Procedure](#procedure)
     - [Folder Structure](#folder-structure)
-    - [Pull the Latest SDK from master branch](#pull-the-latest-sdk-from-master-branch)
+    - [Pull the latest changes/SDK from master branchh](#pull-the-latest-changessdk-from-master-branch)
     - [Handleing Sensitive Information](#handling-sensitive-information)
 2. [Create Extension Card](#create-extension-card)
 3. [Live Reloading The Extensions](#live-reloading-the-extensions)
