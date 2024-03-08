@@ -64,7 +64,7 @@ The Ellucian Experience CCC Project facilitates a collaborative effort among col
     $ git push origin Institution/githubUsername-CardName
     ```
 
-### Pull the latest SDK from master branch
+### Pull the latest changes/SDK from master branch
 - **Check out master branch:**
     ```
     $ git checkout master
@@ -81,6 +81,31 @@ The Ellucian Experience CCC Project facilitates a collaborative effort among col
     ```
     $ git merge master
     ```
+
+### Folder Structure
+The folder structure of the project is organized as follows:
+
+
+```shell
+.
+├── extension.js
+├── package.json
+├── src
+│   ├── GORRSQL
+│   │   └── PIDM_Extenstion.sql
+│   ├── cards
+│   │   └── TestExtCard.jsx
+│   ├── data-connect
+│   │   └── Outstanding-Balance_0.0.4.json
+│   └── page
+│       ├── Home.jsx
+│       └── router.jsx
+└── webpack.config.js
+```
+- **src/cards:** This directory contains the card you build.
+- **src/page:** This directory is for the pages of the card, including the Detail View. Pages are essentially the UI components that render the full-screen views or detailed views for a given card.
+- **src/data-connect:** This directory holds configurations for data connections, including integration designer pipelines. These JSON files define how your extension communicates with external data sources.
+- **src/GORRSQL:** Contains SQL queries for the extensions built within the cards. This is particularly useful for retrieving data that is not available through the Ethos API, allowing for customized data solutions that extend beyond the standard Ethos data models.
 
 ### Handling Sensitive Information
 
