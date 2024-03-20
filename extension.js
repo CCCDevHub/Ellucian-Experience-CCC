@@ -21,6 +21,41 @@ module.exports = {
                 type: 'password',
                 required: true
             }]
+        },
+        queries: {
+            'residency-info': [
+                {
+                    resourceVersions: {
+                        students: { min: 16 },
+                        persons: { min: 12 },
+                        residencyTypes: { min: 7 }
+                    },
+                    query:
+                        `query studentInfo($personId: ID){
+                            students: {students} (
+                                    filter: {
+                                       {person@persons}: { id: {EQ: $personId} }
+                                    }
+                                    sort: { residencies: { startOn: DESC } }
+                                )
+                                {
+                                    edges {
+                                        node {
+                                            id
+                                            residencies {
+                                                  startOn
+                                                  residency: {residency@residencyTypes} {
+                                                    title
+                                                    code
+                                                    description
+                                                  }
+                                            }
+                                        }
+                                    }
+                                }
+                        }`
+                }
+            ]
         }
     }],
     page: {

@@ -1,6 +1,6 @@
 import { withStyles } from '@ellucian/react-design-system/core/styles';
 import classnames from 'classnames';
-import { spacing40, spacing30 } from '@ellucian/react-design-system/core/styles/tokens';
+import { spacing40, spacing30, spacing20 } from '@ellucian/react-design-system/core/styles/tokens';
 import {
     Typography,
     TextLink,
@@ -45,124 +45,81 @@ const styles = () => ({
         marginTop: spacing30,
         marginBottom: spacing30
     },
-
+    balanceAmount: {
+        display: 'flex'
+    },
+    accountBalance: {
+        marginLeft: spacing30
+    },
     balanceContainerSpan: {
         margin: '0'
     }
 });
 
 function OutstandingBalance({ classes }) {
-    const { authenticatedEthosFetch } = useData();
+    const { authenticatedEthosFetch, getEthosQuery } = useData();
     const { setLoadingStatus, setErrorMessage } = useCardControl();
     const { configuration: {
         pipelineAPI
     }, cardId } = useCardInfo();
     const { roles } = useUserInfo();
-    const seasonMap = {
-        '70': 'Fall',
-        '30': 'Spring',
-        '50': 'Summer',
-        '20': 'Winter'
-    };
 
+    const residencyTypeCode = ['R', 'M', 'D', 'B']
     const personId = roles.pop();
     const customId = 'OutstandingBalance';
     const [summarize, setSumarize] = useState()
     const [balanceDetails, setBalanceDetails] = useState();
-    const [groupTransByTerm, setGroupTransByTerm] = useState();
-    const [dropdownStateTerm, setDropdownStateTerm] = useState();
-    const [formatTransDate, setFormatTransDate] = useState();
-    const payLink = 'https://test.secure.touchnet.net:8443/C21220test_tsa/web/caslogin.jsp';
+    const [residency, setResidency] = useState();
+    const [payLink, setPayLink] = useState();
+
+    const payLinkUS = 'https://test.secure.touchnet.net:8443/C21220test_tsa/web/caslogin.jsp';
+    const paylinkIntl = 'https://ssb-prod.ec.pasadena.edu/PROD/bwymtfxp.P_MTFXPayment';
 
     useEffect(() => {
         (async () => {
             setLoadingStatus(true);
             try {
-                setFormatTransDate(() => new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: '2-digit' }));
+                const residencyResult = await getEthosQuery({
+                    queryId: 'residency-info'
+                });
+                const residencyData = (residencyResult?.data?.students?.edges.map(edge => edge.node));
                 const response = await authenticatedEthosFetch(`${pipelineAPI}?cardId=${cardId}&testPersonId=${personId}`);
                 const balanceResult = await response.json();
                 const [{ TBRACCD_CTRL, TBRACCD }] = balanceResult;
-                const groupByTermCode = TBRACCD.reduce((acc, item) => {
-                    const key = item.termCode;
-                    const lastTwo = key.slice(-2);
-                    let termDesc;
-                    if (seasonMap[lastTwo]) {
-                        termDesc = seasonMap[lastTwo] + ' ' + key.slice(0, 4);
-                    }
-                    if (!acc[key]) {
-                        // If it doesn't exist, initialize it with termDesc and transactions array
-                        acc[key] = {
-                            termDesc: termDesc,
-                            termCode: key,
-                            transactions: [item]
-                        };
-                    } else {
-                        // If it exists, just push the new item into the transactions array
-                        acc[key].transactions.push(item);
-                    }
-                    return acc;
-                }, []);
 
                 setSumarize(() => TBRACCD_CTRL);
-                setGroupTransByTerm(() => groupByTermCode);
+                const currResidency = residencyData.pop()?.residencies.pop();
+                const { residency: { code: residencyCode, title: residencyTitle } } = currResidency;
+                if (residencyTypeCode.includes(residencyCode)) {
+                    setPayLink(() => payLinkUS);
+                } else {
+                    setPayLink(() => paylinkIntl);
+                }
+                setResidency(() => residencyData);
                 setLoadingStatus(false);
 
             } catch (error) {
-                console.error(error)
+                console.log(error)
             }
         })();
     }, []);
-    const dropDownItems = useMemo(() => {
-        if (groupTransByTerm) {
-            // Convert groupTransByTerm object to an array of [termCode, item] pairs
-            const entries = Object.entries(groupTransByTerm);
 
-            // Sort the entries by termCode in descending order
-            entries.sort(([termCodeA], [termCodeB]) => termCodeB.localeCompare(termCodeA));
-            setDropdownStateTerm(groupTransByTerm[groupTransByTerm.length - 1].termCode);
-            // Map over the sorted entries to generate the dropdown items
-            return entries.map(([termCode, item]) => {
-                return (
-                    <DropdownItem key={termCode}
-                        label={item.termDesc}
-                        value={termCode}
-                    />
-                );
-            });
-        }
-    }, [groupTransByTerm]);
-
-    const handleChangeTerm = (event) => {
-        setDropdownStateTerm(() => event.target.value);
-    };
 
     function buttonClicked() {
         window.open(payLink, '_blank');
     }
 
 
-    if (summarize && groupTransByTerm) {
+    if (summarize && payLink) {
         const [{ accountBalance, amountDue }] = summarize;
         return (
             <div className={classes.root}>
                 <div className={classes.content}>
-                    <div>
-                        <Dropdown
-                            id={`${customId}_DropdownTerm}`}
-                            label={'Select Term'}
-                            onChange={handleChangeTerm}
-                            value={dropdownStateTerm}
-                            fullWidth
-                        >
-                            {dropDownItems}
-                        </Dropdown>
-                    </div>
                     {accountBalance > 0 && (
                         <div className={classes.balanceContainer}>
-                            <Typography variant={'h4'}>
-                                Outstanding Balance: ${accountBalance}
+                            <Typography variant={'h4'} className={classes.balanceAmount}>
+                                Balance Due: <Typography color='error' variant={'h4'} className={classes.accountBalance}>${accountBalance}</Typography>
                             </Typography>
-
                             <Button
                                 color='secondary'
                                 startIcon={<Icon name="cart" />}
@@ -171,44 +128,18 @@ function OutstandingBalance({ classes }) {
                                 <Typography variant={'h4'}>Pay Now</Typography>
                             </Button>
                         </div>
-
-
                     )}
-
-                    <div>
-                        {dropdownStateTerm && (
-                            <Table>
-                                <TableBody>
-                                    <Typography variant={"h6"}>
-                                        Transaction History
-                                    </Typography>
-                                    {groupTransByTerm[dropdownStateTerm].transactions
-                                        // .filter(item => item.chargeAmount)
-                                        .map((item, index) => {
-                                            const transactionDate = formatTransDate.format(new Date(item.transDate));
-                                            return (
-                                                <TableRow TableRow key={`${item.termCode} - ${index}`} className={classes.transactionsTableRow}>
-                                                    <TableCell align='left' padding='none'>
-                                                        <Typography variant={'body3'}>
-                                                            {transactionDate}
-                                                        </Typography>
-                                                    </TableCell>
-                                                    <TableCell align='left' padding='none'>
-                                                        <Typography variant={'body3'} component={'div'}>
-                                                            {item.desc}
-                                                        </Typography>
-                                                    </TableCell>
-                                                    <TableCell align="right" padding='none'>
-                                                        <Typography variant={'body3'} component={'div'}>
-                                                            ${item.chargeAmount || item.paymentAmount}
-                                                        </Typography>
-                                                    </TableCell>
-                                                </TableRow >
-                                            )
-                                        })}
-                                </TableBody>
-                            </Table>
-                        )}
+                    <div className={classes.balanceContainer}>
+                        <Typography variant={'body2'}>
+                            To ensure you are not dropped from classes, pay your fees at the time of your registration or make sure you have a financial aid application on file.
+                        </Typography>
+                    </div>
+                    <div className={classes.balanceContainer}>
+                        <Typography variant={'h4'} align={'center'}>
+                            <TextLink id={`${customId}_apply_for_aid`}
+                                href='https://pasadena.edu/admissions-and-aid/financial-aid/receiving-aid/apply-for-aid.php'>
+                                Click here to apply for Financial Aid</TextLink>
+                        </Typography>
                     </div>
                 </div>
             </div >
