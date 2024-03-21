@@ -60,10 +60,12 @@ function OutstandingBalance({ classes }) {
     const { authenticatedEthosFetch, getEthosQuery } = useData();
     const { setLoadingStatus, setErrorMessage } = useCardControl();
     const { configuration: {
-        pipelineAPI
+        pipelineAPI, paymentDate
     }, cardId } = useCardInfo();
     const { roles } = useUserInfo();
 
+    const todayDate = new Date();
+    const deadlineDate = new Date(paymentDate);
     const residencyTypeCode = ['R', 'M', 'D', 'B']
     const personId = roles.pop();
     const customId = 'OutstandingBalance';
@@ -130,9 +132,15 @@ function OutstandingBalance({ classes }) {
                         </div>
                     )}
                     <div className={classes.balanceContainer}>
-                        <Typography variant={'body2'}>
-                            To ensure you are not dropped from classes, pay your fees at the time of your registration or make sure you have a financial aid application on file.
-                        </Typography>
+                        {todayDate <= deadlineDate ? (
+                            <Typography variant={'body2'}>
+                                To ensure you are not dropped from classes, pay your fees at the time of your registration or make sure you have a financial aid application on file.
+                            </Typography>
+                        ) : (
+                            <Typography variant={'body2'}>
+                                Upcoming drop for non-payment on {deadlineDate.toLocaleDateString('en-US')}. Make sure all your fees are paid before this date to avoid being dropped from all classes.
+                            </Typography>
+                        )}
                     </div>
                     <div className={classes.balanceContainer}>
                         <Typography variant={'h4'} align={'center'}>
