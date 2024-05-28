@@ -13,6 +13,11 @@ module.exports = {
                 key: 'pipelineAPI',
                 label: 'Pipeline API',
                 type: 'text'
+            },
+            {
+                key: 'pipelineAPIStudentInfo',
+                label: 'Pipeline API Student Info',
+                type: 'text'
             }
             ],
             server: [{

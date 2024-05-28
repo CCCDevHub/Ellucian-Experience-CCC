@@ -60,7 +60,7 @@ function OutstandingBalance({ classes }) {
     const { authenticatedEthosFetch, getEthosQuery } = useData();
     const { setLoadingStatus, setErrorMessage } = useCardControl();
     const { configuration: {
-        pipelineAPI, paymentDate
+        pipelineAPI, pipelineAPIStudentInfo, paymentDate
     }, cardId } = useCardInfo();
     const { roles } = useUserInfo();
 
@@ -72,6 +72,7 @@ function OutstandingBalance({ classes }) {
     const [summarize, setSumarize] = useState()
     const [balanceDetails, setBalanceDetails] = useState();
     const [residency, setResidency] = useState();
+    const [studentInfo, setStudentInfo] = useState();
     const [payLink, setPayLink] = useState();
 
     const payLinkUS = 'https://test.secure.touchnet.net:8443/C21220test_tsa/web/caslogin.jsp';
@@ -85,11 +86,6 @@ function OutstandingBalance({ classes }) {
                     queryId: 'residency-info'
                 });
                 const residencyData = (residencyResult?.data?.students?.edges.map(edge => edge.node));
-                const response = await authenticatedEthosFetch(`${pipelineAPI}?cardId=${cardId}&testPersonId=${personId}`);
-                const balanceResult = await response.json();
-                const [{ TBRACCD_CTRL, TBRACCD }] = balanceResult;
-
-                setSumarize(() => TBRACCD_CTRL);
                 const currResidency = residencyData.pop()?.residencies.pop();
                 const { residency: { code: residencyCode, title: residencyTitle } } = currResidency;
                 if (residencyTypeCode.includes(residencyCode)) {
@@ -98,6 +94,16 @@ function OutstandingBalance({ classes }) {
                     setPayLink(() => paylinkIntl);
                 }
                 setResidency(() => residencyData);
+
+                const balanceResponse = await authenticatedEthosFetch(`${pipelineAPI}?cardId=${cardId}&testPersonId=${personId}`);
+                const balanceResult = await balanceResponse.json();
+                const [{ TBRACCD_CTRL, TBRACCD }] = balanceResult;
+                setSumarize(() => TBRACCD_CTRL);
+
+                const studentInfoResponse = await authenticatedEthosFetch(`${pipelineAPIStudentInfo}?cardId=${cardId}&testPersonId=${personId}`);
+                const studentInfoResult = await studentInfoResponse.json();
+                setStudentInfo(() => studentInfoResult[0])
+
                 setLoadingStatus(false);
 
             } catch (error) {
@@ -112,12 +118,13 @@ function OutstandingBalance({ classes }) {
     }
 
 
-    if (summarize && payLink) {
+    if (summarize && payLink && studentInfo) {
         const [{ accountBalance, amountDue }] = summarize;
+        const specialCase = ["vetStatus", "financialAid", "eops", "calwork", "dualEnrollment"].some(key => studentInfo[key].trim() != "");
         return (
             <div className={classes.root}>
                 <div className={classes.content}>
-                    {accountBalance > 0 && (
+                    {accountBalance > 100 && !specialCase && (
                         <div className={classes.balanceContainer}>
                             <Typography variant={'h4'} className={classes.balanceAmount}>
                                 Balance Due: <Typography color='error' variant={'h4'} className={classes.accountBalance}>${accountBalance}</Typography>
