@@ -120,8 +120,7 @@ function OutstandingBalance({ classes }) {
 
     if (summarize && payLink && studentInfo) {
         const [{ accountBalance, amountDue }] = summarize;
-        // const specialCase = ["vetStatus", "financialAid", "eops", "calwork", "dualEnrollment"].some(key => studentInfo[key].trim() != "");
-        const specialCase = true;
+        const specialCase = ["vetStatus", "financialAid", "eops", "calwork", "dualEnrollment"].some(key => studentInfo[key].trim() != "");
         return (
             <div className={classes.root}>
                 <div className={classes.content}>
@@ -158,18 +157,12 @@ function OutstandingBalance({ classes }) {
                         </div>
                     </>
                     )}
-                    <div>
-                        <Typography className={classes.message} variant="body1" component="div">
-                            {`You don't have any outstanding Balance`}
-                        </Typography>
-                    </div>
                 </div>
             </div >
         );
     } else {
         return (
             <div>
-                <h1>testing</h1>
                 <Typography className={classes.message} variant="body1" component="div">
                     {`You don't have any outstanding Balance`}
                 </Typography>
