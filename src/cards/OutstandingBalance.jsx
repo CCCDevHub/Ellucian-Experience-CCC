@@ -120,11 +120,12 @@ function OutstandingBalance({ classes }) {
 
     if (summarize && payLink && studentInfo) {
         const [{ accountBalance, amountDue }] = summarize;
-        const specialCase = ["vetStatus", "financialAid", "eops", "calwork", "dualEnrollment"].some(key => studentInfo[key].trim() != "");
+        // const specialCase = ["vetStatus", "financialAid", "eops", "calwork", "dualEnrollment"].some(key => studentInfo[key].trim() != "");
+        const specialCase = true;
         return (
             <div className={classes.root}>
                 <div className={classes.content}>
-                    {accountBalance > 100 && !specialCase && (
+                    {accountBalance > 100 && !specialCase && (<>
                         <div className={classes.balanceContainer}>
                             <Typography variant={'h4'} className={classes.balanceAmount}>
                                 Balance Due: <Typography color='error' variant={'h4'} className={classes.accountBalance}>${accountBalance}</Typography>
@@ -137,23 +138,29 @@ function OutstandingBalance({ classes }) {
                                 <Typography variant={'h4'}>Pay Now</Typography>
                             </Button>
                         </div>
+                        <div className={classes.balanceContainer}>
+                            {todayDate <= deadlineDate ? (
+                                <Typography variant={'body2'}>
+                                    To ensure you are not dropped from classes, pay your fees at the time of your registration or make sure you have a financial aid application on file.
+                                </Typography>
+                            ) : (
+                                <Typography variant={'body2'}>
+                                    Upcoming drop for non-payment on {deadlineDate.toLocaleDateString('en-US')}. Make sure all your fees are paid before {deadlineDate.toLocaleDateString('en-US')} to avoid being dropped from all classes.
+                                </Typography>
+                            )}
+                        </div>
+                        <div className={classes.balanceContainer}>
+                            <Typography variant={'h4'} align={'center'}>
+                                <TextLink id={`${customId}_apply_for_aid`}
+                                    href='https://pasadena.edu/admissions-and-aid/financial-aid/receiving-aid/apply-for-aid.php'>
+                                    Click here to apply for Financial Aid</TextLink>
+                            </Typography>
+                        </div>
+                    </>
                     )}
-                    <div className={classes.balanceContainer}>
-                        {todayDate <= deadlineDate ? (
-                            <Typography variant={'body2'}>
-                                To ensure you are not dropped from classes, pay your fees at the time of your registration or make sure you have a financial aid application on file.
-                            </Typography>
-                        ) : (
-                            <Typography variant={'body2'}>
-                                Upcoming drop for non-payment on {deadlineDate.toLocaleDateString('en-US')}. Make sure all your fees are paid before this date to avoid being dropped from all classes.
-                            </Typography>
-                        )}
-                    </div>
-                    <div className={classes.balanceContainer}>
-                        <Typography variant={'h4'} align={'center'}>
-                            <TextLink id={`${customId}_apply_for_aid`}
-                                href='https://pasadena.edu/admissions-and-aid/financial-aid/receiving-aid/apply-for-aid.php'>
-                                Click here to apply for Financial Aid</TextLink>
+                    <div>
+                        <Typography className={classes.message} variant="body1" component="div">
+                            {`You don't have any outstanding Balance`}
                         </Typography>
                     </div>
                 </div>
@@ -161,7 +168,8 @@ function OutstandingBalance({ classes }) {
         );
     } else {
         return (
-            <div className={classes.card}>
+            <div>
+                <h1>testing</h1>
                 <Typography className={classes.message} variant="body1" component="div">
                     {`You don't have any outstanding Balance`}
                 </Typography>

@@ -18,6 +18,11 @@ module.exports = {
                 key: 'pipelineAPIStudentInfo',
                 label: 'Pipeline API Student Info',
                 type: 'text'
+            },
+            {
+                key: 'paymentDate',
+                label: 'Payment Deadline Date',
+                type: 'date'
             }
             ],
             server: [{
