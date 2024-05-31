@@ -121,10 +121,11 @@ function OutstandingBalance({ classes }) {
     if (summarize && payLink && studentInfo) {
         const [{ accountBalance, amountDue }] = summarize;
         const specialCase = ["vetStatus", "financialAid", "eops", "calwork", "dualEnrollment"].some(key => studentInfo[key].trim() != "");
+
         return (
             <div className={classes.root}>
                 <div className={classes.content}>
-                    {accountBalance > 100 && !specialCase && (<>
+                    {accountBalance > 0 ? (
                         <div className={classes.balanceContainer}>
                             <Typography variant={'h4'} className={classes.balanceAmount}>
                                 Balance Due: <Typography color='error' variant={'h4'} className={classes.accountBalance}>${accountBalance}</Typography>
@@ -137,6 +138,15 @@ function OutstandingBalance({ classes }) {
                                 <Typography variant={'h4'}>Pay Now</Typography>
                             </Button>
                         </div>
+                    ) : (
+                        <div className={classes.balanceContainer}>
+                            <Typography variant={'h4'} className={classes.balanceAmount}>
+                                Your Balance: <Typography color='error' variant={'h4'} className={classes.accountBalance}>${accountBalance}</Typography>
+                            </Typography>
+                        </div>
+                    )}
+
+                    {accountBalance > 100 && specialCase ? null : (
                         <div className={classes.balanceContainer}>
                             {todayDate <= deadlineDate ? (
                                 <Typography variant={'body2'}>
@@ -144,19 +154,19 @@ function OutstandingBalance({ classes }) {
                                 </Typography>
                             ) : (
                                 <Typography variant={'body2'}>
-                                    Upcoming drop for non-payment on {deadlineDate.toLocaleDateString('en-US')}. Make sure all your fees are paid before {deadlineDate.toLocaleDateString('en-US')} to avoid being dropped from all classes.
+                                    Upcoming drop for non-payment on {deadlineDate.toLocaleDateString('en-US')}. Make sure all your fees are paid before this date to avoid being dropped from all classes.
                                 </Typography>
                             )}
                         </div>
-                        <div className={classes.balanceContainer}>
-                            <Typography variant={'h4'} align={'center'}>
-                                <TextLink id={`${customId}_apply_for_aid`}
-                                    href='https://pasadena.edu/admissions-and-aid/financial-aid/receiving-aid/apply-for-aid.php'>
-                                    Click here to apply for Financial Aid</TextLink>
-                            </Typography>
-                        </div>
-                    </>
                     )}
+
+                    <div className={classes.balanceContainer}>
+                        <Typography variant={'h4'} align={'center'}>
+                            <TextLink id={`${customId}_apply_for_aid`}
+                                href='https://pasadena.edu/admissions-and-aid/financial-aid/receiving-aid/apply-for-aid.php'>
+                                Click here to apply for Financial Aid</TextLink>
+                        </Typography>
+                    </div>
                 </div>
             </div >
         );
