@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Icon } from "@ellucian/ds-icons/lib";
 import PropTypes from "prop-types";
+import classnames from 'classnames';
 import { spacing10, spacing40, widthFluid, spacing80 } from '@ellucian/react-design-system/core/styles/tokens';
 import { withStyles } from '@ellucian/react-design-system/core/styles';
+import { useCardControl, useCardInfo, useExtensionControl, useUserInfo, useData, useDashboardInfo } from '@ellucian/experience-extension-utils';
 import {
     Table,
     TableHead,
@@ -13,7 +15,6 @@ import {
     TextLink,
     ListItemIcon
 } from '@ellucian/react-design-system/core';
-import classNames from "classnames";
 
 const cacheKey = 'section-table-data';
 
@@ -40,21 +41,21 @@ const styles = () => ({
     }
 });
 
-const GradeAssignmentCard = (props) => {
-    const {
-        classes,
-        data: { getEthosQuery },
-        cardControl: {
-            setLoadingStatus,
-            setErrorMessage
-        }
-    } = props;
-    // const { cardId } = useCardInfo();
-    // const { storeItem, getItem } = useCache();
+function GradeAssignmentCard({ classes }) {
+    const { authenticatedEthosFetch, getEthosQuery } = useData();
+    const { setLoadingStatus, setErrorMessage } = useCardControl();
+    const { configuration: {
+        pipelineAPI
+    }, cardId } = useCardInfo();
+    const { roles } = useUserInfo();
+
     let id = 0;
     const [sectionData, setSectionData] = useState();
+    const [gradeSubmission, setGradeSubmission] = useState();
     const tableData = [];
     const terms = new Set();
+
+    const personId = roles.pop();
 
     // const todayDate = new Date().toJSON().slice(0, 10);
 
@@ -76,6 +77,9 @@ const GradeAssignmentCard = (props) => {
                         iconColor: 'blue'
                     });
                 }
+                const gradeSubmissionResponse = await authenticatedEthosFetch(`${pipelineAPI}?cardId=${cardId}&testPersonId=${personId}`);
+                const gradeSubmissionResult = await gradeSubmissionResponse.json();
+                setGradeSubmission(() => gradeSubmissionResult);
                 setLoadingStatus(false);
             } catch (error) {
                 console.log('ethosQuery failed', error);
@@ -90,16 +94,25 @@ const GradeAssignmentCard = (props) => {
         )();
     }, []);
 
+
+    const assignedGradeSubmitted = (guid) => {
+        const found = gradeSubmission.find(item => item.guid === guid);
+        return found ? found.gradeEntered : null;
+    }
+
     for (const i in sectionData) {
-        if (i != null) {
+        if (i != null && gradeSubmission) {
+
             // const {section16: {code: crn}} = sectionData[i];
             // console.log(crn);
             // const {alternateIds, code: crn, course:{number:csn, subject:{abbreviation:dept}}, maxEnrollment, reportingAcademicPeriod16: {code: termCode, registration, title: termName}, status: {detail11:{category, title:statusTitle}}, titles} = sectionData[i];
             // const {section16:{code: crn, course16: {subject, number: csn}, maxEnrollment, }}
-            const { section16: { code: crn, course16, maxEnrollment, reportingAcademicPeriod16, titles, gradeSubmitted } } = sectionData[i] || {};
+            const { section16: { id: sectionID, code: crn, course16, maxEnrollment, reportingAcademicPeriod16, titles } } = sectionData[i] || {};
             const { subject, number: csn } = course16 || {};
             const { code: termCode, title: termName } = reportingAcademicPeriod16 || {};
             const { abbreviation: dept } = subject || {};
+            const gradeSubmitted = parseInt(assignedGradeSubmitted(sectionID), 10);
+
             if (!crnSet.has(crn)) {
                 tableData.push(createData(titles[1].value, dept, csn, termName, crn, maxEnrollment, termCode, gradeSubmitted));
             }
@@ -113,7 +126,6 @@ const GradeAssignmentCard = (props) => {
     }
 
     function createData(title, dept, csn, term, crn, enrolled, termCode, gradeSubmitted) {
-
         id += 1;
         return { id, title, dept, csn, term, crn, enrolled, termCode, gradeSubmitted };
 
@@ -145,14 +157,14 @@ const GradeAssignmentCard = (props) => {
                                                     name="check-circle"
                                                     color="blue"
                                                     large="true"
-                                                    className={classNames(classes.check, classes.icon)}
+                                                    className={(classes.check, classes.icon)}
                                                 />
                                             </ListItemIcon> : <ListItemIcon className={classes.itemText}>
                                                 <Icon
                                                     name="times-circle"
                                                     color="red"
                                                     large="true"
-                                                    className={classNames(classes.check, classes.icon)}
+                                                    className={(classes.check, classes.icon)}
                                                 />
                                             </ListItemIcon>
                                             }
@@ -196,12 +208,10 @@ const GradeAssignmentCard = (props) => {
             </div>
         );
     }
-};
+}
 
 GradeAssignmentCard.propTypes = {
-    classes: PropTypes.object.isRequired,
-    cardControl: PropTypes.object.isRequired,
-    data: PropTypes.object.isRequired
-}
+    classes: PropTypes.object.isRequired
+};
 
 export default withStyles(styles)(GradeAssignmentCard);

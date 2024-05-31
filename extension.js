@@ -12,6 +12,20 @@ module.exports = {
             "route": "/",
             "excludeClickSelectors": ['#link']
         },
+        configuration: {
+            client: [{
+                key: 'pipelineAPI',
+                label: 'Pipeline API',
+                type: 'text'
+            },
+            ],
+            server: [{
+                key: 'ethosApiKey',
+                label: 'Ethos API',
+                type: 'password',
+                required: true
+            }]
+        },
         "queries": {
             "section-list": [
                 {
