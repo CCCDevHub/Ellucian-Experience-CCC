@@ -117,10 +117,9 @@ function OutstandingBalance({ classes }) {
         window.open(payLink, '_blank');
     }
 
-
     if (summarize && payLink && studentInfo) {
         const [{ accountBalance, amountDue }] = summarize;
-        const specialCase = ["vetStatus", "financialAid", "eops", "calwork", "dualEnrollment"].some(key => studentInfo[key].trim() != "");
+        const specialCase = ["vetStatus", "financialAid", "eops", "calwork", "dualEnrollment"].some(key => studentInfo[key]);
 
         return (
             <div className={classes.root}>
