@@ -107,16 +107,17 @@ function GradeAssignmentCard({ classes }) {
             // console.log(crn);
             // const {alternateIds, code: crn, course:{number:csn, subject:{abbreviation:dept}}, maxEnrollment, reportingAcademicPeriod16: {code: termCode, registration, title: termName}, status: {detail11:{category, title:statusTitle}}, titles} = sectionData[i];
             // const {section16:{code: crn, course16: {subject, number: csn}, maxEnrollment, }}
-            const { section16: { id: sectionID, code: crn, course16, maxEnrollment, reportingAcademicPeriod16, titles } } = sectionData[i] || {};
+            const { section16: { id: sectionID, code: crn, alternateIds, course16, maxEnrollment, reportingAcademicPeriod16, titles } } = sectionData[i] || {};
             const { subject, number: csn } = course16 || {};
             const { code: termCode, title: termName } = reportingAcademicPeriod16 || {};
             const { abbreviation: dept } = subject || {};
             const gradeSubmitted = parseInt(assignedGradeSubmitted(sectionID), 10);
+            const [{ value: crnTerm }] = alternateIds || {};
 
-            if (!crnSet.has(crn)) {
+            if (!crnSet.has(crnTerm)) {
                 tableData.push(createData(titles[1].value, dept, csn, termName, crn, maxEnrollment, termCode, gradeSubmitted));
             }
-            crnSet.add(crn);
+            crnSet.add(crnTerm);
             terms.add(termName);
         }
     }
