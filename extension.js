@@ -1,7 +1,7 @@
 module.exports = {
     "name": "Grade Assignment",
     "publisher": "Pasadena City College",
-    "version": "1.1.0",
+    "version": "1.4.0",
     "cards": [{
         "type": "GraphQLQueryCard",
         "source": "./src/cards/GradeAssignmentCard",
@@ -44,9 +44,6 @@ module.exports = {
                             	sectionInstructors: {sectionInstructors} (
                                     filter: {
                                         {instructor@persons} : { id: { EQ: $personId } }
-                                        {section@sections}: {
-                                                            reportingAcademicPeriod16: { registration: { EQ: open } }
-                                                            }
                                     }
                                     sort: {{section@sections}:{{reportingAcademicPeriod@academicPeriods}:{code:DESC}}}
                                 ) {
