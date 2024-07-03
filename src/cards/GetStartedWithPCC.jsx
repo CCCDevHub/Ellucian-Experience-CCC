@@ -44,7 +44,7 @@ const MyInfo = (props) => {
     const {
         classes,
         cardInfo: { configuration: { pipelineAPI }, cardId },
-        data: { getEthosQuery, authenticatedEthosFetch },
+        data: { authenticatedEthosFetch },
         cardControl: {
             setLoadingStatus,
             setErrorMessage,
@@ -54,7 +54,6 @@ const MyInfo = (props) => {
     } = props;
 
     const personId = roles.pop();
-    const [persons, setPersons] = useState();
     const [checkLists, setCheckLists] = useState();
     const [anchorEl, setAnchorEl] = useState(null);
     const [popoverid, setPopoverid] = useState();
