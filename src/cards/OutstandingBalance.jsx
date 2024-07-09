@@ -195,7 +195,7 @@ function OutstandingBalance({ classes }) {
                         variant="card"
                         scrollButtons="true">
                         <Tab id={`${customId}_Tab_Balance`} label="Balance" />
-                        <Tab id={`${customId}_Tab_Summarize`} label="Summarize" />
+                        <Tab id={`${customId}_Tab_Summarize`} label="Details" />
                     </Tabs>
                     {
                         tabChange === 'OutstandingBalance_Tab_Balance' ? (
