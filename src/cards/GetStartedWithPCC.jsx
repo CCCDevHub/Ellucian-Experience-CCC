@@ -75,18 +75,10 @@ const MyInfo = (props) => {
             setLoadingStatus(true);
             try {
                 const gettingStarted = await authenticatedEthosFetch(`${pipelineAPI}?cardId=${cardId}&testPersonId=${personId}`);
-                const gettingStartedResult = await gettingStarted.json()
-                setCheckLists(() => gettingStartedResult);
-                // // Get person info
-                // const personResult = await getEthosQuery({
-                //     queryId: 'person-ext'
-                // });
-                // const personData = (personResult?.data?.persons?.edges.map(edge => edge.node));
-                // console.log('persondata', personData);
-
-                // setPersons(() => personData);
-
+                const gettingStartedResult = await gettingStarted.json();
+                setCheckLists(() => gettingStartedResult[0]);
                 setLoadingStatus(false);
+
             } catch (error) {
                 console.log('ethosQuery failed', error);
                 setErrorMessage({
@@ -106,7 +98,8 @@ const MyInfo = (props) => {
 
         // check if all milestones are complete
         // const c = person[0];
-        const c = destructData(checkLists[0]);
+        const c = destructData(checkLists);
+
         return (
             <div className={classes.card}>
 
@@ -211,84 +204,64 @@ function checkAllMilestonesComplete(checklist) {
 
 function destructData(checklist) {
     let id = 0;
-
-    if (checkAllMilestonesComplete(checklist)) {
+    function createData(name, value, hovertext, linkURL, buttoncolor, iconname, iconcolor, complete) {
+        id += 1;
+        return { id, name, value, hovertext, linkURL, buttoncolor, iconname, iconcolor, complete };
+    }
+    // if all milestones are complete, show completed badge
+    if (checklist.orientation === 1 &&
+        checklist.assessment === 1 &&
+        checklist.edPlan === 1 &&
+        checklist.regPri === 1) {
         return [
-            createData(
-                ++id,
-                'Register',
+            createData('Register',
                 'null',
                 'You have completed steps for early registration!',
                 'https://ssb-prod.ec.pasadena.edu/PROD/bwskflib.P_SelDefTerm',
                 'null',
                 'null',
                 'null',
-                1
-            )
+                1)
+        ]
+    }
+    else {
+        return [
+            createData('Orientation',
+                checklist.orientation,
+                checklist.orientation == 1 ? 'You have completed the online orientation.' : <p>You have not completed your online orientation. Please visit <a rel="noreferrer" target="_blank" href="https://orientation.pasadena.edu"> https://orientation.pasadena.edu </a> to get started.</p>,
+                'https://orientation.pasadena.edu',
+                checklist.orientation == 1 ? 'secondary' : 'primary',
+                checklist.orientation == 1 ? 'check-circle' : 'circle',
+                checklist.orientation == 1 ? "green" : "white",
+                0),
+            createData('Placement',
+                checklist.assessment,
+                checklist.assessment == 1 ? <p>You have completed your placement process. For help selecting appropriate classes visit: <a rel="noreferrer" target="_blank" href="https://pasadena.edu/academics/support/counseling/academic-planning/placement.php">https://pasadena.edu/academics/support/counseling/academic-planning/placement.php </a>.</p>
+                    : <p>You have not completed the placement process. To know what English and math courses are right for you, get started by visiting <a rel="noreferrer" target="_blank" href="https://pasadena.edu/academics/support/counseling/academic-planning/placement.php">https://pasadena.edu/academics/support/counseling/academic-planning/placement.php </a>.</p>,
+                'https://pasadena.edu/academics/support/counseling/academic-planning/placement.php',
+                checklist.assessment == 1 ? 'secondary' : 'primary',
+                checklist.assessment == 1 ? 'check-circle' : 'circle',
+                checklist.assessment == 1 ? "green" : "white",
+                0),
+            createData('Ed Plan',
+                checklist.edPlan,
+                checklist.edPlan == 1 ? <p>You have completed an educational plan. To view, please visit <a rel="noreferrer" target="_blank" href="https://pasadena.edu/academics/support/counseling/academic-planning/">https://pasadena.edu/academics/support/counseling/academic-planning/ </a>.</p>
+                    : <p>Completing an educational plan will make sure you’re taking the correct classes. (You can register without a plan) To request a plan use this link: <a rel="noreferrer" target="_blank" href="https://pasadena.edu/academics/support/counseling/ask-a-counselor/new-students.php">https://pasadena.edu/academics/support/counseling/ask-a-counselor/new-students.php </a>.</p>,
+                'https://pasadena.edu/academics/support/counseling/academic-planning/',
+                checklist.edPlan == 1 ? 'secondary' : 'primary',
+                checklist.edPlan == 1 ? 'check-circle' : 'circle',
+                checklist.edPlan == 1 ? "green" : "white",
+                0),
+            createData('Early Registration',
+                checklist.regPri,
+                checklist.regPri == 1 ? 'You have completed steps for early registration!' : 'To get registration priority, you must first complete the online orientation, assessment, and Ed Plan.',
+                'https://pasadena.edu/academics/support/counseling/academic-planning/placement.php',
+                checklist.regPri == 1 ? 'secondary' : 'primary',
+                checklist.regPri == 1 ? 'check-circle' : 'circle',
+                checklist.regPri == 1 ? "green" : "white",
+                0)
         ];
     }
-
-    return [
-        createData(
-            ++id,
-            'Orientation',
-            checklist.orientation,
-            createHoverText(
-                checklist.orientation === "1",
-                'You have completed the online orientation.',
-                'You have not completed your online orientation. Please visit ',
-                'https://orientation.pasadena.edu'
-            ),
-            'https://orientation.pasadena.edu',
-            getButtonColor(checklist.orientation === "1"),
-            getIconProps(checklist.orientation === "1").name,
-            getIconProps(checklist.orientation === "1").color,
-            0
-        ),
-        createData(
-            ++id,
-            'Placement',
-            checklist.assessment,
-            createHoverText(
-                checklist.assessment === "1",
-                'You have completed your placement process. For help selecting appropriate classes visit: ',
-                'You have not completed the placement process. To know what English and math courses are right for you, get started by visiting ',
-                'https://pasadena.edu/academics/support/counseling/academic-planning/placement.php'
-            ),
-            'https://pasadena.edu/academics/support/counseling/academic-planning/placement.php',
-            getButtonColor(checklist.assessment === "1"),
-            getIconProps(checklist.assessment === "1").name,
-            getIconProps(checklist.assessment === "1").color,
-            0
-        ),
-        createData(
-            ++id,
-            'Ed Plan',
-            checklist.edPlan,
-            createHoverText(
-                checklist.edPlan === "1",
-                'You have completed an educational plan. To view, please visit ',
-                'Completing an educational plan will make sure you’re taking the correct classes. (You can register without a plan) To request a plan use this link: ',
-                'https://pasadena.edu/academics/support/counseling/ask-a-counselor/new-students.php'
-            ),
-            'https://pasadena.edu/academics/support/counseling/academic-planning/',
-            getButtonColor(checklist.edPlan === "1"),
-            getIconProps(checklist.edPlan === "1").name,
-            getIconProps(checklist.edPlan === "1").color,
-            0
-        ),
-        createData(
-            ++id,
-            'Early Registration',
-            checklist.regPri,
-            checklist.regPri === "1" ? 'You have completed steps for early registration!' : 'To get registration priority, you must first complete the online orientation, assessment, and Ed Plan.',
-            'https://pasadena.edu/academics/support/counseling/academic-planning/placement.php',
-            getButtonColor(checklist.regPri === "1"),
-            getIconProps(checklist.regPri === "1").name,
-            getIconProps(checklist.regPri === "1").color,
-            0
-        )
-    ];
 }
 
 
