@@ -20,7 +20,6 @@ function AcademicStanding({ classes }) {
     const { setLoadingStatus, setErrorMessage } = useCardControl();
     const { getEthosQuery } = useData();
     const [standingStatus, setStandingStatus] = useState();
-
     useEffect(() => {
         (async () => {
             setLoadingStatus(true);
@@ -31,12 +30,26 @@ function AcademicStanding({ classes }) {
                 const lastTermStatus = standingData.pop();
                 if (lastTermStatus) {
                     const { academicPeriod: { title: termName }, standing: { title: status } } = lastTermStatus;
-                    setErrorMessage({
-                        headerMessage: (`You are on Probation since ${termName}`),
-                        textMessage: (`${status}`),
-                        iconName: 'warning-solid',
-                        iconColor: 'red'
-                    });
+                    if (!status.includes('Calculated')) {
+                        setErrorMessage({
+                            headerMessage: `${status.replace('Probation', 'Warning')} ${termName}`,
+                            textMessage: (
+                                <span>
+                                    For support with your Academic/Progress Standing please contact your <a href="https://pasadena.edu/academics/support/success-centers/success-coach.php" style={{ color: 'blue' }} target="_blank" rel="noreferrer">success coach</a>.
+                                </span>
+                            ),
+                            iconName: 'warning-solid',
+                            iconColor: 'red'
+                        });
+                    } else {
+                        setErrorMessage({
+                            headerMessage: (`Clear`),
+                            textMessage: (`Dismissal`),
+                            iconName: 'check-circle',
+                            iconColor: 'blue'
+                        });
+                    }
+
                 }
 
             } catch (error) {
@@ -53,10 +66,7 @@ function AcademicStanding({ classes }) {
     }, []);
     if (standingStatus) {
         return (
-            <div className={classes.card}>
-                <Icon name="warning-solid" large="true" spin="true" color="red">
-                </Icon>
-            </div>
+            <h1>`test`</h1>
         );
     } else { return null; }
 
