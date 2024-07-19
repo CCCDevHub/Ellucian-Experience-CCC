@@ -55,7 +55,7 @@ function GradeAssignmentCard({ classes }) {
     const tableData = [];
     const terms = new Set();
 
-    const personId = roles.pop();
+    const personId = roles.at(-1);
 
     // const todayDate = new Date().toJSON().slice(0, 10);
 
