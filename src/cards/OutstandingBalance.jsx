@@ -75,7 +75,7 @@ function OutstandingBalance({ classes }) {
         '50': 'Summer',
         '20': 'Winter'
     };
-    const personId = roles.pop();
+    const personId = roles.at(-1);
     const customId = 'OutstandingBalance';
     const [summarize, setSumarize] = useState()
     const [balanceDetails, setBalanceDetails] = useState();
