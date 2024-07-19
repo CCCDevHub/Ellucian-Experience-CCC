@@ -53,7 +53,7 @@ const MyInfo = (props) => {
         userInfo: { roles }
     } = props;
 
-    const personId = roles.pop();
+    const personId = roles.at(-1);
     const [checkLists, setCheckLists] = useState();
     const [anchorEl, setAnchorEl] = useState(null);
     const [popoverid, setPopoverid] = useState();
