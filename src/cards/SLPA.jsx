@@ -1,6 +1,6 @@
 import { withStyles } from '@ellucian/react-design-system/core/styles';
 import { spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
-import { Typography, TextLink, Button, Dropdown, DropdownItem, Popover } from '@ellucian/react-design-system/core';
+import { Typography, TextLink, Button, Dropdown, DropdownItem, Popover, CircularProgress, Snackbar } from '@ellucian/react-design-system/core';
 import { useCardControl, useCardInfo, useExtensionControl, useUserInfo, useData, useDashboardInfo } from '@ellucian/experience-extension-utils';
 import PropTypes from 'prop-types';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -13,6 +13,12 @@ const styles = () => ({
         marginRight: spacing40,
         marginBottom: 0,
         marginLeft: spacing40
+    },
+    loading: {
+        position: 'relative',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center'
     }
 });
 
@@ -30,6 +36,10 @@ function SLPA({ classes }) {
     const [dropdownStateTerm, setDropdownStateTerm] = useState();
     const [termList, setTermList] = useState([]);
     const [popoverState, setPopoverState] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [snackbar, setSnackbar] = useState(false);
+    const [snackbarDuration, setSnackbarDuration] = useState(0);
+
     useEffect(() => {
         (async () => {
             setLoadingStatus(true);
@@ -49,10 +59,26 @@ function SLPA({ classes }) {
         })();
     }, []);
 
-    const handleClick = () => {
+    const handleClick = async () => {
         if (dropdownStateTerm) {
-            console.log(dropdownStateTerm);
-            console.log(excelData);
+            setLoading(true);
+            const fetchPromises = [];
+
+            excelData.forEach((stuId, index) => {
+                if (index !== 0) {
+                    setSnackbarDuration(1000);
+                    const fetchPromise = authenticatedEthosFetch(`Test-Post-BPAPI?cardId=${cardId}&termCode=${dropdownStateTerm}&studentId=${stuId}`);
+                    fetchPromises.push(fetchPromise);
+                }
+            });
+            try {
+                await Promise.all(fetchPromises);
+                setLoading(false);
+                setSnackbar(true);
+            } catch (error) {
+                console.error('Error fetching data: ', error);
+                setLoading(false);
+            }
         } else {
             setPopoverState(event.currentTarget);
         }
@@ -65,7 +91,9 @@ function SLPA({ classes }) {
     const popoverHandleClose = () => {
         setPopoverState(null);
     };
-
+    const snackbarClose = () => {
+        setSnackbar(false);
+    };
     if (termList && excelData) {
         return (
             <div className={classes.card}>
@@ -88,6 +116,23 @@ function SLPA({ classes }) {
                         })}
                     </Dropdown>
                 </div>
+                <br></br>
+                {loading && (
+                    <div className={classes.loading} >
+                        <CircularProgress aria-valuetext="Inserting records..." />
+                    </div>
+                )}
+                {snackbar && (
+                    <Snackbar
+                        open={snackbar}
+                        variant='success'
+                        message='Records Inserted.'
+                        autoHideDuration={snackbarDuration}
+                        onClose={snackbarClose}
+                    />
+                )}
+                <br></br>
+
                 <div>
                     <Button
                         id={`${customId}_Button`}
@@ -95,7 +140,11 @@ function SLPA({ classes }) {
                         fluid
                         size="default"
                         onClick={handleClick}
-                        variant="contained"> Process </Button>
+                        variant="contained"
+                        disabled={loading}
+                    >
+                        Process
+                    </Button>
                     <Popover
                         id={`${customId}_Popover}`}
                         open={popoverState}
@@ -112,7 +161,6 @@ function SLPA({ classes }) {
                     >
                         <Typography id={`${customId}_PopoverText}`}>Please select term.</Typography>
                     </Popover>
-
                 </div>
 
             </div >
