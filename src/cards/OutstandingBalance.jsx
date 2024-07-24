@@ -55,6 +55,10 @@ const styles = () => ({
     },
     balanceContainerSpan: {
         margin: '0'
+    },
+    dropDown: {
+        marginTop: spacing30,
+        marginBottom: spacing30
     }
 });
 
@@ -83,7 +87,7 @@ function OutstandingBalance({ classes }) {
     const [formatTransDate, setFormatTransDate] = useState();
     const [groupTransByTerm, setGroupTransByTerm] = useState();
     const [dropdownStateTerm, setDropdownStateTerm] = useState();
-    const [tabChange, setTabChange] = useState('OutstandingBalance_Tab_Balance');
+    const [tabChange, setTabChange] = useState(0);
     const [studentInfo, setStudentInfo] = useState();
     const [payLink, setPayLink] = useState();
 
@@ -172,14 +176,14 @@ function OutstandingBalance({ classes }) {
         setDropdownStateTerm(() => event.target.value);
     };
 
-    const handleTabChange = (event) => {
-        setTabChange(() => event.target.id);
+    const handleTabChange = (event, value) => {
+        console.log(value);
+        setTabChange(() => value);
     }
 
     function buttonClicked() {
         window.open(payLink, '_blank');
     }
-    const testing = ['']
 
     if (summarize && payLink && studentInfo) {
         const [{ accountBalance, amountDue }] = summarize;
@@ -192,13 +196,12 @@ function OutstandingBalance({ classes }) {
                         id={`${customId}_Tabs`}
                         onChange={handleTabChange}
                         value={tabChange}
-                        variant="card"
-                        scrollButtons="true">
+                        variant="card">
                         <Tab id={`${customId}_Tab_Balance`} label="Balance" />
                         <Tab id={`${customId}_Tab_Summarize`} label="Details" />
                     </Tabs>
                     {
-                        tabChange === 'OutstandingBalance_Tab_Balance' ? (
+                        tabChange === 0 ? (
                             <div id={`${customId}_Tab_Balance`} role="tabpanel">
                                 {accountBalance > 0 ? (
                                     <div className={classes.balanceContainer}>
@@ -247,8 +250,8 @@ function OutstandingBalance({ classes }) {
                                 </div>
                             </div>
                         ) : (
-                            <div id={`${customId}_Tab_Summarize`} role="tabpanel">
-                                <div>
+                            <div id={`${customId}_Tab_Summarize`} role="tabpanel" >
+                                <div className={classes.dropDown}>
                                     <Dropdown
                                         id={`${customId}_DropdownTerm}`}
                                         label={'Select Term'}
@@ -259,7 +262,13 @@ function OutstandingBalance({ classes }) {
                                         {dropDownItems}
                                     </Dropdown>
                                 </div>
-                                <div><br></br></div>
+                                <div className={classes.dropDown}>
+                                    <Typography variant={'h4'} align={'center'}>
+                                        <TextLink id={`${customId}_PayNow}`} href="https://ssb-dev.ec.pasadena.edu:9003/ssomanager/saml/login?relayState=/c/auth/SSB?pkg=bwskoacc.P_ViewAcctTerm">
+                                            Pay Now
+                                        </TextLink>
+                                    </Typography>
+                                </div>
                                 <div>
                                     {dropdownStateTerm && (
                                         <Table>
