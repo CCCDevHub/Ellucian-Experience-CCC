@@ -91,8 +91,8 @@ function OutstandingBalance({ classes }) {
     const [studentInfo, setStudentInfo] = useState();
     const [payLink, setPayLink] = useState();
 
-    const payLinkUS = 'https://test.secure.touchnet.net:8443/C21220test_tsa/web/caslogin.jsp';
-    const paylinkIntl = 'https://ssb-prod.ec.pasadena.edu/PROD/bwymtfxp.P_MTFXPayment';
+    const payLinkUS = 'https://secure.touchnet.net/C21220_tsa/web/caslogin.jsp';
+    const paylinkIntl = 'https://ssb-prod.ec.pasadena.edu/ssomanager/saml/login?relayState=/c/auth/SSB?pkg=bwymtfxp.P_MTFXPayment';
 
     useEffect(() => {
         (async () => {
@@ -177,7 +177,6 @@ function OutstandingBalance({ classes }) {
     };
 
     const handleTabChange = (event, value) => {
-        console.log(value);
         setTabChange(() => value);
     }
 
@@ -226,7 +225,7 @@ function OutstandingBalance({ classes }) {
 
                                 {!(accountBalance > 100 && specialCase) && (
                                     <div className={classes.balanceContainer}>
-                                        {todayDate <= deadlineDate ? (
+                                        {deadlineDate <= todayDate ? (
                                             <Typography variant={'body2'}>
                                                 To ensure you are not dropped from classes, pay your fees at the time of your registration or make sure you have a financial aid application on file.
                                             </Typography>
@@ -264,7 +263,7 @@ function OutstandingBalance({ classes }) {
                                 </div>
                                 <div className={classes.dropDown}>
                                     <Typography variant={'h4'} align={'center'}>
-                                        <TextLink id={`${customId}_PayNow}`} href="https://ssb-dev.ec.pasadena.edu:9003/ssomanager/saml/login?relayState=/c/auth/SSB?pkg=bwskoacc.P_ViewAcctTerm">
+                                        <TextLink id={`${customId}_PayNow}`} href="https://ssb-prod.ec.pasadena.edu/ssomanager/saml/login?relayState=/c/auth/SSB?pkg=bwskoacc.P_ViewAcctTerm">
                                             Pay Now
                                         </TextLink>
                                     </Typography>
