@@ -67,7 +67,7 @@ function SLPA({ classes }) {
             excelData.forEach((stuId, index) => {
                 if (index !== 0) {
                     setSnackbarDuration(1000);
-                    const fetchPromise = authenticatedEthosFetch(`Test-Post-BPAPI?cardId=${cardId}&termCode=${dropdownStateTerm}&studentId=${stuId}`);
+                    const fetchPromise = authenticatedEthosFetch(`${bannerPipelineAPI}?cardId=${cardId}&termCode=${dropdownStateTerm}&studentId=${stuId}`);
                     fetchPromises.push(fetchPromise);
                 }
             });
