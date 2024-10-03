@@ -1,18 +1,24 @@
 module.exports = {
-    "name": "Extension Name",
-    "publisher": "Your Name",
+    "name": "Identity Hold",
+    "publisher": "Huey Phan",
+    "configuration": {
+        "client": [{
+            "key": "pipelineAPI",
+            "label": "Pipeline API",
+            "type": "text"
+        }],
+        "server": [{
+            "key": "ethosApiKey",
+            "label": "Ethos API Key",
+            "type": "password",
+            "required": true
+        }]
+    },
     "cards": [{
-        "type": "TestExtCard",
-        "source": "./src/cards/TestExtCard",
-        "title": "Card Title",
-        "displayCardType": "Card Type",
-        "description": "Card Description",
-        "pageRoute": {
-            "route": "/",
-            "excludeClickSelectors": ['a']
-        }
-    }],
-    "page": {
-        "source": "./src/page/router.jsx"
-    }
+        "type": "GraphQL Card",
+        "source": "./src/cards/IdentityHold",
+        "title": "Identity Hold",
+        "displayCardType": "GraphQL Card",
+        "description": "Identity Hold"
+    }]
 }
