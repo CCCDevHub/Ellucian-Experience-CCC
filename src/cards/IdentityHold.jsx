@@ -46,10 +46,8 @@ function IdentityHold({ classes }) {
         return (
             <div className={classes.card} style={{ textAlign: "center" }}>
                 <Typography variant="h2">
-                    <h2>Hold on Student Account</h2>
-                    <p>You currently have an <strong>identity hold</strong> on your account. Please resolve this issue as soon as possible.</p>
-                    <p>If this hold is not cleared by the deadline, you may be <strong>dropped from your enrolled courses</strong>.</p>
-                    <p>Contact the Registrar&apos;s Office for assistance in resolving this hold.</p>
+                    <h2>Hold: Verify your Identity</h2>
+                    <p>There is a hold on your account that requires you to verify your identity. Clear your hold or you will be <strong>dropped from your classes.</strong></p>
                 </Typography>
             </div>
         );
