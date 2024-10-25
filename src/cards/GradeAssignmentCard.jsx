@@ -115,7 +115,7 @@ function GradeAssignmentCard({ classes }) {
             const [{ value: crnTerm }] = alternateIds || {};
 
             if (!crnSet.has(crnTerm)) {
-                tableData.push(createData(titles[1].value, dept, csn, termName, crn, maxEnrollment, termCode, gradeSubmitted));
+                tableData.push(createData(titles[0]?.value, dept, csn, termName, crn, maxEnrollment, termCode, gradeSubmitted));
             }
             crnSet.add(crnTerm);
             terms.add(termName);
