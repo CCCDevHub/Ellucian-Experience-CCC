@@ -91,8 +91,10 @@ function OutstandingBalance({ classes }) {
     const [studentInfo, setStudentInfo] = useState();
     const [payLink, setPayLink] = useState();
 
-    const payLinkUS = 'https://secure.touchnet.net/C21220_tsa/web/caslogin.jsp';
-    const paylinkIntl = 'https://ssb-prod.ec.pasadena.edu/ssomanager/saml/login?relayState=/c/auth/SSB?pkg=bwymtfxp.P_MTFXPayment';
+    const payLinkUS = 'https://ssb-prod.ec.pasadena.edu/ssomanager/saml/login?relayState=/c/auth/SSB?pkg=bwskoacc.P_ViewAcctTerm';
+    const paylinkIntl = 'https://ssb-prod.ec.pasadena.edu/ssomanager/saml/login?relayState=/c/auth/SSB?pkg=bwskoacc.P_ViewAcctTerm';
+    // const payLinkUS = 'https://secure.touchnet.net/C21220_tsa/web/caslogin.jsp';
+    // const paylinkIntl = 'https://ssb-prod.ec.pasadena.edu/ssomanager/saml/login?relayState=/c/auth/SSB?pkg=bwymtfxp.P_MTFXPayment';
 
     useEffect(() => {
         (async () => {
@@ -311,11 +313,85 @@ function OutstandingBalance({ classes }) {
         );
     } else {
         return (
-            <div>
-                <Typography className={classes.message} variant="body1" component="div">
-                    {`You don't have any outstanding Balance`}
-                </Typography>
-            </div>
+            <div className={classes.root}>
+                <div className={classes.content}>
+                    <Tabs
+                        id={`${customId}_Tabs`}
+                        onChange={handleTabChange}
+                        value={tabChange}
+                        variant="card">
+                        <Tab id={`${customId}_Tab_Balance`} label="Balance" />
+                        <Tab id={`${customId}_Tab_Summarize`} label="Details" />
+                    </Tabs>
+                    {
+                        tabChange === 0 ? (
+                            <div id={`${customId}_Tab_Balance`} role="tabpanel">
+                                <div className={classes.balanceContainer}>
+                                    <Typography variant={'h4'} align={'center'}>
+                                        You have no balance.
+                                    </Typography>
+                                </div>
+                            </div>
+                        ) : (
+                            <div id={`${customId}_Tab_Summarize`} role="tabpanel" >
+                                <div className={classes.dropDown}>
+                                    <Dropdown
+                                        id={`${customId}_DropdownTerm}`}
+                                        label={'Select Term'}
+                                        onChange={handleChangeTerm}
+                                        value={dropdownStateTerm}
+                                        fullWidth
+                                    >
+                                        {dropDownItems}
+                                    </Dropdown>
+                                </div>
+                                <div className={classes.dropDown}>
+                                    <Typography variant={'h4'} align={'center'}>
+                                        <TextLink id={`${customId}_PayNow}`} href="https://ssb-prod.ec.pasadena.edu/ssomanager/saml/login?relayState=/c/auth/SSB?pkg=bwskoacc.P_ViewAcctTerm">
+                                            Pay Now
+                                        </TextLink>
+                                    </Typography>
+                                </div>
+                                <div>
+                                    {dropdownStateTerm && (
+                                        <Table>
+                                            <TableBody>
+                                                <Typography variant={"h6"}>
+                                                    Transaction History
+                                                </Typography>
+                                                {groupTransByTerm[dropdownStateTerm].transactions
+                                                    // .filter(item => item.chargeAmount)
+                                                    .map((item, index) => {
+                                                        const transactionDate = formatTransDate.format(new Date(item.transDate));
+                                                        return (
+                                                            <TableRow TableRow key={`${item.termCode} - ${index}`} className={classes.transactionsTableRow}>
+                                                                <TableCell align='left' padding='none'>
+                                                                    <Typography variant={'body3'}>
+                                                                        {transactionDate}
+                                                                    </Typography>
+                                                                </TableCell>
+                                                                <TableCell align='left' padding='none'>
+                                                                    <Typography variant={'body3'} component={'div'}>
+                                                                        {item.desc}
+                                                                    </Typography>
+                                                                </TableCell>
+                                                                <TableCell align="right" padding='none'>
+                                                                    <Typography variant={'body3'} component={'div'}>
+                                                                        ${item.chargeAmount || item.paymentAmount}
+                                                                    </Typography>
+                                                                </TableCell>
+                                                            </TableRow >
+                                                        )
+                                                    })}
+                                            </TableBody>
+                                        </Table>
+                                    )}
+                                </div>
+                            </div>
+                        )
+                    }
+                </div>
+            </div >
         );
     }
 
