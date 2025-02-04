@@ -1,6 +1,22 @@
 import { withStyles } from '@ellucian/react-design-system/core/styles';
 import { spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
-import { Typography, TextLink, Button, Dropdown, DropdownItem, Popover, CircularProgress, Snackbar } from '@ellucian/react-design-system/core';
+import {
+    Typography,
+    TextLink,
+    Button,
+    Dropdown,
+    DropdownItem,
+    Popover,
+    CircularProgress,
+    Snackbar,
+    Tab,
+    Tabs,
+    Table,
+    TableHead,
+    TableRow,
+    TableCell,
+    TableBody
+} from '@ellucian/react-design-system/core';
 import { useCardControl, useCardInfo, useExtensionControl, useUserInfo, useData, useDashboardInfo } from '@ellucian/experience-extension-utils';
 import PropTypes from 'prop-types';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -14,11 +30,24 @@ const styles = () => ({
         marginBottom: 0,
         marginLeft: spacing40
     },
+    content: {
+        height: '100%',
+        marginTop: 0,
+        marginRight: spacing40,
+        marginBottom: 0,
+        marginLeft: spacing40,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'flex-start'
+    },
     loading: {
         position: 'relative',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center'
+    },
+    spacing: {
+        marginBottom: spacing40
     }
 });
 
@@ -27,18 +56,22 @@ function SLPA({ classes }) {
     const { configuration:
         {
             microsoftPipelineAPI,
-            bannerPipelineAPI
+            bannerPipelineAPI,
+            SLPAPipelineAPI
         }, cardId
     } = useCardInfo();
     const { setLoadingStatus, setErrorMessage } = useCardControl();
     const { authenticatedEthosFetch, getEthosQuery } = useData();
     const [excelData, setExcelData] = useState([]);
     const [dropdownStateTerm, setDropdownStateTerm] = useState();
+    const [dropdownStateTermReview, setDropdownStateTermReview] = useState();
     const [termList, setTermList] = useState([]);
     const [popoverState, setPopoverState] = useState(null);
     const [loading, setLoading] = useState(false);
     const [snackbar, setSnackbar] = useState(false);
     const [snackbarDuration, setSnackbarDuration] = useState(0);
+    const [tabChange, setTabChange] = useState(0);
+    const [studentData, setStudentData] = useState([]);
 
     useEffect(() => {
         (async () => {
@@ -88,81 +121,164 @@ function SLPA({ classes }) {
         setDropdownStateTerm(() => event.target.value);
     };
 
+    const handleChangeTermReview = (event) => {
+        setDropdownStateTermReview(() => event.target.value);
+        const fetchData = async () => {
+            try {
+                setLoadingStatus(true);
+                const resonse = await authenticatedEthosFetch(`${SLPAPipelineAPI}?cardId=${cardId}&termCode=${event.target.value}`);
+                const data = await resonse.json();
+                setStudentData(data);
+                setLoadingStatus(false);
+            } catch (error) {
+                console.error('Error fetching data: ', error);
+                setLoadingStatus(false);
+            }
+        };
+        fetchData();
+    };
+
     const popoverHandleClose = () => {
         setPopoverState(null);
     };
     const snackbarClose = () => {
         setSnackbar(false);
     };
+    const handleTabChange = (event, value) => {
+        setTabChange(() => value);
+    }
+
     if (termList && excelData) {
         return (
             <div className={classes.card}>
-                <div>
-                    <Dropdown
-                        id={`${customId}_DropdownTerm}`}
-                        label={'Select Term'}
-                        onChange={handleChangeTerm}
-                        value={dropdownStateTerm}
-                        fullWidth
+                <div className={classes.content}>
+                    <Tabs
+                        id={`${customId} _Tabs`}
+                        onChange={handleTabChange}
+                        value={tabChange}
+                        variant={"card"}
+                        className={classes.spacing}
                     >
-                        {termList.map(term => {
-                            return (
-                                <DropdownItem
-                                    key={term.code}
-                                    label={term.title}
-                                    value={term.code}
-                                />
-                            );
-                        })}
-                    </Dropdown>
-                </div>
-                <br></br>
-                {loading && (
-                    <div className={classes.loading} >
-                        <CircularProgress aria-valuetext="Inserting records..." />
-                    </div>
-                )}
-                {snackbar && (
-                    <Snackbar
-                        open={snackbar}
-                        variant='success'
-                        message='Records Inserted.'
-                        autoHideDuration={snackbarDuration}
-                        onClose={snackbarClose}
-                    />
-                )}
-                <br></br>
+                        <Tab id={`${customId} _Tab_Insert`} label="Insert" />
+                        <Tab id={`${customId} _Tab_Review`} label="Review" />
+                    </Tabs>
+                    {
+                        tabChange === 0 ? (
+                            <div>
+                                <Dropdown
+                                    id={`${customId} _DropdownTerm
+    } `}
+                                    label={'Select Term'}
+                                    onChange={handleChangeTerm}
+                                    value={dropdownStateTerm}
+                                    fullWidth
+                                    className={classes.spacing}
+                                >
+                                    {termList.map(term => {
+                                        return (
+                                            <DropdownItem
+                                                key={term.code}
+                                                label={term.title}
+                                                value={term.code}
+                                            />
+                                        );
+                                    })}
+                                </Dropdown>
 
-                <div>
-                    <Button
-                        id={`${customId}_Button`}
-                        color="primary"
-                        fluid
-                        size="default"
-                        onClick={handleClick}
-                        variant="contained"
-                        disabled={loading}
-                    >
-                        Process
-                    </Button>
-                    <Popover
-                        id={`${customId}_Popover}`}
-                        open={popoverState}
-                        anchorEl={popoverState}
-                        onClose={popoverHandleClose}
-                        anchorOrigin={{
-                            vertical: 'top',
-                            horizontal: 'center'
-                        }}
-                        transformOrigin={{
-                            vertical: 'top',
-                            horizontal: 'center'
-                        }}
-                    >
-                        <Typography id={`${customId}_PopoverText}`}>Please select term.</Typography>
-                    </Popover>
-                </div>
+                                {loading && (
+                                    <div className={classes.loading} >
+                                        <CircularProgress aria-valuetext="Inserting records..." />
+                                    </div>
+                                )}
+                                {snackbar && (
+                                    <Snackbar
+                                        open={snackbar}
+                                        variant='success'
+                                        message='Records Inserted.'
+                                        autoHideDuration={snackbarDuration}
+                                        onClose={snackbarClose}
+                                    />
+                                )}
 
+
+                                <div>
+                                    <Button
+                                        id={`${customId} _Button`}
+                                        color="primary"
+                                        fluid
+                                        size="default"
+                                        onClick={handleClick}
+                                        variant="contained"
+                                        disabled={loading}
+                                    >
+                                        Process
+                                    </Button>
+                                    <Popover
+                                        id={`${customId} _Popover
+} `}
+                                        open={popoverState}
+                                        anchorEl={popoverState}
+                                        onClose={popoverHandleClose}
+                                        anchorOrigin={{
+                                            vertical: 'top',
+                                            horizontal: 'center'
+                                        }}
+                                        transformOrigin={{
+                                            vertical: 'top',
+                                            horizontal: 'center'
+                                        }}
+                                    >
+                                        <Typography id={`${customId} _PopoverText}`}>Please select term.</Typography>
+                                    </Popover>
+                                </div>
+                            </div>
+                        ) : (
+                            <div>
+                                <Dropdown
+                                    id={`${customId} _DropdownTermReview}`}
+                                    label={'Select Term'}
+                                    onChange={handleChangeTermReview}
+                                    value={dropdownStateTermReview}
+                                    fullWidth
+                                    className={classes.spacing}
+                                >
+                                    {termList.map(term => {
+                                        return (
+                                            <DropdownItem
+                                                key={term.code}
+                                                label={term.title}
+                                                value={term.code}
+                                            />
+                                        );
+                                    })}
+                                </Dropdown>
+                                {studentData.length > 0 && (
+                                    <Table>
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableCell>ID</TableCell>
+                                                <TableCell>First Name</TableCell>
+                                                <TableCell>Last Name</TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {studentData.map(s => {
+                                                return (
+                                                    <TableRow key={s.id}>
+                                                        <TableCell>{s.id}</TableCell>
+                                                        <TableCell>{s.firstName}</TableCell>
+                                                        <TableCell>{s.lastName}</TableCell>
+                                                    </TableRow>
+                                                )
+                                            })}
+                                        </TableBody>
+                                    </Table>
+                                )}
+                            </div>
+                        )
+                    }
+
+                </div>
             </div >
         );
     } else {
