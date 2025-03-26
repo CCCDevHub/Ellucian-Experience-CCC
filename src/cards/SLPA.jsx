@@ -2,7 +2,7 @@ import { withStyles } from '@ellucian/react-design-system/core/styles';
 import { spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
 import {
     Typography,
-    TextLink,
+    TextField,
     Button,
     Dropdown,
     DropdownItem,
@@ -22,6 +22,8 @@ import PropTypes from 'prop-types';
 import React, { useEffect, useMemo, useState } from 'react';
 import classnames from 'classnames';
 import { Icon } from '@ellucian/ds-icons/lib';
+import { Chip, IconButton } from '@ellucian/react-design-system/core';
+import { Cancel } from '@ellucian/ds-icons/lib';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -72,19 +74,23 @@ function SLPA({ classes }) {
     } = useCardInfo();
     const { setLoadingStatus, setErrorMessage } = useCardControl();
     const { authenticatedEthosFetch, getEthosQuery } = useData();
+    const [manualStudentIds, setManualStudentIds] = useState([]);
     const [excelData, setExcelData] = useState([]);
     const [dropdownStateTerm, setDropdownStateTerm] = useState();
     const [dropdownStateTermReview, setDropdownStateTermReview] = useState();
     const [termList, setTermList] = useState([]);
     const [popoverState, setPopoverState] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [snackbar, setSnackbar] = useState(false);
-    const [snackbarDuration, setSnackbarDuration] = useState(0);
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarDuration, setSnackbarDuration] = useState(4000);
+    const [studentResults, setStudentResults] = useState([]);
     const [tabChange, setTabChange] = useState(0);
     const [studentData, setStudentData] = useState([]);
     const [dropdownTermMulti, setDropdownTermMulti] = useState([]);
     const [graphLabels, setGraphLabels] = useState([]);
-    const [graphData, setGraphData] = useState({})
+    const [graphData, setGraphData] = useState({});
+    const [popOverMsg, setPopOverMsg] = useState();
+
     useEffect(() => {
         (async () => {
             setLoadingStatus(true);
@@ -105,27 +111,39 @@ function SLPA({ classes }) {
     }, []);
 
     const handleClick = async (event) => {
-        if (dropdownStateTerm) {
-            setLoading(true);
-            const fetchPromises = [];
-
-            excelData.forEach((stuId, index) => {
-                if (index !== 0) {
-                    setSnackbarDuration(1000);
-                    const fetchPromise = authenticatedEthosFetch(`${bannerPipelineAPI}?cardId=${cardId}&termCode=${dropdownStateTerm}&studentId=${stuId}`);
-                    fetchPromises.push(fetchPromise);
-                }
-            });
-            try {
-                await Promise.all(fetchPromises);
-                setLoading(false);
-                setSnackbar(true);
-            } catch (error) {
-                console.error('Error fetching data: ', error);
-                setLoading(false);
-            }
-        } else {
+        if (!dropdownStateTerm) {
             setPopoverState(event.currentTarget);
+            return;
+        }
+
+        if (manualStudentIds.length === 0) {
+            setPopoverState(event.currentTarget);
+            setPopOverMsg('Please enter at least one Student ID.');
+            return;
+        }
+
+        setLoading(true);
+        setSnackbarDuration(4000);
+
+        try {
+            const results = await Promise.allSettled(
+                manualStudentIds.map(stuId =>
+                    authenticatedEthosFetch(`${bannerPipelineAPI}?cardId=${cardId}&termCode=${dropdownStateTerm}&studentId=${stuId}`)
+                        .then(() => ({ id: stuId, status: 'success' }))
+                        .catch(() => ({ id: stuId, status: 'failure' }))
+                )
+            );
+
+            const statusArray = results.map(result => (
+                result.status === 'fulfilled' ? result.value : { id: '', status: 'failure' }
+            ));
+            setStudentResults(statusArray);
+            setSnackbarOpen(true);
+        } catch (error) {
+            console.error('Error fetching data: ', error);
+            setErrorMessage('Failed to apply overrides for one or more students.');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -149,7 +167,9 @@ function SLPA({ classes }) {
         };
         fetchData();
     };
-
+    const handleInputChange = (event) => {
+        console.log(event)
+    }
     const handleChangeTermMulti = (event) => {
         const selectedValues = event.target.value;
         setDropdownTermMulti(() => selectedValues);
@@ -177,7 +197,6 @@ function SLPA({ classes }) {
                     labels: selectedTitles,
                     datasets: [
                         {
-                            label: 'SLPA',
                             data: counts,
                             backgroundColor: backgroundColors
                         }
@@ -196,7 +215,7 @@ function SLPA({ classes }) {
         setPopoverState(null);
     };
     const snackbarClose = () => {
-        setSnackbar(false);
+        setSnackbarOpen(false);
     };
     const handleTabChange = (event, value) => {
         setTabChange(() => value);
@@ -218,45 +237,67 @@ function SLPA({ classes }) {
             },
             title: {
                 display: true,
-                text: 'Speech Language Pathology Assistant Program'
+                text: 'Overrides by Term'
             }
         }
     };
-
+    console.log(manualStudentIds);
     const renderTabContent = () => {
         if (tabChange === 0) {
             return (
                 <div>
-                    <Dropdown
-                        id={`${customId} _DropdownTerm`}
-                        label={'Select Term'}
-                        onChange={handleChangeTerm}
-                        value={dropdownStateTerm}
-                        fullWidth
-                        className={classes.spacing}
-                    >
-                        {termList.map(term => (
-                            <DropdownItem
-                                key={term.code}
-                                label={term.title}
-                                value={term.code}
-                            />
-                        ))}
-                    </Dropdown>
+                    <div>
+                        <Dropdown
+                            id={`${customId} _DropdownTerm`}
+                            label={'Select Term'}
+                            onChange={handleChangeTerm}
+                            value={dropdownStateTerm}
+                            fullWidth
+                            className={classes.spacing}
+                        >
+                            {termList.map(term => (
+                                <DropdownItem
+                                    key={term.code}
+                                    label={term.title}
+                                    value={term.code}
+                                />
+                            ))}
+                        </Dropdown>
+                    </div>
+                    <div>
+                        <TextField
+                            id={`${customId}_StudentIds`}
+                            label="Enter Student IDs"
+                            placeholder="Enter student ID and press Enter"
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    const newIds = e.target.value.split(',').map(id => id.trim());
+                                    const validNewIds = newIds.filter(id => (/^\d{8}$/).test(id) && !manualStudentIds.includes(id));
+                                    if (validNewIds.length > 0) {
+                                        setManualStudentIds([...manualStudentIds, ...validNewIds]);
+                                    }
+                                    e.target.value = '';
+                                }
+                            }}
+                            fullWidth
+                            className={classes.spacing}
+                        />
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: spacing40 }}>
+                            {manualStudentIds.map((id) => (
+                                <Chip
+                                    key={id}
+                                    label={id}
+                                    onDelete={() => setManualStudentIds(manualStudentIds.filter(item => item !== id))}
+                                />
+                            ))}
+                        </div>
+                    </div>
 
                     {loading && (
                         <div className={classes.loading}>
                             <CircularProgress aria-valuetext="Inserting records..." />
                         </div>
-                    )}
-                    {snackbar && (
-                        <Snackbar
-                            open={snackbar}
-                            variant='success'
-                            message='Records Inserted.'
-                            autoHideDuration={snackbarDuration}
-                            onClose={snackbarClose}
-                        />
                     )}
 
                     <div>
@@ -276,11 +317,35 @@ function SLPA({ classes }) {
                             open={Boolean(popoverState)}
                             anchorEl={popoverState}
                             onClose={popoverHandleClose}
-                            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
                             transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+                            PaperProps={{
+                                style: {
+                                    padding: '12px 16px',
+                                    backgroundColor: '#fef3c7',
+                                    border: '1px solid #fcd34d',
+                                    borderRadius: '4px',
+                                    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)'
+                                }
+                            }}
                         >
-                            <Typography id={`${customId} _PopoverText`}>Please select term.</Typography>
+                            <Typography id={`${customId} _PopoverText`} variant="body2" color="textPrimary">
+                                {popOverMsg || 'Please select term.'}
+                            </Typography>
                         </Popover>
+                        {studentResults.length > 0 && (
+                            <Snackbar
+                                open={snackbarOpen}
+                                variant={studentResults.some(r => r.status === 'failure') ? 'error' : 'success'}
+                                message={
+                                    studentResults.some(r => r.status === 'failure')
+                                        ? `Failed to override for: ${studentResults.filter(r => r.status === 'failure').map(r => r.id).join(', ')}`
+                                        : `Successfully overridden for: ${studentResults.map(r => r.id).join(', ')}`
+                                }
+                                autoHideDuration={snackbarDuration}
+                                onClose={snackbarClose}
+                            />
+                        )}
                     </div>
                 </div>
             );
@@ -349,7 +414,7 @@ function SLPA({ classes }) {
                     {graphData?.labels && graphData?.datasets ? (
                         <Bar options={options} data={graphData} />
                     ) : (
-                        <Typography>Please select the term.</Typography>
+                        <Typography>Please select the terms.</Typography>
                     )}
 
                 </div>
