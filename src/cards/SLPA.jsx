@@ -22,6 +22,16 @@ import PropTypes from 'prop-types';
 import React, { useEffect, useMemo, useState } from 'react';
 import classnames from 'classnames';
 import { Icon } from '@ellucian/ds-icons/lib';
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend
+} from 'chart.js';
+import { Bar } from 'react-chartjs-2';
 
 const styles = () => ({
     card: {
@@ -72,7 +82,9 @@ function SLPA({ classes }) {
     const [snackbarDuration, setSnackbarDuration] = useState(0);
     const [tabChange, setTabChange] = useState(0);
     const [studentData, setStudentData] = useState([]);
-
+    const [dropdownTermMulti, setDropdownTermMulti] = useState([]);
+    const [graphLabels, setGraphLabels] = useState([]);
+    const [graphData, setGraphData] = useState({})
     useEffect(() => {
         (async () => {
             setLoadingStatus(true);
@@ -92,7 +104,7 @@ function SLPA({ classes }) {
         })();
     }, []);
 
-    const handleClick = async () => {
+    const handleClick = async (event) => {
         if (dropdownStateTerm) {
             setLoading(true);
             const fetchPromises = [];
@@ -138,6 +150,48 @@ function SLPA({ classes }) {
         fetchData();
     };
 
+    const handleChangeTermMulti = (event) => {
+        const selectedValues = event.target.value;
+        setDropdownTermMulti(() => selectedValues);
+
+        const selectedTitles = termList
+            .filter(term => selectedValues.includes(term.code))
+            .map(term => term.title);
+
+
+        const fetchData = async () => {
+            try {
+                setLoadingStatus(true);
+                const promises = selectedValues.map(termCode =>
+                    authenticatedEthosFetch(`${SLPAPipelineAPI}?cardId=${cardId}&termCode=${termCode}`)
+                );
+                const results = await Promise.all(promises);
+
+                const counts = await Promise.all(results.map(res => res.json().then(data => data.length)));
+
+                const backgroundColors = counts.map(() =>
+                    `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, 0.5)`
+                );
+
+                setGraphData(() => ({
+                    labels: selectedTitles,
+                    datasets: [
+                        {
+                            label: 'SLPA',
+                            data: counts,
+                            backgroundColor: backgroundColors
+                        }
+                    ]
+                }));
+                setLoadingStatus(false);
+            } catch (error) {
+                console.error('Error fetching data: ', error);
+                setLoadingStatus(false);
+            }
+        };
+
+        fetchData();
+    };
     const popoverHandleClose = () => {
         setPopoverState(null);
     };
@@ -147,6 +201,161 @@ function SLPA({ classes }) {
     const handleTabChange = (event, value) => {
         setTabChange(() => value);
     }
+
+    ChartJS.register(
+        CategoryScale,
+        LinearScale,
+        BarElement,
+        Title,
+        Tooltip,
+        Legend
+    );
+    const options = {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: false
+            },
+            title: {
+                display: true,
+                text: 'Speech Language Pathology Assistant Program'
+            }
+        }
+    };
+
+    const renderTabContent = () => {
+        if (tabChange === 0) {
+            return (
+                <div>
+                    <Dropdown
+                        id={`${customId} _DropdownTerm`}
+                        label={'Select Term'}
+                        onChange={handleChangeTerm}
+                        value={dropdownStateTerm}
+                        fullWidth
+                        className={classes.spacing}
+                    >
+                        {termList.map(term => (
+                            <DropdownItem
+                                key={term.code}
+                                label={term.title}
+                                value={term.code}
+                            />
+                        ))}
+                    </Dropdown>
+
+                    {loading && (
+                        <div className={classes.loading}>
+                            <CircularProgress aria-valuetext="Inserting records..." />
+                        </div>
+                    )}
+                    {snackbar && (
+                        <Snackbar
+                            open={snackbar}
+                            variant='success'
+                            message='Records Inserted.'
+                            autoHideDuration={snackbarDuration}
+                            onClose={snackbarClose}
+                        />
+                    )}
+
+                    <div>
+                        <Button
+                            id={`${customId} _Button`}
+                            color="primary"
+                            fluid
+                            size="default"
+                            onClick={(event) => handleClick(event)}
+                            variant="contained"
+                            disabled={loading}
+                        >
+                            Apply
+                        </Button>
+                        <Popover
+                            id={`${customId} _Popover`}
+                            open={Boolean(popoverState)}
+                            anchorEl={popoverState}
+                            onClose={popoverHandleClose}
+                            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                            transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+                        >
+                            <Typography id={`${customId} _PopoverText`}>Please select term.</Typography>
+                        </Popover>
+                    </div>
+                </div>
+            );
+        } else if (tabChange === 1) {
+            return (
+                <div>
+                    <Dropdown
+                        id={`${customId} _DropdownTermReview`}
+                        label={'Select Term'}
+                        onChange={handleChangeTermReview}
+                        value={dropdownStateTermReview}
+                        fullWidth
+                        className={classes.spacing}
+                    >
+                        {termList.map(term => (
+                            <DropdownItem
+                                key={term.code}
+                                label={term.title}
+                                value={term.code}
+                            />
+                        ))}
+                    </Dropdown>
+                    {studentData.length > 0 && (
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>ID</TableCell>
+                                    <TableCell>First Name</TableCell>
+                                    <TableCell>Last Name</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {studentData.map(s => (
+                                    <TableRow key={s.id}>
+                                        <TableCell>{s.id}</TableCell>
+                                        <TableCell>{s.firstName}</TableCell>
+                                        <TableCell>{s.lastName}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    )}
+                </div>
+            );
+        } else {
+            return (
+                <div>
+                    <Dropdown
+                        id={`${customId} _DropdownTermMulti`}
+                        label={'Select Terms'}
+                        onChange={handleChangeTermMulti}
+                        value={dropdownTermMulti}
+                        fullWidth
+                        className={classes.spacing}
+                        multiple
+                    >
+                        {termList.map(term => (
+                            <DropdownItem
+                                key={term.code}
+                                label={term.title}
+                                value={term.code}
+                                name={term.title}
+                            />
+                        ))}
+                    </Dropdown>
+                    {graphData?.labels && graphData?.datasets ? (
+                        <Bar options={options} data={graphData} />
+                    ) : (
+                        <Typography>Please select the term.</Typography>
+                    )}
+
+                </div>
+            );
+        }
+    };
 
     if (termList && excelData) {
         return (
@@ -159,126 +368,13 @@ function SLPA({ classes }) {
                         variant={"card"}
                         className={classes.spacing}
                     >
-                        <Tab id={`${customId} _Tab_Insert`} label="Insert" />
-                        <Tab id={`${customId} _Tab_Review`} label="Review" />
+                        <Tab id={`${customId} _Tab_Applys`} label="Apply" />
+                        <Tab id={`${customId} _Tab_History`} label="History" />
+                        <Tab id={`${customId} _Tab_Summary`} label="Summary" />
                     </Tabs>
-                    {
-                        tabChange === 0 ? (
-                            <div>
-                                <Dropdown
-                                    id={`${customId} _DropdownTerm
-    } `}
-                                    label={'Select Term'}
-                                    onChange={handleChangeTerm}
-                                    value={dropdownStateTerm}
-                                    fullWidth
-                                    className={classes.spacing}
-                                >
-                                    {termList.map(term => {
-                                        return (
-                                            <DropdownItem
-                                                key={term.code}
-                                                label={term.title}
-                                                value={term.code}
-                                            />
-                                        );
-                                    })}
-                                </Dropdown>
-
-                                {loading && (
-                                    <div className={classes.loading} >
-                                        <CircularProgress aria-valuetext="Inserting records..." />
-                                    </div>
-                                )}
-                                {snackbar && (
-                                    <Snackbar
-                                        open={snackbar}
-                                        variant='success'
-                                        message='Records Inserted.'
-                                        autoHideDuration={snackbarDuration}
-                                        onClose={snackbarClose}
-                                    />
-                                )}
-
-                                <div>
-                                    <Button
-                                        id={`${customId} _Button`}
-                                        color="primary"
-                                        fluid
-                                        size="default"
-                                        onClick={handleClick}
-                                        variant="contained"
-                                        disabled={loading}
-                                    >
-                                        Process
-                                    </Button>
-                                    <Popover
-                                        id={`${customId} _Popover
-} `}
-                                        open={popoverState}
-                                        anchorEl={popoverState}
-                                        onClose={popoverHandleClose}
-                                        anchorOrigin={{
-                                            vertical: 'top',
-                                            horizontal: 'center'
-                                        }}
-                                        transformOrigin={{
-                                            vertical: 'top',
-                                            horizontal: 'center'
-                                        }}
-                                    >
-                                        <Typography id={`${customId} _PopoverText}`}>Please select term.</Typography>
-                                    </Popover>
-                                </div>
-                            </div>
-                        ) : (
-                            <div>
-                                <Dropdown
-                                    id={`${customId} _DropdownTermReview}`}
-                                    label={'Select Term'}
-                                    onChange={handleChangeTermReview}
-                                    value={dropdownStateTermReview}
-                                    fullWidth
-                                    className={classes.spacing}
-                                >
-                                    {termList.map(term => {
-                                        return (
-                                            <DropdownItem
-                                                key={term.code}
-                                                label={term.title}
-                                                value={term.code}
-                                            />
-                                        );
-                                    })}
-                                </Dropdown>
-                                {studentData.length > 0 && (
-                                    <Table>
-                                        <TableHead>
-                                            <TableRow>
-                                                <TableCell>ID</TableCell>
-                                                <TableCell>First Name</TableCell>
-                                                <TableCell>Last Name</TableCell>
-                                            </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                            {studentData.map(s => {
-                                                return (
-                                                    <TableRow key={s.id}>
-                                                        <TableCell>{s.id}</TableCell>
-                                                        <TableCell>{s.firstName}</TableCell>
-                                                        <TableCell>{s.lastName}</TableCell>
-                                                    </TableRow>
-                                                )
-                                            })}
-                                        </TableBody>
-                                    </Table>
-                                )}
-                            </div>
-                        )
-                    }
-
+                    {renderTabContent()}
                 </div>
-            </div >
+            </div>
         );
     } else {
         return (
