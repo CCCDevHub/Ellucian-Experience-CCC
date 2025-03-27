@@ -69,7 +69,8 @@ function SLPA({ classes }) {
         {
             microsoftPipelineAPI,
             bannerPipelineAPI,
-            SLPAPipelineAPI
+            SLPAPipelineAPI,
+            SLPACountPipelineAPI
         }, cardId
     } = useCardInfo();
     const { setLoadingStatus, setErrorMessage } = useCardControl();
@@ -183,25 +184,43 @@ function SLPA({ classes }) {
             try {
                 setLoadingStatus(true);
                 const promises = selectedValues.map(termCode =>
-                    authenticatedEthosFetch(`${SLPAPipelineAPI}?cardId=${cardId}&termCode=${termCode}`)
+                    authenticatedEthosFetch(`${SLPACountPipelineAPI}?cardId=${cardId}&termCode=${termCode}`)
+                        .then(response => response.json())
                 );
+
                 const results = await Promise.all(promises);
 
-                const counts = await Promise.all(results.map(res => res.json().then(data => data.length)));
+                const allCourses = new Set();
+                results.forEach(termData => {
+                    termData.forEach(record => allCourses.add(record.course));
+                });
 
-                const backgroundColors = counts.map(() =>
-                    `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, 0.5)`
-                );
+                const labels = Array.from(allCourses);
+                const datasets = results.map((termData, index) => {
+                    const termCode = selectedValues[index];
+                    const termTitle = termList.find(t => t.code === termCode)?.title || termCode;
 
-                setGraphData(() => ({
-                    labels: selectedTitles,
-                    datasets: [
-                        {
-                            data: counts,
-                            backgroundColor: backgroundColors
-                        }
-                    ]
-                }));
+                    const dataMap = {};
+                    termData.forEach(({ course, total }) => {
+                        dataMap[course] = parseInt(total, 10);
+                    });
+
+                    const data = labels.map(course => dataMap[course] || 0);
+
+                    const backgroundColor = `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, 0.5)`;
+
+                    return {
+                        label: termTitle,
+                        data,
+                        backgroundColor
+                    };
+                });
+
+                setGraphData({
+                    labels,
+                    datasets
+                });
+
                 setLoadingStatus(false);
             } catch (error) {
                 console.error('Error fetching data: ', error);
@@ -233,7 +252,7 @@ function SLPA({ classes }) {
         responsive: true,
         plugins: {
             legend: {
-                display: false
+                display: true
             },
             title: {
                 display: true,
@@ -241,7 +260,7 @@ function SLPA({ classes }) {
             }
         }
     };
-    console.log(manualStudentIds);
+
     const renderTabContent = () => {
         if (tabChange === 0) {
             return (
@@ -368,25 +387,34 @@ function SLPA({ classes }) {
                             />
                         ))}
                     </Dropdown>
-                    {studentData.length > 0 && (
-                        <Table>
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell>ID</TableCell>
-                                    <TableCell>First Name</TableCell>
-                                    <TableCell>Last Name</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {studentData.map(s => (
-                                    <TableRow key={s.id}>
-                                        <TableCell>{s.id}</TableCell>
-                                        <TableCell>{s.firstName}</TableCell>
-                                        <TableCell>{s.lastName}</TableCell>
+                    {studentData.length === 0 && dropdownStateTermReview !== undefined ? (
+                        <Typography>No override history found for this term.</Typography>
+                    ) : (
+                        <div style={{
+                            overflowY: 'auto',
+                            maxHeight: '300px',
+                            minHeight: '100px',
+                            paddingTop: '8px'
+                        }}>
+                            <Table>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell style={{ maxWidth: '120px' }}>ID</TableCell>
+                                        <TableCell style={{ maxWidth: '120px' }}>First Name</TableCell>
+                                        <TableCell style={{ maxWidth: '120px' }}>Last Name</TableCell>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                                </TableHead>
+                                <TableBody>
+                                    {studentData.map(s => (
+                                        <TableRow key={s.id}>
+                                            <TableCell style={{ maxWidth: '120px' }}>{s.id}</TableCell>
+                                            <TableCell style={{ wordBreak: 'break-word', maxWidth: '120px' }}>{s.firstName}</TableCell>
+                                            <TableCell style={{ wordBreak: 'break-word', maxWidth: '120px' }}>{s.lastName}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
                     )}
                 </div>
             );

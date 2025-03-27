@@ -49,6 +49,11 @@ module.exports = {
                     key: 'SLPAPipelineAPI',
                     label: 'SLPA Pipeline API',
                     type: 'text'
+                },
+                {
+                    key: 'SLPACountPipelineAPI',
+                    label: 'SLPA Count Pipeline API',
+                    type: 'text'
                 }
             ],
             server: [
