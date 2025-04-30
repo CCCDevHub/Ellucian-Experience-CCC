@@ -34,7 +34,7 @@
     "@babel/preset-env": "7.12.1",
     "@babel/preset-react": "7.12.1",
     "@calm/eslint-plugin-react-intl": "1.4.1",
-    "@ellucian/experience-extension": "https://cdn.elluciancloud.com/assets/SDK/7.9.0/ellucian-experience-extension-7.9.0.tgz",
+    "@ellucian/experience-extension": "https://cdn.elluciancloud.com/assets/SDK/7.16.0/ellucian-experience-extension-7.16.0.tgz",
     "babel-plugin-rewire": "1.2.0",
     "cross-env": "7.0.2",
     "dotenv": "8.2.0",
