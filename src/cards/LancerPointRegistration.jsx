@@ -102,7 +102,7 @@ function LancePointRegistration({ classes }) {
         if (dropdownStateTerm) {
             href = hasData
                 ? 'https://reg-test.ec.pasadena.edu:8103/StudentRegistrationSsb'
-                : 'https://generalssb-test.ec.pasadena.edu:8101/BannerExtensibility/customPage/page/pbsxVteaSurvey';
+                : `https://generalssb-test.ec.pasadena.edu:8101/BannerExtensibility/customPage/page/pbsxVteaSurvey?termCode=${dropdownStateTerm}`;
         }
 
         return (
