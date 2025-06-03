@@ -19,7 +19,7 @@ const styles = () => ({
     }
 });
 
-function TestExtCard({ classes }) {
+function SectionAuthorizationCode({ classes }) {
     const customId = 'Section-Add-Authorization-Code';
     const { configuration:
         {
@@ -255,7 +255,7 @@ function TestExtCard({ classes }) {
 
     const codeList = () => {
         if (addCodes.length !== 0) {
-            const activeItems = addCodes.filter(item => item.activeInd === 'Y');
+            const activeItems = addCodes?.filter(item => item.activeInd === 'Y');
 
             if (activeItems.length === 0) {
                 return <p>No active authorization codes available.</p>;
@@ -351,8 +351,10 @@ function TestExtCard({ classes }) {
 
 }
 
-TestExtCard.propTypes = {
+
+
+SectionAuthorizationCode.propTypes = {
     classes: PropTypes.object.isRequired
 };
 
-export default withStyles(styles)(TestExtCard);
+export default withStyles(styles)(SectionAuthorizationCode);

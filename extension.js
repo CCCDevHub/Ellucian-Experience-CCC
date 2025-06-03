@@ -5,7 +5,7 @@ module.exports = {
     cards: [
         {
             type: "GraphQlQueryCard",
-            source: "./src/cards/Section-Authorization-Code",
+            source: "./src/cards/SectionAuthorizationCode",
             title: "Section Add Authorization Code",
             displayCardType: "Section Add Authorization Code",
             description: "Section Add Authorization Code",
