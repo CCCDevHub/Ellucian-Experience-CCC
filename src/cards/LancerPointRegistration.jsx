@@ -109,7 +109,7 @@ function LancePointRegistration({ classes }) {
             <div>
                 {!hasData && (
                     <Typography paragraph>
-                        You have not filled out the required survey, please fill out the PCC VTEA survey in order to proceed
+                        You have not filled out the required survey, please fill out the Pre-Registration survey in order to proceed
                     </Typography>
                 )}
                 <TextLink href={href} target="_blank" rel="noopener noreferrer">
@@ -125,7 +125,7 @@ function LancePointRegistration({ classes }) {
                         }}
                         variant="contained"
                     >
-                        {hasData ? 'Click Here to Register' : 'PCC VTEA Survey'}
+                        {hasData ? 'Click Here to Register' : 'Pre-Registration'}
                     </Button>
                 </TextLink>
                 <Popover
