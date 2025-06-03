@@ -1,50 +1,56 @@
 module.exports = {
     name: "Section Add Authorization Code",
     publisher: "Huey Phan",
-    cards: [{
-        type: "GraphQlQueryCard",
-        source: "./src/cards/Section-Authorization-Code",
-        title: "Section Add Authorization Code",
-        displayCardType: "Section Add Authorization Code",
-        description: "Section Add Authorization Code",
-        pageRoute: {
-            route: "/",
-            excludeClickSelectors: ['a']
-        },
-        configuration: {
-            client: [{
-                key: 'pipelineAPI',
-                label: 'Pipeline API',
-                type: 'text'
+    version: "1.0.1",
+    cards: [
+        {
+            type: "GraphQlQueryCard",
+            source: "./src/cards/Section-Authorization-Code",
+            title: "Section Add Authorization Code",
+            displayCardType: "Section Add Authorization Code",
+            description: "Section Add Authorization Code",
+            configuration: {
+                client: [
+                    {
+                        key: "pipelineAPI",
+                        label: "Pipeline API",
+                        type: "text"
+                    }
+                ],
+                server: [
+                    {
+                        key: "ethosApiKey",
+                        label: "Ethos API",
+                        type: "password",
+                        required: true
+                    }
+                ]
             },
-            ],
-            server: [{
-                key: 'ethosApiKey',
-                label: 'Ethos API',
-                type: 'password',
-                required: true
-            }]
-        },
-        queries: {
-            "section-list": [
-                {
-                    "resourceVersions": {
-                        "sections": { min: 16 },
-                        "courses": { min: 16 },
-                        "subjects": { min: 6 },
-                        "sectionStatuses": { min: 11 },
-                        "academicPeriods": { min: 16 },
-                        "sectionInstructors": { min: 10 },
-                        "persons": { min: 12 },
-                        "instructionalMethods": { min: 6 }
-                    },
-                    "query":
-                        `query sectionList($personId: ID){
-                            	sectionInstructors: {sectionInstructors} (
+            queries: {
+                "section-list": [
+                    {
+                        resourceVersions: {
+                            sections: { min: 16 },
+                            courses: { min: 16 },
+                            subjects: { min: 6 },
+                            sectionStatuses: { min: 11 },
+                            academicPeriods: { min: 16 },
+                            sectionInstructors: { min: 10 },
+                            persons: { min: 12 },
+                            instructionalMethods: { min: 6 }
+                        },
+                        query: `
+                            query sectionList($personId: ID, $todayDate: Date) {
+                                sectionInstructors: {sectionInstructors} (
                                     filter: {
-                                        {instructor@persons} : { id: { EQ: $personId } }
+                                        {instructor@persons}: { id: { EQ: $personId } }
+                                        {section@sections}: {
+                                            reportingAcademicPeriod16: {
+                                                startOn: { BEFORE: $todayDate }
+                                                endOn: { AFTER: $todayDate }
+                                            }
+                                        }
                                     }
-                                    sort: {{section@sections}:{{reportingAcademicPeriod@academicPeriods}:{code:DESC}}}
                                 ) {
                                     edges {
                                         node {
@@ -74,7 +80,7 @@ module.exports = {
                                                     value
                                                 }
                                                 course16 {
-                                                    subject: {subject} {
+                                                    subject6 {
                                                         abbreviation
                                                     }
                                                     number
@@ -89,35 +95,11 @@ module.exports = {
                                         }
                                     }
                                 }
-                        }`
-                }
-            ],
-            'term-list': [
-                {
-                    resourceVersions: {
-                        academicPeriods: { min: 16 }
-                    },
-                    query:
-                        `query termList{
-                            academicPeriods: {academicPeriods} (
-                                filter: { code: { STARTS_WITH: "2" } }
-                                sort: { startOn: DESC }
-                            ) {
-                                totalCount
-                                edges {
-                                node {
-                                    id
-                                    code
-                                    title
-                                }
-                                }
                             }
-                        }`
-                }
-            ]
+                        `
+                    }
+                ]
+            }
         }
-    }],
-    "page": {
-        "source": "./src/page/router.jsx"
-    }
-}
+    ]
+};
