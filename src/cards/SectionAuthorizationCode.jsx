@@ -1,7 +1,7 @@
 import { withStyles } from '@ellucian/react-design-system/core/styles';
 import { spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
-import { Typography, TextLink, Dropdown, DropdownItem, Table, TableRow, TableCell, TableBody, TableHead } from '@ellucian/react-design-system/core';
-import { useCardControl, useCardInfo, useExtensionControl, useUserInfo, useData, useDashboardInfo } from '@ellucian/experience-extension-utils';
+import { Typography, TextLink, Dropdown, DropdownItem, Table, TableRow, TableCell, TableBody, TableHead, TextField } from '@ellucian/react-design-system/core';
+import { useCardControl, useCardInfo, useExtensionControl, useUserInfo, useData, useDashboardInfo, useCache } from '@ellucian/experience-extension-utils';
 import PropTypes from 'prop-types';
 import React, { useEffect, useMemo, useState } from 'react';
 import classnames from 'classnames';
@@ -21,14 +21,11 @@ const styles = () => ({
 
 function SectionAuthorizationCode({ classes }) {
     const customId = 'Section-Add-Authorization-Code';
-    const { configuration:
-        {
-            pipelineAPI
-        }, cardId
-    } = useCardInfo();
-
-    const { setLoadingStatus, setErrorMessage } = useCardControl();
+    const { cardId } = useCardInfo();
+    const { setLoadingStatus, setErrorMessage, navigateToPage } = useCardControl();
     const { authenticatedEthosFetch, getEthosQuery } = useData();
+    const { getItem, storeItem, removeItem } = useCache();
+
     const [sections, setSections] = useState([]);
     const [dropdownSection, setDropdownSection] = useState();
     const [dropdownStateSection, setDropdownStateSection] = useState();
@@ -235,69 +232,47 @@ function SectionAuthorizationCode({ classes }) {
         })();
     }, []);
 
-    const handleChangeSection = async (event) => {
+    const handleChangeSection = (event) => {
         const { value } = event.target;
         setDropdownStateSection(value);
         setLoadingStatus(true);
 
-        const [crn, termCode] = value?.split('.') ?? [];
+        localStorage.setItem('selectedSection', value)
+        navigateToPage({
+            route: `/section-authorization-code`
+        });
+        setLoadingStatus(false);
 
-        try {
-            const response = await authenticatedEthosFetch(`${pipelineAPI}?cardId=${cardId}&crn=${crn}&termCode=${termCode}`);
-            const result = await response.json();
-            setAddCodes(() => result);
-            setLoadingStatus(false);
-
-        } catch (error) {
-            console.error('Error fetching data: ', error);
-        }
     };
 
     const codeList = () => {
         if (addCodes.length !== 0) {
             const activeItems = addCodes?.filter(item => item.activeInd === 'Y');
-
             if (activeItems.length === 0) {
                 return <p>No active authorization codes available.</p>;
             }
-
-            const rows = [];
-            for (let i = 0; i < activeItems.length; i += 3) {
-                rows.push(activeItems.slice(i, i + 3));
-            }
-
-            const handleCopy = (code) => {
-                navigator.clipboard.writeText(code).then(() => {
-                    setCopiedCode(code);
-                    setTimeout(() => setCopiedCode(null), 1500);
-                });
-            };
 
             return (
                 <div style={{ marginTop: '1rem' }}>
                     <Typography variant="h5">Authorization Codes ({activeItems.length})</Typography>
                     <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Add Code</TableCell>
+                                <TableCell>Student ID</TableCell>
+                            </TableRow>
+                        </TableHead>
                         <TableBody>
-                            {rows.map((row, rowIndex) => (
-                                <TableRow key={rowIndex}>
-                                    {row.map((item, colIndex) => (
-                                        <TableCell
-                                            key={colIndex}
-                                            onClick={() => handleCopy(item.authCde)}
-                                            style={{
-                                                cursor: 'pointer',
-                                                backgroundColor: copiedCode === item.authCde ? '#e0ffe0' : 'transparent',
-                                                fontWeight: copiedCode === item.authCde ? 'bold' : 'normal',
-                                                textAlign: 'center',
-                                                transition: 'background-color 0.3s'
-                                            }}
-                                        >
-                                            {copiedCode === item.authCde ? 'Copied!' : item.authCde}
-                                        </TableCell>
-                                    ))}
-                                    {Array.from({ length: 3 - row.length }).map((_, fillerIndex) => (
-                                        <TableCell key={`filler-${fillerIndex}`} />
-                                    ))}
+                            {activeItems.map((item) => (
+                                <TableRow key={item.authCde}>
+                                    <TableCell>{item.authCde} </TableCell>
+                                    <TableCell>
+                                        <TextField
+                                            id={`${customId}_StudentID`}
+                                            label="Student Id"
+                                            name="studentId"
+                                        />
+                                    </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>

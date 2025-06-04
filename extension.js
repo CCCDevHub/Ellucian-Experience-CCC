@@ -15,6 +15,16 @@ module.exports = {
                         key: "pipelineAPI",
                         label: "Pipeline API",
                         type: "text"
+                    },
+                    {
+                        key: "putPipelineAPI",
+                        label: "Put Pipeline API",
+                        type: "text"
+                    },
+                    {
+                        key: "postPipelineAPI",
+                        label: "Post Pipeline API",
+                        type: "text"
                     }
                 ],
                 server: [
@@ -101,5 +111,8 @@ module.exports = {
                 ]
             }
         }
-    ]
+    ],
+    page: {
+        source: "./src/page/Home.jsx"
+    }
 };
