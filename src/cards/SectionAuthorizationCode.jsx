@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import React, { useEffect, useMemo, useState } from 'react';
 import classnames from 'classnames';
 import { Icon } from '@ellucian/ds-icons/lib';
+import mock from '../data/mock.json';
 
 const styles = () => ({
     card: {
@@ -40,191 +41,10 @@ function SectionAuthorizationCode({ classes }) {
                 // const sectionResult = await getEthosQuery({
                 //     queryId: 'section-list', properties: { todayDate: todayDate }
                 // });
-                const sectionResult = await {
-                    "data": {
-                        "sectionInstructors": {
-                            "edges": [
-                                {
-                                    "node": {
-                                        "id": "667cd958-33bf-43eb-a28f-3873722b81b3",
-                                        "instructionalMethod6": {
-                                            "title": "Lecture",
-                                            "abbreviation": "L"
-                                        },
-                                        "section16": {
-                                            "id": "5b405dad-a431-425f-9982-37d4bdbd452d",
-                                            "startOn": "2025-02-18",
-                                            "endOn": "2025-04-13",
-                                            "code": "34171",
-                                            "reportingAcademicPeriod16": {
-                                                "code": "202530",
-                                                "title": "Spring 2025",
-                                                "registration": "open"
-                                            },
-                                            "maxEnrollment": 25,
-                                            "crossListed": "notCrossListed",
-                                            "alternateIds": [
-                                                {
-                                                    "title": "Source Key",
-                                                    "value": "34171.202530"
-                                                }
-                                            ],
-                                            "course16": {
-                                                "subject6": {
-                                                    "abbreviation": "ABE",
-                                                    "title": "ADULT BASIC EDUCATION"
-                                                },
-                                                "number": "3001"
-                                            }
-                                        },
-                                        "instructor12": {
-                                            "id": "7fb8ed27-bfb3-4906-83ff-5e2960795f10",
-                                            "names": [
-                                                {
-                                                    "fullName": "Tae Yong Yang"
-                                                }
-                                            ]
-                                        }
-                                    }
-                                },
-                                {
-                                    "node": {
-                                        "id": "c8205853-ce91-4d22-b25c-911fc627e543",
-                                        "instructionalMethod6": {
-                                            "title": "DE Online Lecture",
-                                            "abbreviation": "OLD"
-                                        },
-                                        "section16": {
-                                            "id": "4cb14d5d-29ba-4f74-90f8-a64b2b007b45",
-                                            "startOn": "2025-04-21",
-                                            "endOn": "2025-06-15",
-                                            "code": "38085",
-                                            "reportingAcademicPeriod16": {
-                                                "code": "202530",
-                                                "title": "Spring 2025",
-                                                "registration": "open"
-                                            },
-                                            "maxEnrollment": 25,
-                                            "crossListed": "notCrossListed",
-                                            "alternateIds": [
-                                                {
-                                                    "title": "Source Key",
-                                                    "value": "38085.202530"
-                                                }
-                                            ],
-                                            "course16": {
-                                                "subject6": {
-                                                    "abbreviation": "AHSD",
-                                                    "title": "ADULT HIGH SCHOOL DIPLOMA"
-                                                },
-                                                "number": "6402"
-                                            }
-                                        },
-                                        "instructor12": {
-                                            "id": "7fb8ed27-bfb3-4906-83ff-5e2960795f10",
-                                            "names": [
-                                                {
-                                                    "fullName": "Tae Yong Yang"
-                                                }
-                                            ]
-                                        }
-                                    }
-                                },
-                                {
-                                    "node": {
-                                        "id": "5520e14c-cd4c-49c2-8109-30a84443db52",
-                                        "instructionalMethod6": {
-                                            "title": "DE Online Lecture",
-                                            "abbreviation": "OLD"
-                                        },
-                                        "section16": {
-                                            "id": "4cb14d5d-29ba-4f74-90f8-a64b2b007b45",
-                                            "startOn": "2025-04-21",
-                                            "endOn": "2025-06-15",
-                                            "code": "38085",
-                                            "reportingAcademicPeriod16": {
-                                                "code": "202530",
-                                                "title": "Spring 2025",
-                                                "registration": "open"
-                                            },
-                                            "maxEnrollment": 25,
-                                            "crossListed": "notCrossListed",
-                                            "alternateIds": [
-                                                {
-                                                    "title": "Source Key",
-                                                    "value": "38085.202530"
-                                                }
-                                            ],
-                                            "course16": {
-                                                "subject6": {
-                                                    "abbreviation": "AHSD",
-                                                    "title": "ADULT HIGH SCHOOL DIPLOMA"
-                                                },
-                                                "number": "6402"
-                                            }
-                                        },
-                                        "instructor12": {
-                                            "id": "7fb8ed27-bfb3-4906-83ff-5e2960795f10",
-                                            "names": [
-                                                {
-                                                    "fullName": "Tae Yong Yang"
-                                                }
-                                            ]
-                                        }
-                                    }
-                                },
-                                {
-                                    "node": {
-                                        "id": "d1a76677-dddf-4665-8597-d48c584e6c9a",
-                                        "instructionalMethod6": {
-                                            "title": "Lecture",
-                                            "abbreviation": "L"
-                                        },
-                                        "section16": {
-                                            "id": "e6288f67-babc-416c-9c27-7becdae85c91",
-                                            "startOn": "2025-04-21",
-                                            "endOn": "2025-06-15",
-                                            "code": "39140",
-                                            "reportingAcademicPeriod16": {
-                                                "code": "202530",
-                                                "title": "Spring 2025",
-                                                "registration": "open"
-                                            },
-                                            "maxEnrollment": 25,
-                                            "crossListed": "notCrossListed",
-                                            "alternateIds": [
-                                                {
-                                                    "title": "Source Key",
-                                                    "value": "39140.202530"
-                                                }
-                                            ],
-                                            "course16": {
-                                                "subject6": {
-                                                    "abbreviation": "ABE",
-                                                    "title": "ADULT BASIC EDUCATION"
-                                                },
-                                                "number": "3001"
-                                            }
-                                        },
-                                        "instructor12": {
-                                            "id": "7fb8ed27-bfb3-4906-83ff-5e2960795f10",
-                                            "names": [
-                                                {
-                                                    "fullName": "Tae Yong Yang"
-                                                }
-                                            ]
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
+                const sectionResult = await mock;
                 const sectionData = (sectionResult?.data?.sectionInstructors?.edges?.map(edge => edge.node));
                 setSections(() => sectionData);
-                // const excelResponse = await authenticatedEthosFetch(`${microsoftPipelineAPI}?cardId=${cardId}`);
-                // const excelResult = await excelResponse.json();
-                // setExcelData(() => excelResult);
+
                 setLoadingStatus(false);
             } catch (error) {
                 console.log(error);
@@ -237,7 +57,7 @@ function SectionAuthorizationCode({ classes }) {
         setDropdownStateSection(value);
         setLoadingStatus(true);
 
-        localStorage.setItem('selectedSection', value)
+        localStorage.setItem('selectedSection', value);
         navigateToPage({
             route: `/section-authorization-code`
         });
@@ -294,7 +114,7 @@ function SectionAuthorizationCode({ classes }) {
             seen.add(key);
             return true;
         });
-
+        localStorage.setItem('sectionData', JSON.stringify(dedupedSections));
         return (
             <div className={classes.card}>
                 <Dropdown

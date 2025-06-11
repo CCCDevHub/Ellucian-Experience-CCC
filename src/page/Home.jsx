@@ -1,10 +1,10 @@
 import { withStyles } from '@ellucian/react-design-system/core/styles';
 import { spacing20, spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
 import {
-    Typography, Tab, Tabs, Table, TableRow, TableCell, TableBody, TableHead, TextField, Button
+    Typography, Tab, Tabs, Table, TableRow, TableCell, TableBody, TableHead, TextField, Button, Dropdown, DropdownItem
 } from '@ellucian/react-design-system/core';
 import PropTypes from 'prop-types';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import {
     useCache,
     useCardInfo,
@@ -61,35 +61,55 @@ const HomePage = (props) => {
     const [tabChange, setTabChange] = useState(0);
 
     const selected = localStorage.getItem('selectedSection');
-    const [crn, termCode] = selected ? selected.split('.') : [];
+    const [initialCrn, initialTermCode] = selected ? selected.split('.') : ['', ''];
+    const [crn, setCrn] = useState(initialCrn);
+    const [termCode, setTermCode] = useState(initialTermCode);
+
+    const sectionData = JSON.parse(localStorage.getItem('sectionData') || '[]');
+
+    const [dropdownSection, setDropdownSection] = useState();
+    const [dropdownStateSection, setDropdownStateSection] = useState(selected);
+
+    const fetchAuthorizationData = async (crn, termCode) => {
+        setLoadingStatus(true);
+        try {
+            const response = await authenticatedEthosFetch(`${pipelineAPI}?cardId=${cardId}&crn=${crn}&termCode=${termCode}`);
+            const rawResult = await response.json();
+            const result = Array.isArray(rawResult)
+                ? rawResult.filter(item => !('spridenId' in item))
+                : [];
+            setAddCodes(() => result);
+            const studentHasCode = Array.isArray(rawResult)
+                ? rawResult.filter(item => ('spridenId' in item))
+                : [];
+            setStudentWithCodes(() => studentHasCode);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoadingStatus(false);
+        }
+    };
+
     useEffect(() => {
         setPageTitle("Authorization Code");
     }, []);
 
     useEffect(() => {
-        (async () => {
-            setLoadingStatus(true);
-            try {
-                const response = await authenticatedEthosFetch(`${pipelineAPI}?cardId=${cardId}&crn=${crn}&termCode=${termCode}`);
-                const rawResult = await response.json();
-                const result = Array.isArray(rawResult)
-                    ? rawResult.filter(item => !('spridenId' in item))
-                    : [];
-                setAddCodes(() => result);
-                const studentHasCode = Array.isArray(rawResult)
-                    ? rawResult.filter(item => ('spridenId' in item))
-                    : [];
-                setStudentWithCodes(() => studentHasCode);
-                setLoadingStatus(false);
-            } catch (error) {
-                console.log(error);
-            }
-        })();
-    }, []);
+        fetchAuthorizationData(crn, termCode);
+    }, [crn, termCode]);
 
     const handleTabChange = (event, value) => {
         setTabChange(() => value);
     }
+
+    const handleChangeSection = useCallback((event) => {
+        const { value } = event.target;
+        setDropdownStateSection(value);
+        localStorage.setItem('selectedSection', value);
+        const [newCrn, newTermCode] = value.split('.');
+        setCrn(newCrn);
+        setTermCode(newTermCode);
+    }, []);
 
     const renderContent = () => {
         if (tabChange === 0) {
@@ -99,8 +119,6 @@ const HomePage = (props) => {
                     return <p>No active authorization codes available.</p>;
                 }
                 else {
-
-
                     return (
                         <div style={{ marginTop: '1rem' }}>
                             <Typography variant="h5">Authorization Codes Available {activeItems.length}</Typography>
@@ -169,17 +187,7 @@ const HomePage = (props) => {
                                         }
                                     }));
 
-                                    const refreshed = await authenticatedEthosFetch(`${pipelineAPI}?cardId=${cardId}&crn=${crn}&termCode=${termCode}`);
-                                    const refreshedResult = await refreshed.json();
-                                    const filtered = Array.isArray(refreshedResult)
-                                        ? refreshedResult.filter(item => !('spridenId' in item))
-                                        : [];
-                                    setAddCodes(() => filtered);
-                                    const refreshedStudents = Array.isArray(refreshedResult)
-                                        ? refreshedResult.filter(item => ('spridenId' in item))
-                                        : [];
-                                    setStudentWithCodes(() => refreshedStudents);
-                                    setLoadingStatus(false);
+                                    await fetchAuthorizationData(crn, termCode);
                                 }}
                             >
                                 Process
@@ -193,27 +201,19 @@ const HomePage = (props) => {
                                             method: 'POST'
                                         });
                                         const result = await response.json();
-                                        const refreshed = await authenticatedEthosFetch(`${pipelineAPI}?cardId=${cardId}&crn=${crn}&termCode=${termCode}`);
-                                        const refreshedResult = await refreshed.json();
-                                        const filtered = Array.isArray(refreshedResult)
-                                            ? refreshedResult.filter(item => !('spridenId' in item))
-                                            : [];
-                                        setAddCodes(() => filtered);
-                                        setLoadingStatus(false);
+                                        await fetchAuthorizationData(crn, termCode);
                                     } catch (error) {
                                         console.error('Failed to process:', error);
                                     }
                                 }}
                             >
-                                Generate Code
+                                Generate Codes
                             </Button>
                         </div>
                     )
                 }
             } else {
-                <div>
-                    <h2>Testing</h2>
-                </div>
+                return null;
             }
         }
         if (tabChange === 1) {
@@ -247,6 +247,27 @@ const HomePage = (props) => {
 
     return (
         <div className={classes.card}>
+            <Dropdown
+                id={`${customId}_DropdownSection`}
+                label="Select Section"
+                onChange={handleChangeSection}
+                value={dropdownStateSection}
+                fullWidth
+                className={classes.spacing}
+            >
+                {sectionData.map(sec => {
+                    const section = sec?.section16;
+                    const course = section?.course16;
+
+                    return (
+                        <DropdownItem
+                            key={section?.alternateIds?.[0]?.value}
+                            label={`CRN: ${section?.code} (${course?.subject6?.abbreviation} ${course?.number})`}
+                            value={section?.alternateIds?.[0]?.value}
+                        />
+                    );
+                })}
+            </Dropdown>
             <Tabs
                 id={`${customId}_Tabs`}
                 onChange={handleTabChange}
