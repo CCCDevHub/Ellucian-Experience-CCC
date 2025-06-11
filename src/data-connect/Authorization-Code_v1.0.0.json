@@ -1,0 +1,44 @@
+{
+  "name": "Authorization-Code",
+  "parameters": [
+    {
+      "name": "ethosApiKey",
+      "type": "string",
+      "required": true,
+      "sensitive": true
+    },
+    {
+      "name": "crn",
+      "type": "string",
+      "required": true,
+      "sensitive": true
+    },
+    {
+      "name": "termCode",
+      "type": "string",
+      "required": true
+    }
+  ],
+  "apiDefinition": {
+    "authType": "userToken",
+    "httpVerb": "GET"
+  },
+  "pipeline": [
+    "Get registration-add-authorization-codes"
+  ],
+  "segments": {
+    "Get registration-add-authorization-codes": {
+      "class": "ethosProxyGetFilter",
+      "config": {
+        "resource": "registration-add-authorization-codes",
+        "filter": "?keyCrn={{context.crn}}&keyTermCode={{context.termCode}}",
+        "acceptVersions": [
+          "1"
+        ],
+        "cache": false,
+        "queryByPost": false,
+        "ignoreErrors": false
+      }
+    }
+  }
+}

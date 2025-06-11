@@ -1,0 +1,42 @@
+{
+  "name": "Authorization-Code-Update",
+  "parameters": [
+    {
+      "name": "ethosApiKey",
+      "type": "string",
+      "required": true,
+      "sensitive": true
+    }
+  ],
+  "apiDefinition": {
+    "authType": "userToken",
+    "httpVerb": "PUT"
+  },
+  "pipeline": [
+    "JavaScript Transform",
+    "registration-add-authorization-codes put"
+  ],
+  "segments": {
+    "JavaScript Transform": {
+      "class": "JavaScriptTransform",
+      "config": {
+        "pushUndefined": true,
+        "stopOnError": false,
+        "draft": false,
+        "code": "function transform(message, context) {\n  const body = {\n    json: message.payload,\n    tempId: \" \"\n  };\n\n  return {\n    payload: {\n      body\n    }\n  };\n}"
+      }
+    },
+    "registration-add-authorization-codes put": {
+      "class": "ethosProxyPut",
+      "config": {
+        "resource": "registration-add-authorization-codes",
+        "contentVersion": "1.0.0",
+        "acceptVersion": "1",
+        "idFromPayload": "$.body.tempId",
+        "bodyPath": "$.body.json",
+        "ignoreErrors": false,
+        "allowConcurrent": false
+      }
+    }
+  }
+}

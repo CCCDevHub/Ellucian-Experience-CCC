@@ -1,0 +1,50 @@
+{
+  "name": "Authorization-Code-Create",
+  "parameters": [
+    {
+      "name": "ethosApiKey",
+      "type": "string",
+      "required": true,
+      "sensitive": true
+    },
+    {
+      "name": "crn",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "termCode",
+      "type": "string",
+      "required": true
+    }
+  ],
+  "apiDefinition": {
+    "authType": "userToken",
+    "httpVerb": "POST"
+  },
+  "pipeline": [
+    "JavaScript Transform",
+    "registration-add-authorization-codes"
+  ],
+  "segments": {
+    "JavaScript Transform": {
+      "class": "JavaScriptTransform",
+      "config": {
+        "pushUndefined": true,
+        "stopOnError": false,
+        "draft": false,
+        "code": "function transform (message, context) {\n  const body = {\n    \"keyTermCode\": context.termCode,\n    \"keyCrn\": context.crn,\n    \"generateCodeNumber\": 1\n  }\n  \n  return {\n    payload:{\n      body\n    }\n  };\n}\n"
+      }
+    },
+    "registration-add-authorization-codes": {
+      "class": "ethosProxyPost",
+      "config": {
+        "resource": "registration-add-authorization-codes",
+        "contentVersion": "1.0.0",
+        "acceptVersion": "1",
+        "bodyPath": "$.body",
+        "ignoreErrors": false
+      }
+    }
+  }
+}
