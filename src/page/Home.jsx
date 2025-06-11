@@ -160,55 +160,55 @@ const HomePage = (props) => {
                                     ))}
                                 </TableBody>
                             </Table>
-                            <Button
-                                style={{ marginTop: '1rem', marginRight: '1rem' }}
-                                onClick={async () => {
-                                    setLoadingStatus(true);
-                                    const entries = Object.entries(inputValues).filter(([_, v]) => v?.trim());
+                            <div style={{ display: 'flex', gap: '1rem', marginTop: spacing40 }}>
+                                <Button
+                                    onClick={async () => {
+                                        setLoadingStatus(true);
+                                        const entries = Object.entries(inputValues).filter(([_, v]) => v?.trim());
 
-                                    await Promise.all(entries.map(async ([authCde, studentId]) => {
+                                        await Promise.all(entries.map(async ([authCde, studentId]) => {
+                                            try {
+                                                const response = await authenticatedEthosFetch(`${putPipelineAPI}?cardId=${cardId}`, {
+                                                    method: 'PUT',
+                                                    headers: {
+                                                        'Content-Type': 'application/json'
+                                                    },
+                                                    body: JSON.stringify({
+                                                        "keyTermCode": termCode,
+                                                        "criteria.authCde": authCde,
+                                                        "keyCrn": crn,
+                                                        "activeInd": "Y",
+                                                        "spridenId": studentId
+                                                    })
+                                                });
+                                                const result = await response.json();
+                                            } catch (error) {
+                                                console.error('Failed to process:', authCde, error);
+                                            }
+                                        }));
+
+                                        await fetchAuthorizationData(crn, termCode);
+                                    }}
+                                >
+                                    Process
+                                </Button>
+                                <Button
+                                    onClick={async () => {
+                                        setLoadingStatus(true);
                                         try {
-                                            const response = await authenticatedEthosFetch(`${putPipelineAPI}?cardId=${cardId}`, {
-                                                method: 'PUT',
-                                                headers: {
-                                                    'Content-Type': 'application/json'
-                                                },
-                                                body: JSON.stringify({
-                                                    "keyTermCode": termCode,
-                                                    "criteria.authCde": authCde,
-                                                    "keyCrn": crn,
-                                                    "activeInd": "Y",
-                                                    "spridenId": studentId
-                                                })
+                                            const response = await authenticatedEthosFetch(`${postPipelineAPI}?cardId=${cardId}&crn=${crn}&termCode=${termCode}`, {
+                                                method: 'POST'
                                             });
                                             const result = await response.json();
+                                            await fetchAuthorizationData(crn, termCode);
                                         } catch (error) {
-                                            console.error('Failed to process:', authCde, error);
+                                            console.error('Failed to process:', error);
                                         }
-                                    }));
-
-                                    await fetchAuthorizationData(crn, termCode);
-                                }}
-                            >
-                                Process
-                            </Button>
-                            <Button
-                                style={{ marginTop: '1rem' }}
-                                onClick={async () => {
-                                    setLoadingStatus(true);
-                                    try {
-                                        const response = await authenticatedEthosFetch(`${postPipelineAPI}?cardId=${cardId}&crn=${crn}&termCode=${termCode}`, {
-                                            method: 'POST'
-                                        });
-                                        const result = await response.json();
-                                        await fetchAuthorizationData(crn, termCode);
-                                    } catch (error) {
-                                        console.error('Failed to process:', error);
-                                    }
-                                }}
-                            >
-                                Generate Codes
-                            </Button>
+                                    }}
+                                >
+                                    Generate Codes
+                                </Button>
+                            </div>
                         </div>
                     )
                 }
@@ -218,7 +218,7 @@ const HomePage = (props) => {
         }
         if (tabChange === 1) {
             return (
-                <div style={{ marginTop: '1rem' }}>
+                <div style={{ marginTop: spacing40, marginBottom: spacing40 }}>
                     <Typography variant="h5">Students With Authorization Codes</Typography>
                     <Table>
                         <TableHead>
@@ -247,6 +247,12 @@ const HomePage = (props) => {
 
     return (
         <div className={classes.card}>
+            <Typography variant="h4" style={{ marginBottom: spacing20 }}>
+                Add Authorization Codes
+            </Typography>
+            <Typography style={{ marginBottom: spacing40 }}>
+                Select a course section from the dropdown to generate or assign authorization codes.
+            </Typography>
             <Dropdown
                 id={`${customId}_DropdownSection`}
                 label="Select Section"
