@@ -101,5 +101,8 @@ module.exports = {
                 }
             ]
         }
-    }]
+    }],
+    page: {
+        source: "./src/page/Home.jsx"
+    }
 }
