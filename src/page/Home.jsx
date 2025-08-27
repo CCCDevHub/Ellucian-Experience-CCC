@@ -51,7 +51,7 @@ const HomePage = (props) => {
     const { authenticatedEthosFetch, getEthosQuery } = useData();
     const { cardConfiguration:
         {
-            pipelineAPI, postPipelineAPI, putPipelineAPI
+            pipelineAPI, postPipelineAPI, putPipelineAPI, sectionPipelineAPI
         }, cardId
     } = useCardInfo();
     const customId = 'Section-Add-Authorization-Code';
@@ -73,11 +73,10 @@ const HomePage = (props) => {
             (async () => {
                 setLoadingStatus(true);
                 try {
-                    const sectionResult = await getEthosQuery({
-                        queryId: 'section-list', properties: { todayDate: new Date().toJSON().slice(0, 10) }
-                    });
+                    const response = await authenticatedEthosFetch(`${sectionPipelineAPI}?cardId=${cardId}`);
+                    const sectionResult = await response.json();
                     // const sectionResult = await mock;
-                    const sectionDataResult = (sectionResult?.data?.sectionInstructors?.edges?.map(edge => edge.node));
+                    const sectionDataResult = (sectionResult?.data?.sectionInstructors10?.edges?.map(edge => edge.node));
                     const seen = new Set();
                     const dedupedSections = sectionDataResult.filter(sec => {
                         const key = sec?.section16?.alternateIds?.[0]?.value;

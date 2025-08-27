@@ -25,6 +25,11 @@ module.exports = {
                         key: "postPipelineAPI",
                         label: "Post Pipeline API",
                         type: "text"
+                    },
+                    {
+                        key: "sectionPipelineAPI",
+                        label: "Section Pipeline API",
+                        type: "text"
                     }
                 ],
                 server: [
