@@ -20,6 +20,7 @@ import {
     usePageInfo
 } from '@ellucian/experience-extension-utils';
 import SectionAuthorizationCode from '../cards/SectionAuthorizationCode';
+import mock from '../data/mock.json';
 
 
 const styles = () => ({
@@ -65,11 +66,36 @@ const HomePage = (props) => {
     const [crn, setCrn] = useState(initialCrn);
     const [termCode, setTermCode] = useState(initialTermCode);
 
-    const sectionData = JSON.parse(localStorage.getItem('sectionData') || '[]');
-
-    const [dropdownSection, setDropdownSection] = useState();
+    const [sectionData, setSectionData] = useState(JSON.parse(localStorage.getItem('sectionData') || '[]'));
     const [dropdownStateSection, setDropdownStateSection] = useState(selected);
+    useEffect(() => {
+        if (!sectionData || sectionData.length === 0) {
+            (async () => {
+                setLoadingStatus(true);
+                try {
+                    const sectionResult = await getEthosQuery({
+                        queryId: 'section-list', properties: { todayDate: new Date().toJSON().slice(0, 10) }
+                    });
+                    // const sectionResult = await mock;
+                    const sectionDataResult = (sectionResult?.data?.sectionInstructors?.edges?.map(edge => edge.node));
+                    const seen = new Set();
+                    const dedupedSections = sectionDataResult.filter(sec => {
+                        const key = sec?.section16?.alternateIds?.[0]?.value;
+                        if (!key || seen.has(key)) { return false }
+                        seen.add(key);
+                        return true;
+                    });
+                    setSectionData(dedupedSections);
+                    localStorage.setItem('sectionData', JSON.stringify(dedupedSections));
 
+                    setLoadingStatus(false);
+                } catch (error) {
+                    console.log(error);
+                    setLoadingStatus(false);
+                }
+            })();
+        }
+    }, []);
     const fetchAuthorizationData = async (crn, termCode) => {
         setLoadingStatus(true);
         try {
@@ -78,11 +104,11 @@ const HomePage = (props) => {
             const result = Array.isArray(rawResult)
                 ? rawResult.filter(item => !('spridenId' in item))
                 : [];
-            setAddCodes(() => result);
+            setAddCodes(result);
             const studentHasCode = Array.isArray(rawResult)
                 ? rawResult.filter(item => ('spridenId' in item))
                 : [];
-            setStudentWithCodes(() => studentHasCode);
+            setStudentWithCodes(studentHasCode);
         } catch (error) {
             console.error(error);
         } finally {
@@ -99,7 +125,7 @@ const HomePage = (props) => {
     }, [crn, termCode]);
 
     const handleTabChange = (event, value) => {
-        setTabChange(() => value);
+        setTabChange(value);
     }
 
     const handleChangeSection = useCallback((event) => {
@@ -164,30 +190,36 @@ const HomePage = (props) => {
                                 <Button
                                     onClick={async () => {
                                         setLoadingStatus(true);
-                                        const entries = Object.entries(inputValues).filter(([_, v]) => v?.trim());
+                                        try {
+                                            const entries = Object.entries(inputValues).filter(([_, v]) => v?.trim());
 
-                                        await Promise.all(entries.map(async ([authCde, studentId]) => {
-                                            try {
-                                                const response = await authenticatedEthosFetch(`${putPipelineAPI}?cardId=${cardId}`, {
-                                                    method: 'PUT',
-                                                    headers: {
-                                                        'Content-Type': 'application/json'
-                                                    },
-                                                    body: JSON.stringify({
-                                                        "keyTermCode": termCode,
-                                                        "criteria.authCde": authCde,
-                                                        "keyCrn": crn,
-                                                        "activeInd": "Y",
-                                                        "spridenId": studentId
-                                                    })
-                                                });
-                                                const result = await response.json();
-                                            } catch (error) {
-                                                console.error('Failed to process:', authCde, error);
-                                            }
-                                        }));
+                                            await Promise.all(entries.map(async ([authCde, studentId]) => {
+                                                try {
+                                                    const response = await authenticatedEthosFetch(`${putPipelineAPI}?cardId=${cardId}`, {
+                                                        method: 'PUT',
+                                                        headers: {
+                                                            'Content-Type': 'application/json'
+                                                        },
+                                                        body: JSON.stringify({
+                                                            "keyTermCode": termCode,
+                                                            "criteria.authCde": authCde,
+                                                            "keyCrn": crn,
+                                                            "activeInd": "Y",
+                                                            "spridenId": studentId
+                                                        })
+                                                    });
+                                                    const result = await response.json();
+                                                } catch (error) {
+                                                    console.error('Failed to process:', authCde, error);
+                                                }
+                                            }));
 
-                                        await fetchAuthorizationData(crn, termCode);
+                                            await fetchAuthorizationData(crn, termCode);
+                                        } catch (error) {
+                                            console.error('Failed to process codes:', error);
+                                        } finally {
+                                            setLoadingStatus(false);
+                                        }
                                     }}
                                 >
                                     Process
@@ -202,7 +234,9 @@ const HomePage = (props) => {
                                             const result = await response.json();
                                             await fetchAuthorizationData(crn, termCode);
                                         } catch (error) {
-                                            console.error('Failed to process:', error);
+                                            console.error('Failed to generate codes:', error);
+                                        } finally {
+                                            setLoadingStatus(false);
                                         }
                                     }}
                                 >
