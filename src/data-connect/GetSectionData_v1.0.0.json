@@ -1,0 +1,42 @@
+{
+  "name": "GetSectionData",
+  "parameters": [
+    {
+      "name": "ethosApiKey",
+      "type": "string",
+      "required": true,
+      "sensitive": true
+    },
+    {
+      "name": "testPersonId",
+      "type": "string",
+      "sensitive": true
+    }
+  ],
+  "apiDefinition": {
+    "authType": "userToken",
+    "httpVerb": "GET"
+  },
+  "pipeline": [
+    "Set up user",
+    "Get Section List"
+  ],
+  "segments": {
+    "Set up user": {
+      "class": "JavaScriptTransform",
+      "config": {
+        "pushUndefined": true,
+        "stopOnError": false,
+        "draft": false,
+        "code": "function transform (message, context) {\n  const contextUser = context.get('__user');\n  const testPersonId = context.get('testPersonId');\n  const todayDate = new Date().toJSON().slice(0, 10);\n  const personId = testPersonId || user?.id;\n  \n  context.set('personId', personId);\n  \n  return { payload:\n    {\n      personId,\n      todayDate\n    }\n  };\n}\n"
+      }
+    },
+    "Get Section List": {
+      "class": "ethosGraphql",
+      "config": {
+        "query": "{ sectionInstructors10( filter: {instructor12: {id: {EQ: \"{{msg.payload.personId}}\"}}, section16: {reportingAcademicPeriod16: {startOn: {BEFORE: \"{{msg.payload.todayDate}}\"}, endOn: {AFTER: \"{{msg.payload.todayDate}}\"}}}} ) { edges { node { id instructionalMethod6 { title abbreviation } section16 { id startOn endOn gradeSubmitted titles { value } code reportingAcademicPeriod16 { code title registration } maxEnrollment crossListed alternateIds { title value } course16 { subject6 { abbreviation } number } } instructor12 { id names { fullName } } } } } }",
+        "ignoreErrors": false
+      }
+    }
+  }
+}
