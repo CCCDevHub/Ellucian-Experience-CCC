@@ -1,0 +1,263 @@
+{
+  "data": {
+    "sectionInstructors": {
+      "edges": [
+        {
+          "node": {
+            "id": "c21c585f-c8aa-4817-b2fa-62b0adc9d159",
+            "instructionalMethod6": {
+              "title": "Lecture",
+              "abbreviation": "L"
+            },
+            "section16": {
+              "id": "8d949956-79d2-4ca4-9221-7a1c2f6cf3ab",
+              "startOn": "2025-08-25",
+              "endOn": "2025-10-19",
+              "gradeSubmitted": 0,
+              "titles": [
+                {
+                  "value": "LANGUAGE ARTS"
+                },
+                {
+                  "value": "LANGUAGE ARTS"
+                }
+              ],
+              "code": "75046",
+              "reportingAcademicPeriod16": {
+                "code": "202570",
+                "title": "Fall 2025",
+                "registration": "open"
+              },
+              "maxEnrollment": 25,
+              "crossListed": "notCrossListed",
+              "alternateIds": [
+                {
+                  "title": "Source Key",
+                  "value": "75046.202570"
+                }
+              ],
+              "course16": {
+                "subject6": {
+                  "abbreviation": "ABE"
+                },
+                "number": "3001"
+              }
+            },
+            "instructor12": {
+              "id": "7fb8ed27-bfb3-4906-83ff-5e2960795f10",
+              "names": [
+                {
+                  "fullName": "Tae Yong Yang"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "b1e1ec49-fc9a-4d1f-be96-04001fc64571",
+            "instructionalMethod6": {
+              "title": "DE Online Lecture",
+              "abbreviation": "OLD"
+            },
+            "section16": {
+              "id": "512906ac-fadd-4333-b802-468707bcc2d9",
+              "startOn": "2025-10-20",
+              "endOn": "2025-12-14",
+              "gradeSubmitted": 0,
+              "titles": [
+                {
+                  "value": "FUNDAMENTALS OF GRAMMAR A"
+                },
+                {
+                  "value": "FUNDAMENTALS OF GRAMMAR A"
+                }
+              ],
+              "code": "72853",
+              "reportingAcademicPeriod16": {
+                "code": "202570",
+                "title": "Fall 2025",
+                "registration": "open"
+              },
+              "maxEnrollment": 25,
+              "crossListed": "notCrossListed",
+              "alternateIds": [
+                {
+                  "title": "Source Key",
+                  "value": "72853.202570"
+                }
+              ],
+              "course16": {
+                "subject6": {
+                  "abbreviation": "AHSD"
+                },
+                "number": "6401"
+              }
+            },
+            "instructor12": {
+              "id": "7fb8ed27-bfb3-4906-83ff-5e2960795f10",
+              "names": [
+                {
+                  "fullName": "Tae Yong Yang"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "a8454f23-ee4a-4cf2-9ff9-d4eb052d894f",
+            "instructionalMethod6": {
+              "title": "DE Online Lecture",
+              "abbreviation": "OLD"
+            },
+            "section16": {
+              "id": "512906ac-fadd-4333-b802-468707bcc2d9",
+              "startOn": "2025-10-20",
+              "endOn": "2025-12-14",
+              "gradeSubmitted": 0,
+              "titles": [
+                {
+                  "value": "FUNDAMENTALS OF GRAMMAR A"
+                },
+                {
+                  "value": "FUNDAMENTALS OF GRAMMAR A"
+                }
+              ],
+              "code": "72853",
+              "reportingAcademicPeriod16": {
+                "code": "202570",
+                "title": "Fall 2025",
+                "registration": "open"
+              },
+              "maxEnrollment": 25,
+              "crossListed": "notCrossListed",
+              "alternateIds": [
+                {
+                  "title": "Source Key",
+                  "value": "72853.202570"
+                }
+              ],
+              "course16": {
+                "subject6": {
+                  "abbreviation": "AHSD"
+                },
+                "number": "6401"
+              }
+            },
+            "instructor12": {
+              "id": "7fb8ed27-bfb3-4906-83ff-5e2960795f10",
+              "names": [
+                {
+                  "fullName": "Tae Yong Yang"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "c5fece5b-f9cb-4149-8912-7928ddb9147c",
+            "instructionalMethod6": {
+              "title": "DE Online Lecture",
+              "abbreviation": "OLD"
+            },
+            "section16": {
+              "id": "d0cba4b2-f041-4bf4-ae54-b58ec05849e6",
+              "startOn": "2025-08-25",
+              "endOn": "2025-10-19",
+              "gradeSubmitted": 0,
+              "titles": [
+                {
+                  "value": "PRACTICAL ENGLISH SKILLS"
+                },
+                {
+                  "value": "PRACTICAL ENGLISH SKILLS"
+                }
+              ],
+              "code": "78758",
+              "reportingAcademicPeriod16": {
+                "code": "202570",
+                "title": "Fall 2025",
+                "registration": "open"
+              },
+              "maxEnrollment": 25,
+              "crossListed": "notCrossListed",
+              "alternateIds": [
+                {
+                  "title": "Source Key",
+                  "value": "78758.202570"
+                }
+              ],
+              "course16": {
+                "subject6": {
+                  "abbreviation": "AHSD"
+                },
+                "number": "6400"
+              }
+            },
+            "instructor12": {
+              "id": "7fb8ed27-bfb3-4906-83ff-5e2960795f10",
+              "names": [
+                {
+                  "fullName": "Tae Yong Yang"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "f5cdce27-a4a7-4f0e-a110-e260495e11f7",
+            "instructionalMethod6": {
+              "title": "DE Online Lecture",
+              "abbreviation": "OLD"
+            },
+            "section16": {
+              "id": "d0cba4b2-f041-4bf4-ae54-b58ec05849e6",
+              "startOn": "2025-08-25",
+              "endOn": "2025-10-19",
+              "gradeSubmitted": 0,
+              "titles": [
+                {
+                  "value": "PRACTICAL ENGLISH SKILLS"
+                },
+                {
+                  "value": "PRACTICAL ENGLISH SKILLS"
+                }
+              ],
+              "code": "78758",
+              "reportingAcademicPeriod16": {
+                "code": "202570",
+                "title": "Fall 2025",
+                "registration": "open"
+              },
+              "maxEnrollment": 25,
+              "crossListed": "notCrossListed",
+              "alternateIds": [
+                {
+                  "title": "Source Key",
+                  "value": "78758.202570"
+                }
+              ],
+              "course16": {
+                "subject6": {
+                  "abbreviation": "AHSD"
+                },
+                "number": "6400"
+              }
+            },
+            "instructor12": {
+              "id": "7fb8ed27-bfb3-4906-83ff-5e2960795f10",
+              "names": [
+                {
+                  "fullName": "Tae Yong Yang"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

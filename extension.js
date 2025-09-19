@@ -1,18 +1,123 @@
 module.exports = {
-    "name": "Extension Name",
-    "publisher": "Your Name",
-    "cards": [{
-        "type": "TestExtCard",
-        "source": "./src/cards/TestExtCard",
-        "title": "Card Title",
-        "displayCardType": "Card Type",
-        "description": "Card Description",
-        "pageRoute": {
-            "route": "/",
-            "excludeClickSelectors": ['a']
+    name: "Attendance Tracking",
+    publisher: "Huey Phan",
+    version: "1.0.1",
+    cards: [
+        {
+            type: "GraphQlQueryCard",
+            source: "./src/cards/Attendance",
+            title: "Attendance Tracking",
+            displayCardType: "graphql-query-card",
+            description: "Attendance Tracking Card",
+            configuration: {
+                client: [
+                    {
+                        key: "pipelineAPI",
+                        label: "Pipeline API",
+                        type: "text"
+                    },
+                    {
+                        key: "putPipelineAPI",
+                        label: "Put Pipeline API",
+                        type: "text"
+                    },
+                    {
+                        key: "postPipelineAPI",
+                        label: "Post Pipeline API",
+                        type: "text"
+                    },
+                    {
+                        key: "sectionPipelineAPI",
+                        label: "Section Pipeline API",
+                        type: "text"
+                    }
+                ],
+                server: [
+                    {
+                        key: "ethosApiKey",
+                        label: "Ethos API",
+                        type: "password",
+                        required: true
+                    }
+                ]
+            },
+            queries: {
+                "section-list": [
+                    {
+                        resourceVersions: {
+                            sections: { min: 16 },
+                            courses: { min: 16 },
+                            subjects: { min: 6 },
+                            sectionStatuses: { min: 11 },
+                            academicPeriods: { min: 16 },
+                            sectionInstructors: { min: 10 },
+                            persons: { min: 12 },
+                            instructionalMethods: { min: 6 }
+                        },
+                        query: `
+                            query sectionList($personId: ID, $todayDate: Date) {
+                                sectionInstructors: {sectionInstructors} (
+                                    filter: {
+                                        {instructor@persons}: { id: { EQ: $personId } }
+                                        {section@sections}: {
+                                            reportingAcademicPeriod16: {
+                                                startOn: { BEFORE: $todayDate }
+                                                endOn: { AFTER: $todayDate }
+                                            }
+                                        }
+                                    }
+                                ) {
+                                    edges {
+                                        node {
+                                            id
+                                            instructionalMethod6 {
+                                                title
+                                                abbreviation
+                                            }
+                                            section16 {
+                                                id
+                                                startOn
+                                                endOn
+                                                gradeSubmitted
+                                                titles {
+                                                    value
+                                                }
+                                                code
+                                                reportingAcademicPeriod16 {
+                                                    code
+                                                    title
+                                                    registration
+                                                }
+                                                maxEnrollment
+                                                crossListed
+                                                alternateIds {
+                                                    title
+                                                    value
+                                                }
+                                                course16 {
+                                                    subject6 {
+                                                        abbreviation
+                                                    }
+                                                    number
+                                                }
+                                            }
+                                            instructor12 {
+                                                id
+                                                names {
+                                                    fullName
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        `
+                    }
+                ]
+            }
         }
-    }],
-    "page": {
-        "source": "./src/page/router.jsx"
+    ],
+    page: {
+        source: "./src/page/Home.jsx"
     }
-}
+};
