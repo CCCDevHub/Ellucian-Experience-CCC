@@ -65,7 +65,7 @@ const HomePage = (props) => {
     const [initialCrn, initialTermCode] = selected ? selected.split('.') : ['', ''];
     const [crn, setCrn] = useState(initialCrn);
     const [termCode, setTermCode] = useState(initialTermCode);
-
+    const [courseName, setCourseName] = useState('');
     const [sectionData, setSectionData] = useState(JSON.parse(localStorage.getItem('sectionData') || '[]'));
     const [dropdownStateSection, setDropdownStateSection] = useState(selected);
     const [attendanceData, setAttendanceData] = useState({});
@@ -171,7 +171,7 @@ const HomePage = (props) => {
     const handleAlertClose = () => {
         setAlertOpen(false);
     }
-
+    console.log(dropdownStateSection)
     const printAttendanceHistory = () => {
         const printContent = document.getElementById('attendance-history-table');
 
@@ -197,9 +197,67 @@ const HomePage = (props) => {
                 </head>
                 <body>
                     <h1>Attendance History Report</h1>
-                    <p><strong>Section:</strong> CRN ${crn} - Term ${termCode}</p>
+                    <p><strong>Section:</strong> ${courseName}</p>
                     <p><strong>Generated:</strong> ${new Date().toLocaleString()}</p>
                     ${printContent.outerHTML}
+                </body>
+            </html>
+        `);
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
+    }
+
+    const printBlankSheet = () => {
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Blank Attendance Sheet</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        h1 { color: #333; margin-bottom: 20px; }
+                        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+                        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; min-height: 40px; }
+                        th { background-color: #f2f2f2; font-weight: bold; }
+                        .empty-cell { height: 40px; }
+                        @media print {
+                            body { margin: 0; }
+                            table { page-break-inside: auto; }
+                            tr { page-break-inside: avoid; page-break-after: auto; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h1>Attendance Sheet</h1>
+                    <p><strong>Section:</strong> ${courseName}</p>
+                    <p><strong>Date:</strong> _______________</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>Student Name</th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${studentList.map(student => `
+                                <tr>
+                                    <td>${student.spridenId}</td>
+                                    <td>${student.spridenCurrName}</td>
+                                    <td class="empty-cell"></td>
+                                    <td class="empty-cell"></td>
+                                    <td class="empty-cell"></td>
+                                    <td class="empty-cell"></td>
+                                    <td class="empty-cell"></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
                 </body>
             </html>
         `);
@@ -216,7 +274,14 @@ const HomePage = (props) => {
         const [newCrn, newTermCode] = value.split('.');
         setCrn(newCrn);
         setTermCode(newTermCode);
-    }, []);
+
+        // Set course name for the selected section
+        const selectedSection = sectionData.find(sec => sec?.section16?.alternateIds?.[0]?.value === value);
+        if (selectedSection) {
+            const course = selectedSection.section16?.course16;
+            setCourseName(`${course?.subject6?.abbreviation} ${course?.number}`);
+        }
+    }, [sectionData]);
 
     const renderContent = () => {
         if (tabChange === 0) {
@@ -267,9 +332,12 @@ const HomePage = (props) => {
                         <Typography style={{ marginTop: spacing20 }}>No attendance records found.</Typography>
                     ) : (
                         <div>
-                            <div style={{ marginBottom: spacing20 }}>
+                            <div style={{ marginBottom: spacing20, display: 'flex', gap: '16px' }}>
                                 <Button onClick={printAttendanceHistory} variant="contained" color="primary">
                                     Print/Save as PDF
+                                </Button>
+                                <Button onClick={printBlankSheet} variant="contained" color="primary">
+                                    Print Blank Sheet
                                 </Button>
                             </div>
                             <Table id="attendance-history-table">
