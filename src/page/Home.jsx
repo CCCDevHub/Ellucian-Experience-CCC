@@ -171,7 +171,6 @@ const HomePage = (props) => {
     const handleAlertClose = () => {
         setAlertOpen(false);
     }
-    console.log(dropdownStateSection)
     const printAttendanceHistory = () => {
         const printContent = document.getElementById('attendance-history-table');
 
@@ -329,7 +328,12 @@ const HomePage = (props) => {
                 <div style={{ marginTop: spacing40, marginBottom: spacing40 }}>
                     <Typography variant="h5">Attendance History</Typography>
                     {attendanceDates.length === 0 ? (
-                        <Typography style={{ marginTop: spacing20 }}>No attendance records found.</Typography>
+                        <div style={{ marginBottom: spacing20, display: 'flex', flexDirection: 'column', gap: spacing20, alignItems: 'flex-start' }}>
+                            <Typography>No attendance records found.</Typography>
+                            <Button onClick={printBlankSheet} variant="contained" color="primary">
+                                Print Blank Sheet
+                            </Button>
+                        </div>
                     ) : (
                         <div>
                             <div style={{ marginBottom: spacing20, display: 'flex', gap: '16px' }}>
