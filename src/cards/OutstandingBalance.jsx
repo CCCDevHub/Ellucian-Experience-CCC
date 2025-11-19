@@ -91,10 +91,10 @@ function OutstandingBalance({ classes }) {
     const [studentInfo, setStudentInfo] = useState();
     const [payLink, setPayLink] = useState();
 
-    const payLinkUS = 'https://ssb-prod.ec.pasadena.edu/ssomanager/saml/login?relayState=/c/auth/SSB?pkg=bwskoacc.P_ViewAcctTerm';
-    const paylinkIntl = 'https://ssb-prod.ec.pasadena.edu/ssomanager/saml/login?relayState=/c/auth/SSB?pkg=bwskoacc.P_ViewAcctTerm';
-    // const payLinkUS = 'https://secure.touchnet.net/C21220_tsa/web/caslogin.jsp';
-    // const paylinkIntl = 'https://ssb-prod.ec.pasadena.edu/ssomanager/saml/login?relayState=/c/auth/SSB?pkg=bwymtfxp.P_MTFXPayment';
+    // const payLinkUS = 'https://ssb-prod.ec.pasadena.edu/ssomanager/saml/login?relayState=/c/auth/SSB?pkg=bwskoacc.P_ViewAcctTerm';
+    // const paylinkIntl = 'https://ssb-prod.ec.pasadena.edu/ssomanager/saml/login?relayState=/c/auth/SSB?pkg=bwskoacc.P_ViewAcctTerm';
+    const payLinkUS = 'https://secure.touchnet.net/C21220_tsa/web/caslogin.jsp';
+    const paylinkIntl = 'https://ssb-prod.ec.pasadena.edu/ssomanager/saml/login?relayState=/c/auth/SSB?pkg=bwymtfxp.P_MTFXPayment';
 
     useEffect(() => {
         (async () => {
@@ -265,7 +265,7 @@ function OutstandingBalance({ classes }) {
                                 </div>
                                 <div className={classes.dropDown}>
                                     <Typography variant={'h4'} align={'center'}>
-                                        <TextLink id={`${customId}_PayNow}`} href="https://ssb-prod.ec.pasadena.edu/ssomanager/saml/login?relayState=/c/auth/SSB?pkg=bwskoacc.P_ViewAcctTerm">
+                                        <TextLink id={`${customId}_PayNow}`} href="https://secure.touchnet.net/C21220_tsa/web/caslogin.jsp">
                                             Pay Now
                                         </TextLink>
                                     </Typography>
@@ -347,7 +347,7 @@ function OutstandingBalance({ classes }) {
                                 </div>
                                 <div className={classes.dropDown}>
                                     <Typography variant={'h4'} align={'center'}>
-                                        <TextLink id={`${customId}_PayNow}`} href="https://ssb-prod.ec.pasadena.edu/ssomanager/saml/login?relayState=/c/auth/SSB?pkg=bwskoacc.P_ViewAcctTerm">
+                                        <TextLink id={`${customId}_PayNow}`} href="https://secure.touchnet.net/C21220_tsa/web/caslogin.jsp">
                                             Pay Now
                                         </TextLink>
                                     </Typography>
