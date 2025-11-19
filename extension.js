@@ -6,9 +6,9 @@ module.exports = {
         {
             type: "GraphQlQueryCard",
             source: "./src/cards/Attendance",
-            title: "Attendance Tracking",
+            title: "Class Roster",
             displayCardType: "graphql-query-card",
-            description: "Attendance Tracking Card",
+            description: "Class Roster Card",
             configuration: {
                 client: [
                     {
