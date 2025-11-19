@@ -19,7 +19,7 @@ const styles = () => ({
 });
 
 function Attendance({ classes }) {
-    const customId = 'Attendance-Tracking';
+    const customId = 'Class-Roster';
     const { setLoadingStatus, setErrorMessage, navigateToPage } = useCardControl();
     const { authenticatedEthosFetch, getEthosQuery } = useData();
     const [sections, setSections] = useState([]);
@@ -51,7 +51,7 @@ function Attendance({ classes }) {
 
         localStorage.setItem('selectedSection', value);
         navigateToPage({
-            route: `/attendance-tracking`
+            route: `/class-roster`
         });
         setLoadingStatus(false);
 
@@ -72,9 +72,7 @@ function Attendance({ classes }) {
 
     return (
         <div className={classes.card}>
-            <Typography variant="h4" style={{ marginBottom: spacing20, textAlign: 'center' }}>
-                Attendance Tracking
-            </Typography>
+
             <Typography style={{ marginBottom: spacing40, textAlign: 'center' }}>
                 Select a course section from the dropdown to manage attendance.
             </Typography>

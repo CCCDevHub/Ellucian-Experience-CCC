@@ -55,7 +55,7 @@ const HomePage = (props) => {
             pipelineAPI, postPipelineAPI, putPipelineAPI, sectionPipelineAPI
         }, cardId
     } = useCardInfo();
-    const customId = 'Attendance-Tracking';
+    const customId = 'Roster-Sheet';
 
     const [studentList, setStudentList] = useState([]);
     const [inputValues, setInputValues] = useState({});
@@ -120,7 +120,7 @@ const HomePage = (props) => {
     };
 
     useEffect(() => {
-        setPageTitle("Attendance Tracking");
+        setPageTitle("Roster Sheet");
         loadAttendanceDataFromDB();
     }, []);
 
@@ -171,48 +171,48 @@ const HomePage = (props) => {
     const handleAlertClose = () => {
         setAlertOpen(false);
     }
-    const printAttendanceHistory = () => {
-        const printContent = document.getElementById('attendance-history-table');
+    // const printAttendanceHistory = () => {
+    //     const printContent = document.getElementById('attendance-history-table');
 
-        const printWindow = window.open('', '_blank');
-        printWindow.document.write(`
-            <html>
-                <head>
-                    <title>Attendance History</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; margin: 20px; }
-                        h1 { color: #333; margin-bottom: 20px; }
-                        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                        th { background-color: #f2f2f2; font-weight: bold; }
-                        .present { color: green; font-weight: bold; }
-                        .absent { color: red; font-weight: bold; }
-                        @media print {
-                            body { margin: 0; }
-                            table { page-break-inside: auto; }
-                            tr { page-break-inside: avoid; page-break-after: auto; }
-                        }
-                    </style>
-                </head>
-                <body>
-                    <h1>Attendance History Report</h1>
-                    <p><strong>Section:</strong> ${courseName}</p>
-                    <p><strong>Generated:</strong> ${new Date().toLocaleString()}</p>
-                    ${printContent.outerHTML}
-                </body>
-            </html>
-        `);
-        printWindow.document.close();
-        printWindow.focus();
-        printWindow.print();
-    }
+    //     const printWindow = window.open('', '_blank');
+    //     printWindow.document.write(`
+    //         <html>
+    //             <head>
+    //                 <title>Attendance History</title>
+    //                 <style>
+    //                     body { font-family: Arial, sans-serif; margin: 20px; }
+    //                     h1 { color: #333; margin-bottom: 20px; }
+    //                     table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    //                     th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    //                     th { background-color: #f2f2f2; font-weight: bold; }
+    //                     .present { color: green; font-weight: bold; }
+    //                     .absent { color: red; font-weight: bold; }
+    //                     @media print {
+    //                         body { margin: 0; }
+    //                         table { page-break-inside: auto; }
+    //                         tr { page-break-inside: avoid; page-break-after: auto; }
+    //                     }
+    //                 </style>
+    //             </head>
+    //             <body>
+    //                 <h1>Attendance History Report</h1>
+    //                 <p><strong>Section:</strong> ${courseName}</p>
+    //                 <p><strong>Generated:</strong> ${new Date().toLocaleString()}</p>
+    //                 ${printContent.outerHTML}
+    //             </body>
+    //         </html>
+    //     `);
+    //     printWindow.document.close();
+    //     printWindow.focus();
+    //     printWindow.print();
+    // }
 
     const printBlankSheet = () => {
         const printWindow = window.open('', '_blank');
         printWindow.document.write(`
             <html>
                 <head>
-                    <title>Blank Attendance Sheet</title>
+                    <title>Blank Roster Sheet</title>
                     <style>
                         body { font-family: Arial, sans-serif; margin: 20px; }
                         h1 { color: #333; margin-bottom: 20px; }
@@ -228,7 +228,7 @@ const HomePage = (props) => {
                     </style>
                 </head>
                 <body>
-                    <h1>Attendance Sheet</h1>
+                    <h1>Roster Sheet</h1>
                     <p><strong>Section:</strong> ${courseName}</p>
                     <p><strong>Date:</strong> _______________</p>
                     <table>
@@ -241,6 +241,8 @@ const HomePage = (props) => {
                                 <th></th>
                                 <th></th>
                                 <th></th>
+                                <th></th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -248,6 +250,8 @@ const HomePage = (props) => {
                                 <tr>
                                     <td>${student.spridenId}</td>
                                     <td>${student.spridenCurrName}</td>
+                                    <td class="empty-cell"></td>
+                                    <td class="empty-cell"></td>
                                     <td class="empty-cell"></td>
                                     <td class="empty-cell"></td>
                                     <td class="empty-cell"></td>
@@ -286,13 +290,18 @@ const HomePage = (props) => {
         if (tabChange === 0) {
             return (
                 <div style={{ marginTop: spacing40, marginBottom: spacing40 }}>
-                    <Typography variant="h5">Students With Attendance Tracking</Typography>
+                    <div style={{ marginTop: spacing40, marginBottom: spacing40 }}>
+                        <Button onClick={printBlankSheet} variant="contained" color="primary">
+                            Print Weekly Roster
+                        </Button>
+                    </div>
+                    <Typography variant="h5">Student Roster</Typography>
                     <Table>
                         <TableHead>
                             <TableRow>
                                 <TableCell><Typography variant="h6">Student ID</Typography></TableCell>
                                 <TableCell><Typography variant="h6">Student Name</Typography></TableCell>
-                                <TableCell><Typography variant="h6">{todayDate}</Typography></TableCell>
+                                {/* <TableCell><Typography variant="h6">{todayDate}</Typography></TableCell> */}
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -300,87 +309,87 @@ const HomePage = (props) => {
                                 <TableRow key={index}>
                                     <TableCell>{item.spridenId}</TableCell>
                                     <TableCell>{item.spridenCurrName}</TableCell>
-                                    <TableCell>
+                                    {/* <TableCell>
                                         <Checkbox
                                             checked={attendanceData[`${crn}-${termCode}-${todayDate}`]?.[item.spridenId] || false}
                                             onChange={(event) => checkboxChange(item.spridenId, event.target.checked)}
                                         />
-                                    </TableCell>
+                                    </TableCell> */}
                                 </TableRow>
                             ))}
                         </TableBody>
                     </Table>
-                    <div style={{ marginTop: spacing40 }}>
+                    {/* <div style={{ marginTop: spacing40 }}>
                         <Button onClick={saveAttendanceDataToDB} variant="contained" color="primary">
                             Save Attendance
                         </Button>
-                    </div>
+                    </div> */}
                 </div>
             );
         }
-        if (tabChange === 1) {
-            const attendanceDates = Object.keys(attendanceData)
-                .filter(key => key.startsWith(`${crn}-${termCode}-`))
-                .map(key => key.split('-').slice(2).join('-'))
-                .sort();
+        // if (tabChange === 1) {
+        //     const attendanceDates = Object.keys(attendanceData)
+        //         .filter(key => key.startsWith(`${crn}-${termCode}-`))
+        //         .map(key => key.split('-').slice(2).join('-'))
+        //         .sort();
 
-            return (
-                <div style={{ marginTop: spacing40, marginBottom: spacing40 }}>
-                    <Typography variant="h5">Attendance History</Typography>
-                    {attendanceDates.length === 0 ? (
-                        <div style={{ marginBottom: spacing20, display: 'flex', flexDirection: 'column', gap: spacing20, alignItems: 'flex-start' }}>
-                            <Typography>No attendance records found.</Typography>
-                            <Button onClick={printBlankSheet} variant="contained" color="primary">
-                                Print Blank Sheet
-                            </Button>
-                        </div>
-                    ) : (
-                        <div>
-                            <div style={{ marginBottom: spacing20, display: 'flex', gap: '16px' }}>
-                                <Button onClick={printAttendanceHistory} variant="contained" color="primary">
-                                    Print/Save as PDF
-                                </Button>
-                                <Button onClick={printBlankSheet} variant="contained" color="primary">
-                                    Print Blank Sheet
-                                </Button>
-                            </div>
-                            <Table id="attendance-history-table">
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell><Typography variant="h6">Student ID</Typography></TableCell>
-                                        <TableCell><Typography variant="h6">Student Name</Typography></TableCell>
-                                        {attendanceDates.map(date => (
-                                            <TableCell key={date}>
-                                                <Typography variant="h6">{date}</Typography>
-                                            </TableCell>
-                                        ))}
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {studentList.map((item, index) => (
-                                        <TableRow key={index}>
-                                            <TableCell>{item.spridenId}</TableCell>
-                                            <TableCell>{item.spridenCurrName}</TableCell>
-                                            {attendanceDates.map(date => {
-                                                const key = `${crn}-${termCode}-${date}`;
-                                                const isPresent = attendanceData[key]?.[item.spridenId];
-                                                return (
-                                                    <TableCell key={date}>
-                                                        <Typography className={isPresent ? 'present' : 'absent'}>
-                                                            {isPresent ? '✓' : '✗'}
-                                                        </Typography>
-                                                    </TableCell>
-                                                );
-                                            })}
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    )}
-                </div>
-            );
-        }
+        //     return (
+        //         <div style={{ marginTop: spacing40, marginBottom: spacing40 }}>
+        //             <Typography variant="h5">Attendance History</Typography>
+        //             {attendanceDates.length === 0 ? (
+        //                 <div style={{ marginBottom: spacing20, display: 'flex', flexDirection: 'column', gap: spacing20, alignItems: 'flex-start' }}>
+        //                     <Typography>No attendance records found.</Typography>
+        //                     <Button onClick={printBlankSheet} variant="contained" color="primary">
+        //                         Print Blank Sheet
+        //                     </Button>
+        //                 </div>
+        //             ) : (
+        //                 <div>
+        //                     <div style={{ marginBottom: spacing20, display: 'flex', gap: '16px' }}>
+        //                         <Button onClick={printAttendanceHistory} variant="contained" color="primary">
+        //                             Print/Save as PDF
+        //                         </Button>
+        //                         <Button onClick={printBlankSheet} variant="contained" color="primary">
+        //                             Print Blank Sheet
+        //                         </Button>
+        //                     </div>
+        //                     <Table id="attendance-history-table">
+        //                         <TableHead>
+        //                             <TableRow>
+        //                                 <TableCell><Typography variant="h6">Student ID</Typography></TableCell>
+        //                                 <TableCell><Typography variant="h6">Student Name</Typography></TableCell>
+        //                                 {attendanceDates.map(date => (
+        //                                     <TableCell key={date}>
+        //                                         <Typography variant="h6">{date}</Typography>
+        //                                     </TableCell>
+        //                                 ))}
+        //                             </TableRow>
+        //                         </TableHead>
+        //                         <TableBody>
+        //                             {studentList.map((item, index) => (
+        //                                 <TableRow key={index}>
+        //                                     <TableCell>{item.spridenId}</TableCell>
+        //                                     <TableCell>{item.spridenCurrName}</TableCell>
+        //                                     {attendanceDates.map(date => {
+        //                                         const key = `${crn}-${termCode}-${date}`;
+        //                                         const isPresent = attendanceData[key]?.[item.spridenId];
+        //                                         return (
+        //                                             <TableCell key={date}>
+        //                                                 <Typography className={isPresent ? 'present' : 'absent'}>
+        //                                                     {isPresent ? '✓' : '✗'}
+        //                                                 </Typography>
+        //                                             </TableCell>
+        //                                         );
+        //                                     })}
+        //                                 </TableRow>
+        //                             ))}
+        //                         </TableBody>
+        //                     </Table>
+        //                 </div>
+        //             )}
+        //         </div>
+        //     );
+        // }
     }
 
     return (
@@ -393,10 +402,10 @@ const HomePage = (props) => {
                 text={alertMessage}
             />
             <Typography variant="h4" style={{ marginBottom: spacing20 }}>
-                Attendance Tracking
+                Roster Sheet
             </Typography>
             <Typography style={{ marginBottom: spacing40 }}>
-                Select a course section from the dropdown to track students attendance.
+                Select a course section from the dropdown to view roster.
             </Typography>
             <Dropdown
                 id={`${customId}_DropdownSection`}
@@ -419,9 +428,9 @@ const HomePage = (props) => {
                     );
                 })}
             </Dropdown>
-            <Tabs value={tabChange} onChange={handleTabChange} aria-label="Attendance Tracking Tabs">
-                <Tab label="Students With Attendance Tracking" />
-                <Tab label="Attendance History" />
+            <Tabs value={tabChange} onChange={handleTabChange} aria-label="Roster Sheet Tabs">
+                <Tab label="Student Roster" />
+                {/* <Tab label="Attendance History" /> */}
             </Tabs>
             {renderContent()}
         </div>
