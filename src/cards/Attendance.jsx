@@ -74,7 +74,7 @@ function Attendance({ classes }) {
         <div className={classes.card}>
 
             <Typography style={{ marginBottom: spacing40, textAlign: 'center' }}>
-                Select a course section from the dropdown to manage attendance.
+                Select a course section from the dropdown to view roster.
             </Typography>
             <Dropdown
                 id={`${customId}_DropdownSection`}
