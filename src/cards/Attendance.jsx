@@ -29,10 +29,10 @@ function Attendance({ classes }) {
         (async () => {
             setLoadingStatus(true);
             try {
-                // const sectionResult = await getEthosQuery({
-                //     queryId: 'section-list', properties: { todayDate: new Date().toJSON().slice(0, 10) }
-                // });
-                const sectionResult = await mock;
+                const sectionResult = await getEthosQuery({
+                    queryId: 'section-list', properties: { todayDate: new Date().toJSON().slice(0, 10) }
+                });
+                // const sectionResult = await mock;
                 const sectionData = (sectionResult?.data?.sectionInstructors?.edges?.map(edge => edge.node));
                 setSections(sectionData);
                 setLoadingStatus(false);
