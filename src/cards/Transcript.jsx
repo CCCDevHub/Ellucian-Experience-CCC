@@ -88,7 +88,7 @@ function Transcript({ classes }) {
                 <Button
                     variant="contained"
                     color="primary"
-                    href={`${testLink}/StudentSelfService/ssb/academicTranscript?studentId=${studentId}&termCode=${currentTerm.code}`}
+                    href={`${prodLink}/StudentSelfService/ssb/academicTranscript?studentId=${studentId}&termCode=${currentTerm.code}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={classes.button}
