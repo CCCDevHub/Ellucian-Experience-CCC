@@ -1,7 +1,7 @@
 module.exports = {
     "name": "Grade Assignment",
     "publisher": "Pasadena City College",
-    "version": "1.4.0",
+    "version": "1.4.3",
     "cards": [{
         "type": "GraphQLQueryCard",
         "source": "./src/cards/GradeAssignmentCard",
@@ -40,10 +40,11 @@ module.exports = {
                         "instructionalMethods": { min: 6 }
                     },
                     "query":
-                        `query sectionList($personId: ID){
+                        `query sectionList($personId: ID, $todayDate: Date){
                             	sectionInstructors: {sectionInstructors} (
                                     filter: {
                                         {instructor@persons} : { id: { EQ: $personId } }
+                                        {section@sections}:{endOn:{BEFORE: $todayDate}}
                                     }
                                     sort: {{section@sections}:{{reportingAcademicPeriod@academicPeriods}:{code:DESC}}}
                                 ) {

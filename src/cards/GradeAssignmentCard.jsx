@@ -172,7 +172,7 @@ function GradeAssignmentCard({ classes }) {
                                         </TableCell>
                                         <TableCell columnName="Course Title">
                                             <TextLink id="link"
-                                                href={`https://ssb-prod.ec.pasadena.edu/ssomanager/saml/login?relayState=/c/auth/SSB?pkg=bwlkffgd.P_FacFinGrd?TERM=${n.termCode}&CRN=${n.crn}`}>
+                                                href={`https://facultyssb-prod.ec.pasadena.edu/FacultySelfService/ssb/GradeEntry`}>
                                                 {n.title}
                                             </TextLink>
                                         </TableCell>
