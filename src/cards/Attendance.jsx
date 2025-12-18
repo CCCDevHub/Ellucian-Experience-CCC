@@ -29,8 +29,10 @@ function Attendance({ classes }) {
         (async () => {
             setLoadingStatus(true);
             try {
+                const dateWith20 = new Date();
+                dateWith20.setDate(dateWith20.getDate() + 20);
                 const sectionResult = await getEthosQuery({
-                    queryId: 'section-list', properties: { todayDate: new Date().toJSON().slice(0, 10) }
+                    queryId: 'section-list', properties: { todayDate: new Date().toJSON().slice(0, 10), dateWith20: dateWith20.toJSON().slice(0, 10) }
                 });
                 // const sectionResult = await mock;
                 const sectionData = (sectionResult?.data?.sectionInstructors?.edges?.map(edge => edge.node));

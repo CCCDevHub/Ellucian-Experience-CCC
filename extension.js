@@ -55,13 +55,13 @@ module.exports = {
                             instructionalMethods: { min: 6 }
                         },
                         query: `
-                            query sectionList($personId: ID, $todayDate: Date) {
+                            query sectionList($personId: ID, $todayDate: Date, $dateWith20: Date) {
                                 sectionInstructors: {sectionInstructors} (
                                     filter: {
                                         {instructor@persons}: { id: { EQ: $personId } }
                                         {section@sections}: {
                                             reportingAcademicPeriod16: {
-                                                startOn: { BEFORE: $todayDate }
+                                                startOn: { BEFORE: $dateWith20 }
                                                 endOn: { AFTER: $todayDate }
                                             }
                                         }
