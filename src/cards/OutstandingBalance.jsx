@@ -107,6 +107,7 @@ function OutstandingBalance({ classes }) {
                 const residencyData = (residencyResult?.data?.students?.edges.map(edge => edge.node));
                 const currResidency = residencyData.pop()?.residencies.pop();
                 const { residency: { code: residencyCode, title: residencyTitle } } = currResidency;
+                console.log('residencyCode', residencyCode);
                 if (residencyTypeCode.includes(residencyCode)) {
                     setPayLink(() => payLinkUS);
                 } else {
@@ -144,6 +145,7 @@ function OutstandingBalance({ classes }) {
 
                 const studentInfoResponse = await authenticatedEthosFetch(`${pipelineAPIStudentInfo}?cardId=${cardId}&testPersonId=${personId}`);
                 const studentInfoResult = await studentInfoResponse.json();
+                console.log('studentInfoResult', studentInfoResult);
                 setStudentInfo(() => studentInfoResult[0])
 
                 setLoadingStatus(false);
@@ -185,11 +187,12 @@ function OutstandingBalance({ classes }) {
     function buttonClicked() {
         window.open(payLink, '_blank');
     }
-
+    console.log(summarize, 'summarize');
+    console.log(studentInfo, 'studentInfo');
+    console.log(payLink, 'payLink');
     if (summarize && payLink && studentInfo) {
         const [{ accountBalance, amountDue }] = summarize;
         const specialCase = ["vetStatus", "financialAid", "eops", "calwork", "dualEnrollment"].some(key => studentInfo[key]);
-
         return (
             <div className={classes.root}>
                 <div className={classes.content}>
@@ -212,6 +215,7 @@ function OutstandingBalance({ classes }) {
                                         <Button
                                             color='secondary'
                                             startIcon={<Icon name="cart" />}
+                                            disabled={true}
                                             onClick={buttonClicked}
                                         >
                                             <Typography variant={'h4'}>Pay Now</Typography>
@@ -265,7 +269,7 @@ function OutstandingBalance({ classes }) {
                                 </div>
                                 <div className={classes.dropDown}>
                                     <Typography variant={'h4'} align={'center'}>
-                                        <TextLink id={`${customId}_PayNow}`} href="https://secure.touchnet.net/C21220_tsa/web/caslogin.jsp">
+                                        <TextLink id={`${customId}_PayNow}`} disabled href="https://secure.touchnet.net/C21220_tsa/web/caslogin.jsp">
                                             Pay Now
                                         </TextLink>
                                     </Typography>
@@ -347,7 +351,7 @@ function OutstandingBalance({ classes }) {
                                 </div>
                                 <div className={classes.dropDown}>
                                     <Typography variant={'h4'} align={'center'}>
-                                        <TextLink id={`${customId}_PayNow}`} href="https://secure.touchnet.net/C21220_tsa/web/caslogin.jsp">
+                                        <TextLink id={`${customId}_PayNow}`} disabled href="https://secure.touchnet.net/C21220_tsa/web/caslogin.jsp">
                                             Pay Now
                                         </TextLink>
                                     </Typography>
