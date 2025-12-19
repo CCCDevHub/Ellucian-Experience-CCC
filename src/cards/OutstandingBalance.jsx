@@ -235,7 +235,8 @@ function OutstandingBalance({ classes }) {
                                             </Typography>
                                         ) : (
                                             <Typography variant={'body2'}>
-                                                Upcoming drop for non-payment on {deadlineDate.toLocaleDateString('en-US')}. Make sure all your fees are paid before this date to avoid being dropped from all classes.
+                                                To submit payment, go to the Billing & Payments Card.
+                                                {/* Upcoming drop for non-payment on {deadlineDate.toLocaleDateString('en-US')}. Make sure all your fees are paid before this date to avoid being dropped from all classes. */}
                                             </Typography>
                                         )}
                                     </div>
@@ -266,6 +267,9 @@ function OutstandingBalance({ classes }) {
                                     </Dropdown>
                                 </div>
                                 <div className={classes.dropDown}>
+                                    <Typography variant={'h4'} align={'center'}>
+                                        To submit payment, go to the Billing & Payments Card.
+                                    </Typography>
                                     <Typography variant={'h4'} align={'center'}>
                                         <TextLink id={`${customId}_PayNow}`} disabled href="https://secure.touchnet.net/C21220_tsa/web/caslogin.jsp">
                                             Pay Now
@@ -348,6 +352,9 @@ function OutstandingBalance({ classes }) {
                                     </Dropdown>
                                 </div>
                                 <div className={classes.dropDown}>
+                                    <Typography variant={'h4'} align={'center'}>
+                                        To submit payment, go to the Billing & Payments Card.
+                                    </Typography>
                                     <Typography variant={'h4'} align={'center'}>
                                         <TextLink id={`${customId}_PayNow}`} disabled href="https://secure.touchnet.net/C21220_tsa/web/caslogin.jsp">
                                             Pay Now
