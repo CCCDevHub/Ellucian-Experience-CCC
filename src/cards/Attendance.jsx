@@ -30,7 +30,7 @@ function Attendance({ classes }) {
             setLoadingStatus(true);
             try {
                 const dateWith20 = new Date();
-                dateWith20.setDate(dateWith20.getDate() + 20);
+                dateWith20.setDate(dateWith20.getDate() + 21);
                 const sectionResult = await getEthosQuery({
                     queryId: 'section-list', properties: { todayDate: new Date().toJSON().slice(0, 10), dateWith20: dateWith20.toJSON().slice(0, 10) }
                 });
