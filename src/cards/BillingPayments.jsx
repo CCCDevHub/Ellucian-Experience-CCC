@@ -57,7 +57,7 @@ function BillingPayments({ classes }) {
         pipelineAPI, pipelineAPIStudentInfo, paymentDate
     }, cardId } = useCardInfo();
     const { roles } = useUserInfo();
-    console.log(paymentDate);
+
     const payLinkUS = 'https://secure.touchnet.net/C21220_tsa/web/caslogin.jsp';
     const paylinkIntl = 'https://ssb-prod.ec.pasadena.edu/ssomanager/saml/login?relayState=/c/auth/SSB?pkg=bwymtfxp.P_MTFXPayment';
     const residencyTypeCode = ['R', 'M', 'D', 'B']
@@ -80,7 +80,7 @@ function BillingPayments({ classes }) {
     const [fullName, setFullName] = useState('');
 
     const todayDate = new Date().toJSON().slice(0, 10);
-    console.log(todayDate);
+
 
     const isPaymentDisabled = isInternational && paymentDate && todayDate >= paymentDate;
 
