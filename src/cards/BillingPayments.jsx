@@ -81,28 +81,13 @@ function BillingPayments({ classes }) {
 
     const todayDate = new Date().toJSON().slice(0, 10);
 
-    // If today > paymentDate, use TouchNet for everyone
-    const usePayMyTuition = isInternational && paymentDate && todayDate <= paymentDate;
+    // Check if PayMyTuition should be disabled (after deadline)
+    const isPayMyTuitionDisabled = paymentDate && todayDate > paymentDate;
 
     const handleInternationalPayment = () => {
-        if (formRef.current && usePayMyTuition) {
+        if (formRef.current && !isPayMyTuitionDisabled) {
             formRef.current.submit();
         }
-    };
-
-    const renderPayOnlineLink = () => {
-        if (usePayMyTuition) {
-            return (
-                <TextLink onClick={handleInternationalPayment} style={{ cursor: 'pointer' }}>
-                    Pay Online
-                </TextLink>
-            );
-        }
-        return (
-            <TextLink href={payLink} target="_blank" rel="noopener noreferrer">
-                Pay Online
-            </TextLink>
-        );
     };
 
     useEffect(() => {
@@ -165,38 +150,50 @@ function BillingPayments({ classes }) {
 
     return (
         <div className={classes.card}>
+            {isInternational && (
+                <>
+                    <div className={classes.buttonContainer}>
+                        <Button
+                            id={`${customId}_PayMyTuitionButton`}
+                            fluid
+                            color="primary"
+                            onClick={handleInternationalPayment}
+                            disabled={isPayMyTuitionDisabled}
+                        >
+                            Pay with PayMyTuition (International)
+                        </Button>
+                    </div>
+                    <form
+                        ref={formRef}
+                        className={classes.hiddenForm}
+                        id="tuitionForm"
+                        action="https://www.paymytuition.com/server/post_to_pmt.aspx"
+                        method="post"
+                        target="_blank"
+                    >
+                        <input type="hidden" name="External_Institute_Id" value="pasadena" />
+                        <input type="hidden" name="mtfx_website" value="https://www.paymytuition.com/server/post_to_pmt.aspx" />
+                        <input type="hidden" name="Routing_Type" value="International" />
+                        <input type="hidden" name="Student_Id" value={studentId || ''} />
+                        <input type="hidden" name="full_name" value={fullName || ''} />
+                        <input type="hidden" name="Balance_Due" value={accountBalance || ''} />
+                        <input type="hidden" name="Payment_Amount" value={accountBalance || ''} />
+                    </form>
+                </>
+            )}
+
             <div className={classes.buttonContainer}>
                 <Button
-                    id={`${customId}_MakePaymentButton`}
+                    id={`${customId}_TouchNetButton`}
                     fluid
                     color="primary"
-                    onClick={usePayMyTuition ? handleInternationalPayment : undefined}
-                    href={usePayMyTuition ? undefined : payLink}
-                    target={usePayMyTuition ? undefined : "_blank"}
-                    rel={usePayMyTuition ? undefined : "noopener noreferrer"}
+                    href={payLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
                 >
-                    Make A Payment
+                    Pay with TouchNet
                 </Button>
             </div>
-
-            {usePayMyTuition && (
-                <form
-                    ref={formRef}
-                    className={classes.hiddenForm}
-                    id="tuitionForm"
-                    action="https://www.paymytuition.com/server/post_to_pmt.aspx"
-                    method="post"
-                    target="_blank"
-                >
-                    <input type="hidden" name="External_Institute_Id" value="pasadena" />
-                    <input type="hidden" name="mtfx_website" value="https://www.paymytuition.com/server/post_to_pmt.aspx" />
-                    <input type="hidden" name="Routing_Type" value="International" />
-                    <input type="hidden" name="Student_Id" value={studentId || ''} />
-                    <input type="hidden" name="full_name" value={fullName || ''} />
-                    <input type="hidden" name="Balance_Due" value={accountBalance || ''} />
-                    <input type="hidden" name="Payment_Amount" value={accountBalance || ''} />
-                </form>
-            )}
 
             <div className={classes.panelContainer}>
                 <ExpansionPanel>
@@ -208,8 +205,20 @@ function BillingPayments({ classes }) {
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails className={classes.linkDetails}>
                         <List>
+                            {isInternational && (
+                                <ListItem divider="true">
+                                    <TextLink
+                                        onClick={handleInternationalPayment}
+                                        style={{ cursor: isPayMyTuitionDisabled ? 'not-allowed' : 'pointer', opacity: isPayMyTuitionDisabled ? 0.5 : 1 }}
+                                    >
+                                        Pay with PayMyTuition (International)
+                                    </TextLink>
+                                </ListItem>
+                            )}
                             <ListItem divider="true">
-                                {renderPayOnlineLink()}
+                                <TextLink href={payLink} target="_blank" rel="noopener noreferrer">
+                                    Pay with TouchNet
+                                </TextLink>
                             </ListItem>
                             <ListItem>
                                 <TextLink href="https://studentssb-prod.ec.pasadena.edu/StudentSelfService/ssb/accountDetailByTerm" target="_blank" rel="noopener noreferrer">
