@@ -59,24 +59,13 @@ function BillingPayments({ classes }) {
     const { roles } = useUserInfo();
 
     const payLinkUS = 'https://secure.touchnet.net/C21220_tsa/web/caslogin.jsp';
-    const paylinkIntl = 'https://ssb-prod.ec.pasadena.edu/ssomanager/saml/login?relayState=/c/auth/SSB?pkg=bwymtfxp.P_MTFXPayment';
-    const residencyTypeCode = ['R', 'M', 'D', 'B', 'O']
 
     const personId = roles.at(-1);
     const formRef = useRef(null);
 
-    const [summarize, setSumarize] = useState()
-    const [balanceDetails, setBalanceDetails] = useState();
-    const [residency, setResidency] = useState();
-    const [formatTransDate, setFormatTransDate] = useState();
-    const [groupTransByTerm, setGroupTransByTerm] = useState();
-    const [dropdownStateTerm, setDropdownStateTerm] = useState();
-    const [tabChange, setTabChange] = useState(0);
-    const [studentInfo, setStudentInfo] = useState();
     const [payLink, setPayLink] = useState();
     const [accountBalance, setAccountBalance] = useState();
     const [studentId, setStudentId] = useState();
-    const [isInternational, setIsInternational] = useState(false);
     const [fullName, setFullName] = useState('');
 
     const todayDate = new Date().toJSON().slice(0, 10);
@@ -84,7 +73,7 @@ function BillingPayments({ classes }) {
     // Check if PayMyTuition should be disabled (after deadline)
     const isPayMyTuitionDisabled = paymentDate && todayDate > paymentDate;
 
-    const handleInternationalPayment = () => {
+    const handlePayMyTuitionPayment = () => {
         if (formRef.current && !isPayMyTuitionDisabled) {
             formRef.current.submit();
         }
@@ -96,27 +85,19 @@ function BillingPayments({ classes }) {
             try {
 
 
-                // Fetch residency information
+                // Fetch student information
                 const residencyResult = await getEthosQuery({
                     queryId: 'residency-info'
                 });
 
                 const residencyData = (residencyResult?.data?.students?.edges.map(edge => edge.node));
-                const currResidency = residencyData[0]?.residencies[0];
-
-                const { residency: { code: residencyCode, title: residencyTitle } } = currResidency;
                 const studentFullName = residencyData[0]?.person12?.fullName;
                 const studentIdData = residencyData[0]?.person12?.credentials.filter(cred => cred.type === 'bannerId')[0]?.value;
                 setFullName(() => studentFullName);
                 setStudentId(() => studentIdData);
 
-                // Check if international student
-                const isIntlStudent = !residencyTypeCode.includes(residencyCode);
-                setIsInternational(isIntlStudent);
-
-                // Set payLink for everyone (TouchNet for domestic, or for international after deadline)
+                // Set payLink for TouchNet
                 setPayLink(() => payLinkUS);
-                setResidency(() => residencyData);
 
                 // Fetch balance information
                 const balanceResponse = await authenticatedEthosFetch(`${pipelineAPI}?cardId=${cardId}&testPersonId=${personId}`);
@@ -150,37 +131,34 @@ function BillingPayments({ classes }) {
 
     return (
         <div className={classes.card}>
-            {isInternational && (
-                <>
-                    <div className={classes.buttonContainer}>
-                        <Button
-                            id={`${customId}_PayMyTuitionButton`}
-                            fluid
-                            color="primary"
-                            onClick={handleInternationalPayment}
-                            disabled={isPayMyTuitionDisabled}
-                        >
-                            Pay with PayMyTuition (International)
-                        </Button>
-                    </div>
-                    <form
-                        ref={formRef}
-                        className={classes.hiddenForm}
-                        id="tuitionForm"
-                        action="https://www.paymytuition.com/server/post_to_pmt.aspx"
-                        method="post"
-                        target="_blank"
-                    >
-                        <input type="hidden" name="External_Institute_Id" value="pasadena" />
-                        <input type="hidden" name="mtfx_website" value="https://www.paymytuition.com/server/post_to_pmt.aspx" />
-                        <input type="hidden" name="Routing_Type" value="International" />
-                        <input type="hidden" name="Student_Id" value={studentId || ''} />
-                        <input type="hidden" name="full_name" value={fullName || ''} />
-                        <input type="hidden" name="Balance_Due" value={accountBalance || ''} />
-                        <input type="hidden" name="Payment_Amount" value={accountBalance || ''} />
-                    </form>
-                </>
-            )}
+            <div className={classes.buttonContainer}>
+                <Button
+                    id={`${customId}_PayMyTuitionButton`}
+                    fluid
+                    color="primary"
+                    onClick={handlePayMyTuitionPayment}
+                    disabled={isPayMyTuitionDisabled}
+                >
+                    Pay with PayMyTuition
+                </Button>
+            </div>
+
+            <form
+                ref={formRef}
+                className={classes.hiddenForm}
+                id="tuitionForm"
+                action="https://www.paymytuition.com/server/post_to_pmt.aspx"
+                method="post"
+                target="_blank"
+            >
+                <input type="hidden" name="External_Institute_Id" value="pasadena" />
+                <input type="hidden" name="mtfx_website" value="https://www.paymytuition.com/server/post_to_pmt.aspx" />
+                <input type="hidden" name="Routing_Type" value="International" />
+                <input type="hidden" name="Student_Id" value={studentId || ''} />
+                <input type="hidden" name="full_name" value={fullName || ''} />
+                <input type="hidden" name="Balance_Due" value={accountBalance || ''} />
+                <input type="hidden" name="Payment_Amount" value={accountBalance || ''} />
+            </form>
 
             <div className={classes.buttonContainer}>
                 <Button
@@ -205,16 +183,14 @@ function BillingPayments({ classes }) {
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails className={classes.linkDetails}>
                         <List>
-                            {isInternational && (
-                                <ListItem divider="true">
-                                    <TextLink
-                                        onClick={handleInternationalPayment}
-                                        style={{ cursor: isPayMyTuitionDisabled ? 'not-allowed' : 'pointer', opacity: isPayMyTuitionDisabled ? 0.5 : 1 }}
-                                    >
-                                        Pay with PayMyTuition (International)
-                                    </TextLink>
-                                </ListItem>
-                            )}
+                            <ListItem divider="true">
+                                <TextLink
+                                    onClick={handlePayMyTuitionPayment}
+                                    style={{ cursor: isPayMyTuitionDisabled ? 'not-allowed' : 'pointer', opacity: isPayMyTuitionDisabled ? 0.5 : 1 }}
+                                >
+                                    Pay with PayMyTuition
+                                </TextLink>
+                            </ListItem>
                             <ListItem divider="true">
                                 <TextLink href={payLink} target="_blank" rel="noopener noreferrer">
                                     Pay with TouchNet
