@@ -29,8 +29,10 @@ function SectionAuthorizationCode({ classes }) {
         (async () => {
             setLoadingStatus(true);
             try {
+                const futureDate = new Date();
+                futureDate.setDate(futureDate.getDate() + 3);
                 const sectionResult = await getEthosQuery({
-                    queryId: 'section-list', properties: { todayDate: new Date().toJSON().slice(0, 10) }
+                    queryId: 'section-list', properties: { todayDate: new Date().toJSON().slice(0, 10), futureDate: futureDate.toJSON().slice(0, 10) }
                 });
                 // const sectionResult = await mock;
                 const sectionData = (sectionResult?.data?.sectionInstructors?.edges?.map(edge => edge.node));
