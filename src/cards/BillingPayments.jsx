@@ -82,7 +82,7 @@ function BillingPayments({ classes }) {
     const todayDate = new Date().toJSON().slice(0, 10);
 
     // If today > paymentDate, use TouchNet for everyone
-    const usePayMyTuition = isInternational && paymentDate && todayDate >= paymentDate;
+    const usePayMyTuition = isInternational && paymentDate && todayDate <= paymentDate;
 
     const handleInternationalPayment = () => {
         if (formRef.current && usePayMyTuition) {
