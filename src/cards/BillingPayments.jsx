@@ -60,7 +60,7 @@ function BillingPayments({ classes }) {
 
     const payLinkUS = 'https://secure.touchnet.net/C21220_tsa/web/caslogin.jsp';
     const paylinkIntl = 'https://ssb-prod.ec.pasadena.edu/ssomanager/saml/login?relayState=/c/auth/SSB?pkg=bwymtfxp.P_MTFXPayment';
-    const residencyTypeCode = ['R', 'M', 'D', 'B']
+    const residencyTypeCode = ['R', 'M', 'D', 'B', 'O']
 
     const personId = roles.at(-1);
     const formRef = useRef(null);
@@ -81,24 +81,17 @@ function BillingPayments({ classes }) {
 
     const todayDate = new Date().toJSON().slice(0, 10);
 
-
-    const isPaymentDisabled = isInternational && paymentDate && todayDate >= paymentDate;
+    // If today > paymentDate, use TouchNet for everyone
+    const usePayMyTuition = isInternational && paymentDate && todayDate >= paymentDate;
 
     const handleInternationalPayment = () => {
-        if (formRef.current && !isPaymentDisabled) {
+        if (formRef.current && usePayMyTuition) {
             formRef.current.submit();
         }
     };
 
     const renderPayOnlineLink = () => {
-        if (isInternational && isPaymentDisabled) {
-            return (
-                <TextLink onClick={handleInternationalPayment} style={{ cursor: 'pointer' }} disabled>
-                    Pay Online
-                </TextLink>
-            );
-        }
-        if (isInternational) {
+        if (usePayMyTuition) {
             return (
                 <TextLink onClick={handleInternationalPayment} style={{ cursor: 'pointer' }}>
                     Pay Online
@@ -136,9 +129,8 @@ function BillingPayments({ classes }) {
                 const isIntlStudent = !residencyTypeCode.includes(residencyCode);
                 setIsInternational(isIntlStudent);
 
-                if (!isIntlStudent) {
-                    setPayLink(() => payLinkUS);
-                }
+                // Set payLink for everyone (TouchNet for domestic, or for international after deadline)
+                setPayLink(() => payLinkUS);
                 setResidency(() => residencyData);
 
                 // Fetch balance information
@@ -178,17 +170,16 @@ function BillingPayments({ classes }) {
                     id={`${customId}_MakePaymentButton`}
                     fluid
                     color="primary"
-                    disabled={isPaymentDisabled}
-                    onClick={isInternational ? handleInternationalPayment : undefined}
-                    href={isInternational ? undefined : payLink}
-                    target={isInternational ? undefined : "_blank"}
-                    rel={isInternational ? undefined : "noopener noreferrer"}
+                    onClick={usePayMyTuition ? handleInternationalPayment : undefined}
+                    href={usePayMyTuition ? undefined : payLink}
+                    target={usePayMyTuition ? undefined : "_blank"}
+                    rel={usePayMyTuition ? undefined : "noopener noreferrer"}
                 >
                     Make A Payment
                 </Button>
             </div>
 
-            {isInternational && (
+            {usePayMyTuition && (
                 <form
                     ref={formRef}
                     className={classes.hiddenForm}
