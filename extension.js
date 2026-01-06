@@ -9,21 +9,32 @@ module.exports = {
         displayCardType: 'GraphQL Card',
         description: 'Billing and Payments',
         configuration: {
-            client: [{
-                key: 'pipelineAPI',
-                label: 'Pipeline API',
-                type: 'text'
-            },
-            {
-                key: 'pipelineAPIStudentInfo',
-                label: 'Pipeline API Student Info',
-                type: 'text'
-            },
-            {
-                key: 'paymentDate',
-                label: 'Payment Deadline Date',
-                type: 'date'
-            }
+            client: [
+                {
+                    key: 'pipelineAPI',
+                    label: 'Pipeline API',
+                    type: 'text'
+                },
+                {
+                    key: 'usTextBox',
+                    label: 'US Text Box',
+                    type: 'text'
+                },
+                {
+                    key: 'intlTextBox',
+                    label: 'International Text Box',
+                    type: 'text'
+                },
+                {
+                    key: 'pipelineAPIStudentInfo',
+                    label: 'Pipeline API Student Info',
+                    type: 'text'
+                },
+                {
+                    key: 'paymentDate',
+                    label: 'Payment Deadline Date',
+                    type: 'date'
+                }
             ],
             server: [{
                 key: 'ethosApiKey',

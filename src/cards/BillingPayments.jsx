@@ -54,7 +54,7 @@ function BillingPayments({ classes }) {
     const { authenticatedEthosFetch, getEthosQuery } = useData();
     const { setLoadingStatus, setErrorMessage } = useCardControl();
     const { configuration: {
-        pipelineAPI, pipelineAPIStudentInfo, paymentDate
+        pipelineAPI, pipelineAPIStudentInfo, paymentDate, usTextBox, intlTextBox
     }, cardId } = useCardInfo();
     const { roles } = useUserInfo();
 
@@ -139,7 +139,7 @@ function BillingPayments({ classes }) {
                     onClick={handlePayMyTuitionPayment}
                     disabled={isPayMyTuitionDisabled}
                 >
-                    Pay with PayMyTuition
+                    {intlTextBox}
                 </Button>
             </div>
 
@@ -169,7 +169,7 @@ function BillingPayments({ classes }) {
                     target="_blank"
                     rel="noopener noreferrer"
                 >
-                    Pay with TouchNet
+                    {usTextBox}
                 </Button>
             </div>
 
@@ -188,12 +188,12 @@ function BillingPayments({ classes }) {
                                     onClick={handlePayMyTuitionPayment}
                                     style={{ cursor: isPayMyTuitionDisabled ? 'not-allowed' : 'pointer', opacity: isPayMyTuitionDisabled ? 0.5 : 1 }}
                                 >
-                                    Pay with PayMyTuition
+                                    {intlTextBox}
                                 </TextLink>
                             </ListItem>
                             <ListItem divider="true">
                                 <TextLink href={payLink} target="_blank" rel="noopener noreferrer">
-                                    Pay with TouchNet
+                                    {usTextBox}
                                 </TextLink>
                             </ListItem>
                             <ListItem>
