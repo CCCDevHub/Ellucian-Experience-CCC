@@ -108,8 +108,10 @@ const HomePage = (props) => {
         try {
             const response = await authenticatedEthosFetch(`${pipelineAPI}?cardId=${cardId}&crn=${crn}&termCode=${termCode}`);
             const rawResult = await response.json();
+            console.log('Fetched Roster Data:', rawResult);
             const studentAvailable = Array.isArray(rawResult)
                 ? rawResult.filter(item => ('spridenId' in item))
+                    .sort((a, b) => a.spridenCurrName.localeCompare(b.spridenCurrName))
                 : [];
             setStudentList(studentAvailable);
         } catch (error) {
@@ -234,6 +236,7 @@ const HomePage = (props) => {
                     <table>
                         <thead>
                             <tr>
+                                <th>#</th>
                                 <th>Student ID</th>
                                 <th>Student Name</th>
                                 <th></th>
@@ -246,8 +249,9 @@ const HomePage = (props) => {
                             </tr>
                         </thead>
                         <tbody>
-                            ${studentList.map(student => `
+                            ${studentList.map((student, index) => `
                                 <tr>
+                                    <td>${index + 1}</td>
                                     <td>${student.spridenId}</td>
                                     <td>${student.spridenCurrName}</td>
                                     <td class="empty-cell"></td>
@@ -299,6 +303,7 @@ const HomePage = (props) => {
                     <Table>
                         <TableHead>
                             <TableRow>
+                                <TableCell><Typography variant="h6">#</Typography></TableCell>
                                 <TableCell><Typography variant="h6">Student ID</Typography></TableCell>
                                 <TableCell><Typography variant="h6">Student Name</Typography></TableCell>
                                 {/* <TableCell><Typography variant="h6">{todayDate}</Typography></TableCell> */}
@@ -307,6 +312,7 @@ const HomePage = (props) => {
                         <TableBody>
                             {studentList.map((item, index) => (
                                 <TableRow key={index}>
+                                    <TableCell>{index + 1}</TableCell>
                                     <TableCell>{item.spridenId}</TableCell>
                                     <TableCell>{item.spridenCurrName}</TableCell>
                                     {/* <TableCell>
