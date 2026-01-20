@@ -83,8 +83,6 @@ function BillingPayments({ classes }) {
         (async () => {
             setLoadingStatus(true);
             try {
-
-
                 // Fetch student information
                 const residencyResult = await getEthosQuery({
                     queryId: 'residency-info'
@@ -108,17 +106,17 @@ function BillingPayments({ classes }) {
                 setAccountBalance(() => accountBalance);
 
                 // Fetch student information for international students
-                if (pipelineAPIStudentInfo) {
-                    const studentInfoResponse = await authenticatedEthosFetch(`${pipelineAPIStudentInfo}?cardId=${cardId}&testPersonId=${personId}`);
-                    const studentInfoResult = await studentInfoResponse.json();
-
-                    // Extract student ID and name from the response
-                    if (studentInfoResult && studentInfoResult.length > 0) {
-                        const studentData = studentInfoResult[0];
-                        setStudentId(studentData.studentId || personId);
-                        setFullName(studentData.fullName || '');
-                    }
-                }
+                // if (pipelineAPIStudentInfo) {
+                //     const studentInfoResponse = await authenticatedEthosFetch(`${pipelineAPIStudentInfo}?cardId=${cardId}&testPersonId=${personId}`);
+                //     const studentInfoResult = await studentInfoResponse.json();
+                //     console.log(studentInfoResult);
+                //     // Extract student ID and name from the response
+                //     if (studentInfoResult && studentInfoResult.length > 0) {
+                //         const studentData = studentInfoResult[0];
+                //         setStudentId(studentData.studentId || personId);
+                //         setFullName(studentData.fullName || '');
+                //     }
+                // }
 
                 setLoadingStatus(false);
 
