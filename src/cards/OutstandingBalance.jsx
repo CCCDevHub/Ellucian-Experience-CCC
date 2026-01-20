@@ -210,14 +210,14 @@ function OutstandingBalance({ classes }) {
                                         <Typography variant={'h4'} className={classes.balanceAmount}>
                                             Balance Due: <Typography color='error' variant={'h4'} className={classes.accountBalance}>${accountBalance}</Typography>
                                         </Typography>
-                                        <Button
+                                        {/* <Button
                                             color='secondary'
                                             startIcon={<Icon name="cart" />}
                                             disabled={true}
                                             onClick={buttonClicked}
                                         >
                                             <Typography variant={'h4'}>Pay Now</Typography>
-                                        </Button>
+                                        </Button> */}
                                     </div>
                                 ) : (
                                     <div className={classes.balanceContainer}>
@@ -270,11 +270,11 @@ function OutstandingBalance({ classes }) {
                                     <Typography variant={'h4'} align={'center'}>
                                         To submit payment, go to the Billing & Payments Card.
                                     </Typography>
-                                    <Typography variant={'h4'} align={'center'}>
+                                    {/* <Typography variant={'h4'} align={'center'}>
                                         <TextLink id={`${customId}_PayNow}`} disabled href="https://secure.touchnet.net/C21220_tsa/web/caslogin.jsp">
                                             Pay Now
                                         </TextLink>
-                                    </Typography>
+                                    </Typography> */}
                                 </div>
                                 <div>
                                     {dropdownStateTerm && (
@@ -355,11 +355,11 @@ function OutstandingBalance({ classes }) {
                                     <Typography variant={'h4'} align={'center'}>
                                         To submit payment, go to the Billing & Payments Card.
                                     </Typography>
-                                    <Typography variant={'h4'} align={'center'}>
+                                    {/* <Typography variant={'h4'} align={'center'}>
                                         <TextLink id={`${customId}_PayNow}`} disabled href="https://secure.touchnet.net/C21220_tsa/web/caslogin.jsp">
                                             Pay Now
                                         </TextLink>
-                                    </Typography>
+                                    </Typography> */}
                                 </div>
                                 <div>
                                     {dropdownStateTerm && (
