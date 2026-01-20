@@ -17,18 +17,13 @@ module.exports = {
                         type: "text"
                     },
                     {
-                        key: "putPipelineAPI",
-                        label: "Put Pipeline API",
-                        type: "text"
-                    },
-                    {
-                        key: "postPipelineAPI",
-                        label: "Post Pipeline API",
-                        type: "text"
-                    },
-                    {
                         key: "sectionPipelineAPI",
-                        label: "Section Pipeline API",
+                        label: "Sections Pipeline API",
+                        type: "text"
+                    },
+                    {
+                        key: "termPipelineAPI",
+                        label: "Terms Pipeline API",
                         type: "text"
                     }
                 ],
@@ -55,14 +50,13 @@ module.exports = {
                             instructionalMethods: { min: 6 }
                         },
                         query: `
-                            query sectionList($personId: ID, $todayDate: Date, $dateWith20: Date) {
+                            query sectionList($personId: ID, $termCode: String) {
                                 sectionInstructors: {sectionInstructors} (
                                     filter: {
                                         {instructor@persons}: { id: { EQ: $personId } }
                                         {section@sections}: {
                                             reportingAcademicPeriod16: {
-                                                startOn: { BEFORE: $dateWith20 }
-                                                endOn: { AFTER: $todayDate }
+                                                code: { EQ: $termCode }
                                             }
                                         }
                                     }

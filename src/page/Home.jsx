@@ -52,22 +52,25 @@ const HomePage = (props) => {
     const { authenticatedEthosFetch, getEthosQuery } = useData();
     const { cardConfiguration:
         {
-            pipelineAPI, postPipelineAPI, putPipelineAPI, sectionPipelineAPI
+            pipelineAPI, postPipelineAPI, putPipelineAPI, sectionPipelineAPI, termPipelineAPI
         }, cardId
     } = useCardInfo();
     const customId = 'Roster-Sheet';
-
-    const [studentList, setStudentList] = useState([]);
-    const [inputValues, setInputValues] = useState({});
-    const [tabChange, setTabChange] = useState(0);
 
     const selected = localStorage.getItem('selectedSection');
     const [initialCrn, initialTermCode] = selected ? selected.split('.') : ['', ''];
     const [crn, setCrn] = useState(initialCrn);
     const [termCode, setTermCode] = useState(initialTermCode);
+
+    const [studentList, setStudentList] = useState([]);
+    const [inputValues, setInputValues] = useState({});
+    const [tabChange, setTabChange] = useState(0);
+
     const [courseName, setCourseName] = useState('');
-    const [sectionData, setSectionData] = useState(JSON.parse(localStorage.getItem('sectionData') || '[]'));
-    const [dropdownStateSection, setDropdownStateSection] = useState(selected);
+    const [sectionData, setSectionData] = useState([]);
+    const [dropdownStateSection, setDropdownStateSection] = useState(selected || '');
+    const [terms, setTerms] = useState([]);
+    const [dropdownStateTerm, setDropdownStateTerm] = useState(initialTermCode || '');
     const [attendanceData, setAttendanceData] = useState({});
     const [alertMessage, setAlertMessage] = useState(null);
     const [alertType, setAlertType] = useState('success');
@@ -75,34 +78,65 @@ const HomePage = (props) => {
 
     const todayDate = new Date().toLocaleDateString()
 
-
     useEffect(() => {
-        if (!sectionData || sectionData.length === 0) {
-            (async () => {
-                setLoadingStatus(true);
-                try {
-                    const response = await authenticatedEthosFetch(`${sectionPipelineAPI}?cardId=${cardId}`);
-                    const sectionResult = await response.json();
-                    // const sectionResult = await mock;
-                    const sectionDataResult = (sectionResult?.data?.sectionInstructors10?.edges?.map(edge => edge.node));
-                    const seen = new Set();
-                    const dedupedSections = sectionDataResult.filter(sec => {
-                        const key = sec?.section16?.alternateIds?.[0]?.value;
-                        if (!key || seen.has(key)) { return false }
-                        seen.add(key);
-                        return true;
-                    });
-                    setSectionData(dedupedSections);
-                    localStorage.setItem('sectionData', JSON.stringify(dedupedSections));
+        (async () => {
+            setLoadingStatus(true);
+            try {
+                const response = await authenticatedEthosFetch(`${termPipelineAPI}?cardId=${cardId}`);
+                const termResult = await response.json();
+                const termData = termResult.filter(term => term.termDisplayControl == 'Y');
+                setTerms(termData);
+                const sectionResponse = await authenticatedEthosFetch(`${sectionPipelineAPI}?cardId=${cardId}&termCode=${termCode}`);
+                // const sectionResult = await sectionResponse.json();
+                const sectionResult = await mock;
+                console.log(sectionResult);
+                const sectionDataResult = (sectionResult?.data?.sectionInstructors10?.edges?.map(edge => edge.node));
+                const seen = new Set();
+                const dedupedSections = sectionDataResult.filter(sec => {
+                    const key = sec?.section16?.alternateIds?.[0]?.value;
+                    if (!key || seen.has(key)) { return false }
+                    seen.add(key);
+                    return true;
+                });
+                setSectionData(dedupedSections);
+                localStorage.setItem('sectionData', JSON.stringify(dedupedSections));
 
-                    setLoadingStatus(false);
-                } catch (error) {
-                    console.log(error);
-                    setLoadingStatus(false);
-                }
-            })();
-        }
+                setLoadingStatus(false);
+            } catch (error) {
+                console.error('Failed to load terms:', error);
+                setLoadingStatus(false);
+            }
+        })();
     }, []);
+
+    // useEffect(() => {
+    //     if (!sectionData || sectionData.length === 0) {
+    //         (async () => {
+    //             setLoadingStatus(true);
+    //             try {
+    //                 const response = await authenticatedEthosFetch(`${sectionPipelineAPI}?cardId=${cardId}`);
+    //                 const sectionResult = await response.json();
+    //                 // const sectionResult = await mock;
+    //                 const sectionDataResult = (sectionResult?.data?.sectionInstructors10?.edges?.map(edge => edge.node));
+    //                 const seen = new Set();
+    //                 const dedupedSections = sectionDataResult.filter(sec => {
+    //                     const key = sec?.section16?.alternateIds?.[0]?.value;
+    //                     if (!key || seen.has(key)) { return false }
+    //                     seen.add(key);
+    //                     return true;
+    //                 });
+    //                 setSectionData(dedupedSections);
+    //                 localStorage.setItem('sectionData', JSON.stringify(dedupedSections));
+
+    //                 setLoadingStatus(false);
+    //             } catch (error) {
+    //                 console.log(error);
+    //                 setLoadingStatus(false);
+    //             }
+    //         })();
+    //     }
+    // }, []);
+
     const fetchAuthorizationData = async (crn, termCode) => {
         setLoadingStatus(true);
         try {
@@ -136,12 +170,54 @@ const HomePage = (props) => {
     };
 
     useEffect(() => {
-        fetchAuthorizationData(crn, termCode);
+        if (crn && termCode) {
+            fetchAuthorizationData(crn, termCode);
+        }
     }, [crn, termCode]);
 
     const handleTabChange = (event, value) => {
         setTabChange(value);
     }
+
+    const handleChangeTerm = (event) => {
+        const { value } = event.target;
+        setDropdownStateTerm(value);
+        setTermCode(value);
+        setDropdownStateSection('');
+        setSectionData([]);
+        setCrn('');
+        setCourseName('');
+        setStudentList([]);
+        localStorage.removeItem('selectedSection');
+        setLoadingStatus(true);
+        console.log(sectionPipelineAPI);
+        (async () => {
+            setLoadingStatus(true);
+            try {
+                console.log(value)
+                const response = await authenticatedEthosFetch(`${sectionPipelineAPI}?cardId=${cardId}&termCode=${value}`);
+                const sectionResult = await response.json();
+                // const sectionResult = await mock;
+                console.log(sectionResult);
+                const sectionDataResult = (sectionResult?.data?.sectionInstructors10?.edges?.map(edge => edge.node));
+                const seen = new Set();
+                const dedupedSections = sectionDataResult.filter(sec => {
+                    const key = sec?.section16?.alternateIds?.[0]?.value;
+                    if (!key || seen.has(key)) { return false }
+                    seen.add(key);
+                    return true;
+                });
+                setSectionData(dedupedSections);
+                localStorage.setItem('sectionData', JSON.stringify(dedupedSections));
+
+                setLoadingStatus(false);
+            } catch (error) {
+                console.log(error);
+                setLoadingStatus(false);
+            }
+        })();
+    };
+
     const checkboxChange = (studentId, isChecked) => {
         const key = `${crn}-${termCode}-${todayDate}`;
 
@@ -276,6 +352,7 @@ const HomePage = (props) => {
 
     const handleChangeSection = useCallback((event) => {
         const { value } = event.target;
+        console.log('Selected Section:', value);
         setDropdownStateSection(value);
         localStorage.setItem('selectedSection', value);
         const [newCrn, newTermCode] = value.split('.');
@@ -411,29 +488,55 @@ const HomePage = (props) => {
                 Roster Sheet
             </Typography>
             <Typography style={{ marginBottom: spacing40 }}>
-                Select a course section from the dropdown to view roster.
+                Select a term, then choose a course section to view the roster.
             </Typography>
             <Dropdown
-                id={`${customId}_DropdownSection`}
-                label="Select Section"
-                onChange={handleChangeSection}
-                value={dropdownStateSection}
+                id={`${customId}_DropdownTerm`}
+                label="Select Term"
+                onChange={handleChangeTerm}
+                value={dropdownStateTerm}
                 fullWidth
                 className={classes.spacing}
+                MenuProps={{
+                    disablePortal: true,
+                    disableEnforceFocus: true
+                }}
             >
-                {sectionData.map(sec => {
-                    const section = sec?.section16;
-                    const course = section?.course16;
-
-                    return (
-                        <DropdownItem
-                            key={section?.alternateIds?.[0]?.value}
-                            label={`CRN: ${section?.code} (${course?.subject6?.abbreviation} ${course?.number})`}
-                            value={section?.alternateIds?.[0]?.value}
-                        />
-                    );
-                })}
+                {terms.map(term => (
+                    <DropdownItem
+                        key={term.termCode}
+                        label={term.termName}
+                        value={term.termCode}
+                    />
+                ))}
             </Dropdown>
+            {dropdownStateTerm && (
+                <Dropdown
+                    id={`${customId}_DropdownSection`}
+                    label="Select Section"
+                    onChange={handleChangeSection}
+                    value={dropdownStateSection}
+                    fullWidth
+                    className={classes.spacing}
+                    MenuProps={{
+                        disablePortal: true,
+                        disableEnforceFocus: true
+                    }}
+                >
+                    {sectionData.map(sec => {
+                        const section = sec?.section16;
+                        const course = section?.course16;
+
+                        return (
+                            <DropdownItem
+                                key={section?.alternateIds?.[0]?.value}
+                                label={`CRN: ${section?.code} (${course?.subject6?.abbreviation} ${course?.number})`}
+                                value={section?.alternateIds?.[0]?.value}
+                            />
+                        );
+                    })}
+                </Dropdown>
+            )}
             <Tabs value={tabChange} onChange={handleTabChange} aria-label="Roster Sheet Tabs">
                 <Tab label="Student Roster" />
                 {/* <Tab label="Attendance History" /> */}
