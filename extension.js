@@ -60,6 +60,15 @@ module.exports = {
                                                     description
                                                   }
                                             }
+                                            person12 {
+                                                names {
+                                                    fullName
+                                                }
+                                                    credentials {
+                                                        value
+                                                        type
+                                                    }
+                                            }
                                         }
                                     }
                                 }

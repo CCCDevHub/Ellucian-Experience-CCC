@@ -16,7 +16,7 @@ import {
 } from '@ellucian/react-design-system/core';
 import { useCardControl, useCardInfo, useExtensionControl, useUserInfo, useData, useDashboardInfo } from '@ellucian/experience-extension-utils';
 import PropTypes from 'prop-types';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { Icon } from '@ellucian/ds-icons/lib';
 
 const styles = () => ({
@@ -59,6 +59,22 @@ const styles = () => ({
     dropDown: {
         marginTop: spacing30,
         marginBottom: spacing30
+    },
+    buttonContainer: {
+        marginBottom: spacing30
+    },
+    linksRow: {
+        display: 'flex',
+        gap: spacing30,
+        alignItems: 'center',
+        marginTop: spacing20,
+        marginBottom: spacing30
+    },
+    linkItem: {
+        fontWeight: 600
+    },
+    hiddenForm: {
+        display: 'none'
     }
 });
 
@@ -69,8 +85,8 @@ function OutstandingBalance({ classes }) {
         pipelineAPI, pipelineAPIStudentInfo, paymentDate
     }, cardId } = useCardInfo();
     const { roles } = useUserInfo();
+    const formRef = useRef(null);
 
-    const todayDate = new Date();
     const deadlineDate = new Date(paymentDate);
     const residencyTypeCode = ['R', 'M', 'D', 'B']
     const seasonMap = {
@@ -90,11 +106,20 @@ function OutstandingBalance({ classes }) {
     const [tabChange, setTabChange] = useState(0);
     const [studentInfo, setStudentInfo] = useState();
     const [payLink, setPayLink] = useState();
+    const [studentId, setStudentId] = useState();
+    const [fullName, setFullName] = useState('');
 
-    // const payLinkUS = 'https://ssb-prod.ec.pasadena.edu/ssomanager/saml/login?relayState=/c/auth/SSB?pkg=bwskoacc.P_ViewAcctTerm';
-    // const paylinkIntl = 'https://ssb-prod.ec.pasadena.edu/ssomanager/saml/login?relayState=/c/auth/SSB?pkg=bwskoacc.P_ViewAcctTerm';
+    // const studentInfo = {
+    //     vetStatus: "Vet"
+    // }
+
+    const todayDate = new Date().toJSON().slice(0, 10);
+
+    // Check if PayMyTuition should be disabled (after deadline)
+    const isPayMyTuitionDisabled = paymentDate && todayDate > paymentDate;
+
+
     const payLinkUS = 'https://secure.touchnet.net/C21220_tsa/web/caslogin.jsp';
-    const paylinkIntl = 'https://ssb-prod.ec.pasadena.edu/ssomanager/saml/login?relayState=/c/auth/SSB?pkg=bwymtfxp.P_MTFXPayment';
 
     useEffect(() => {
         (async () => {
@@ -105,15 +130,12 @@ function OutstandingBalance({ classes }) {
                     queryId: 'residency-info'
                 });
                 const residencyData = (residencyResult?.data?.students?.edges.map(edge => edge.node));
-                const currResidency = residencyData.pop()?.residencies.pop();
-                const { residency: { code: residencyCode, title: residencyTitle } } = currResidency;
-                console.log('residencyCode', residencyCode);
-                if (residencyTypeCode.includes(residencyCode)) {
-                    setPayLink(() => payLinkUS);
-                } else {
-                    setPayLink(() => paylinkIntl);
-                }
-                setResidency(() => residencyData);
+                const studentFullName = residencyData[0]?.person12?.names[0]?.fullName;
+                const studentIdData = residencyData[0]?.person12?.credentials.filter(cred => cred.type === 'bannerId')[0]?.value;
+                setFullName(() => studentFullName);
+                setStudentId(() => studentIdData);
+
+                setPayLink(() => payLinkUS);
 
                 const balanceResponse = await authenticatedEthosFetch(`${pipelineAPI}?cardId=${cardId}&testPersonId=${personId}`);
                 const balanceResult = await balanceResponse.json();
@@ -145,7 +167,6 @@ function OutstandingBalance({ classes }) {
 
                 const studentInfoResponse = await authenticatedEthosFetch(`${pipelineAPIStudentInfo}?cardId=${cardId}&testPersonId=${personId}`);
                 const studentInfoResult = await studentInfoResponse.json();
-                console.log('studentInfoResult', studentInfoResult);
                 setStudentInfo(() => studentInfoResult[0])
 
                 setLoadingStatus(false);
@@ -184,16 +205,35 @@ function OutstandingBalance({ classes }) {
         setTabChange(() => value);
     }
 
-    function buttonClicked() {
-        window.open(payLink, '_blank');
-    }
+    const handlePayMyTuitionPayment = () => {
+        if (formRef.current && !isPayMyTuitionDisabled) {
+            formRef.current.submit();
+        }
+    };
+
 
     if (summarize && payLink && studentInfo) {
         const [{ accountBalance, amountDue }] = summarize;
         const specialCase = ["vetStatus", "financialAid", "eops", "calwork", "dualEnrollment"].some(key => studentInfo[key]);
+
         return (
             <div className={classes.root}>
                 <div className={classes.content}>
+                    <form
+                        ref={formRef}
+                        className={classes.hiddenForm}
+                        id="tuitionForm"
+                        action="https://www.paymytuition.com/server/post_to_pmt.aspx"
+                        method="post"
+                    >
+                        <input type="hidden" name="External_Institute_Id" value="pasadena" />
+                        <input type="hidden" name="mtfx_website" value="https://www.paymytuition.com/server/post_to_pmt.aspx" />
+                        <input type="hidden" name="Routing_Type" value="International" />
+                        <input type="hidden" name="Student_Id" value={studentId || ''} />
+                        <input type="hidden" name="full_name" value={fullName || ''} />
+                        <input type="hidden" name="Balance_Due" value={summarize?.[0]?.accountBalance || ''} />
+                        <input type="hidden" name="Payment_Amount" value={summarize?.[0]?.accountBalance || ''} />
+                    </form>
                     <Tabs
                         id={`${customId}_Tabs`}
                         onChange={handleTabChange}
@@ -206,19 +246,38 @@ function OutstandingBalance({ classes }) {
                         tabChange === 0 ? (
                             <div id={`${customId}_Tab_Balance`} role="tabpanel">
                                 {accountBalance > 0 ? (
-                                    <div className={classes.balanceContainer}>
-                                        <Typography variant={'h4'} className={classes.balanceAmount}>
-                                            Balance Due: <Typography color='error' variant={'h4'} className={classes.accountBalance}>${accountBalance}</Typography>
-                                        </Typography>
-                                        {/* <Button
-                                            color='secondary'
-                                            startIcon={<Icon name="cart" />}
-                                            disabled={true}
-                                            onClick={buttonClicked}
-                                        >
-                                            <Typography variant={'h4'}>Pay Now</Typography>
-                                        </Button> */}
-                                    </div>
+                                    <>
+                                        <div className={classes.balanceContainer}>
+                                            <Typography variant={'h4'} className={classes.balanceAmount}>
+                                                Balance Due: <Typography color='error' variant={'h4'} className={classes.accountBalance}>${accountBalance}</Typography>
+                                            </Typography>
+                                        </div>
+
+                                        <div className={classes.buttonContainer}>
+                                            <Button
+                                                id={`${customId}_PayMyTuitionButton`}
+                                                fluid
+                                                color="primary"
+                                                onClick={handlePayMyTuitionPayment}
+                                                disabled={isPayMyTuitionDisabled}
+                                            >
+                                                Pay with International Currency
+                                            </Button>
+                                        </div>
+
+                                        <div className={classes.buttonContainer}>
+                                            <Button
+                                                id={`${customId}_TouchNetButton`}
+                                                fluid
+                                                color="primary"
+                                                href={payLink}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                Pay with U.S. Currency
+                                            </Button>
+                                        </div>
+                                    </>
                                 ) : (
                                     <div className={classes.balanceContainer}>
                                         <Typography variant={'h4'} className={classes.balanceAmount}>
@@ -235,8 +294,8 @@ function OutstandingBalance({ classes }) {
                                             </Typography>
                                         ) : (
                                             <Typography variant={'body2'}>
-                                                To submit payment, go to the Billing & Payments Card.
-                                                {/* Upcoming drop for non-payment on {deadlineDate.toLocaleDateString('en-US')}. Make sure all your fees are paid before this date to avoid being dropped from all classes. */}
+                                                {/* To submit payment, go to the Billing & Payments Card. */}
+                                                Upcoming drop for non-payment on {deadlineDate.toLocaleDateString('en-US')}. Make sure all your fees are paid before this date to avoid being dropped from all classes.
                                             </Typography>
                                         )}
                                     </div>
@@ -266,15 +325,21 @@ function OutstandingBalance({ classes }) {
                                         {dropDownItems}
                                     </Dropdown>
                                 </div>
-                                <div className={classes.dropDown}>
-                                    <Typography variant={'h4'} align={'center'}>
-                                        To submit payment, go to the Billing & Payments Card.
-                                    </Typography>
-                                    {/* <Typography variant={'h4'} align={'center'}>
-                                        <TextLink id={`${customId}_PayNow}`} disabled href="https://secure.touchnet.net/C21220_tsa/web/caslogin.jsp">
-                                            Pay Now
-                                        </TextLink>
-                                    </Typography> */}
+                                <div className={classes.linksRow}>
+                                    <TextLink
+                                        onClick={handlePayMyTuitionPayment}
+                                        className={classes.linkItem}
+                                        title={'Pay with International Currency'}
+                                    >
+                                        Pay with International Currency
+                                    </TextLink>
+                                    <TextLink
+                                        href={payLink}
+                                        className={classes.linkItem}
+                                        title={'Pay with U.S. Currency'}
+                                    >
+                                        Pay with U.S. Currency
+                                    </TextLink>
                                 </div>
                                 <div>
                                     {dropdownStateTerm && (
@@ -351,15 +416,23 @@ function OutstandingBalance({ classes }) {
                                         {dropDownItems}
                                     </Dropdown>
                                 </div>
-                                <div className={classes.dropDown}>
-                                    <Typography variant={'h4'} align={'center'}>
-                                        To submit payment, go to the Billing & Payments Card.
-                                    </Typography>
-                                    {/* <Typography variant={'h4'} align={'center'}>
-                                        <TextLink id={`${customId}_PayNow}`} disabled href="https://secure.touchnet.net/C21220_tsa/web/caslogin.jsp">
-                                            Pay Now
+                                <div className={classes.buttonContainer}>
+                                    {/* <div className={classes.linksRow}>
+                                        <TextLink
+                                            onClick={handlePayMyTuitionPayment}
+                                            className={classes.linkItem}
+                                            title={'Pay with International Currency'}
+                                        >
+                                            Pay with International Currency
                                         </TextLink>
-                                    </Typography> */}
+                                        <TextLink
+                                            href={payLink}
+                                            className={classes.linkItem}
+                                            title={'Pay with U.S. Currency'}
+                                        >
+                                            Pay with U.S. Currency
+                                        </TextLink>
+                                    </div> */}
                                 </div>
                                 <div>
                                     {dropdownStateTerm && (
