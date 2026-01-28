@@ -1,8 +1,9 @@
 import { withStyles } from '@ellucian/react-design-system/core/styles';
 import { spacing20, spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
 import {
-    Typography, Tab, Tabs, Table, TableRow, TableCell, TableBody, TableHead, TextField, Button, Dropdown, DropdownItem, Checkbox, Alert
+    Typography, Tab, Tabs, Table, TableRow, TableCell, TableBody, TableHead, TextField, Button, Dropdown, DropdownItem, Checkbox, Alert, IconButton, Tooltip, Switch
 } from '@ellucian/react-design-system/core';
+import { Icon } from '@ellucian/ds-icons/lib';
 import PropTypes from 'prop-types';
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import {
@@ -75,6 +76,8 @@ const HomePage = (props) => {
     const [alertMessage, setAlertMessage] = useState(null);
     const [alertType, setAlertType] = useState('success');
     const [alertOpen, setAlertOpen] = useState(false);
+    const [includeEmailInPrint, setIncludeEmailInPrint] = useState(false);
+    const allowedRsts = new Set(['RC', 'RE', 'RS', 'RW', 'AU']);
 
     const todayDate = new Date().toLocaleDateString()
 
@@ -87,11 +90,12 @@ const HomePage = (props) => {
                 const termData = termResult.filter(term => term.termDisplayControl == 'Y');
                 setTerms(termData);
                 const sectionResponse = await authenticatedEthosFetch(`${sectionPipelineAPI}?cardId=${cardId}&termCode=${termCode}`);
-                // const sectionResult = await sectionResponse.json();
-                const sectionResult = await mock;
-                console.log(sectionResult);
+                const sectionResult = await sectionResponse.json();
+                // const sectionResult = await mock;
                 const sectionDataResult = (sectionResult?.data?.sectionInstructors10?.edges?.map(edge => edge.node));
                 const seen = new Set();
+                console.log(sectionDataResult);
+
                 const dedupedSections = sectionDataResult.filter(sec => {
                     const key = sec?.section16?.alternateIds?.[0]?.value;
                     if (!key || seen.has(key)) { return false }
@@ -142,12 +146,17 @@ const HomePage = (props) => {
         try {
             const response = await authenticatedEthosFetch(`${pipelineAPI}?cardId=${cardId}&crn=${crn}&termCode=${termCode}`);
             const rawResult = await response.json();
-            console.log('Fetched Roster Data:', rawResult);
-            const studentAvailable = Array.isArray(rawResult)
-                ? rawResult.filter(item => ('spridenId' in item))
-                    .sort((a, b) => a.spridenCurrName.localeCompare(b.spridenCurrName))
-                : [];
-            setStudentList(studentAvailable);
+            console.log(rawResult);
+            const studentDataResult = rawResult?.data?.sectionRegistrations16?.edges?.map(edge => edge.node);
+            console.log(studentDataResult);
+            setStudentList(studentDataResult);
+            // const studentAvailable = Array.isArray(studentDataResult)
+            //     ? studentDataResult.filter(item =>
+            //         'spridenId' in item && allowedRsts.has(item.rstsCode)
+            //     )
+            //         .sort((a, b) => a.spridenCurrName.localeCompare(b.spridenCurrName))
+            //     : [];
+            // setStudentList(studentAvailable);
         } catch (error) {
             console.error(error);
         } finally {
@@ -190,15 +199,13 @@ const HomePage = (props) => {
         setStudentList([]);
         localStorage.removeItem('selectedSection');
         setLoadingStatus(true);
-        console.log(sectionPipelineAPI);
+
         (async () => {
             setLoadingStatus(true);
             try {
-                console.log(value)
                 const response = await authenticatedEthosFetch(`${sectionPipelineAPI}?cardId=${cardId}&termCode=${value}`);
                 const sectionResult = await response.json();
                 // const sectionResult = await mock;
-                console.log(sectionResult);
                 const sectionDataResult = (sectionResult?.data?.sectionInstructors10?.edges?.map(edge => edge.node));
                 const seen = new Set();
                 const dedupedSections = sectionDataResult.filter(sec => {
@@ -248,6 +255,38 @@ const HomePage = (props) => {
 
     const handleAlertClose = () => {
         setAlertOpen(false);
+    }
+
+    const handleCopyEmail = (email) => {
+        navigator.clipboard.writeText(email).then(() => {
+            setAlertType('success');
+            setAlertMessage('Email copied to clipboard!');
+            setAlertOpen(true);
+            setTimeout(() => setAlertOpen(false), 2000);
+        }).catch(() => {
+            setAlertType('error');
+            setAlertMessage('Failed to copy email.');
+            setAlertOpen(true);
+            setTimeout(() => setAlertOpen(false), 2000);
+        });
+    }
+
+    const handleCopyAllEmails = () => {
+        const emails = studentList
+            .map(item => item.registrant12?.emails[0]?.address)
+            .filter(Boolean)
+            .join('; ');
+        navigator.clipboard.writeText(emails).then(() => {
+            setAlertType('success');
+            setAlertMessage(`${studentList.length} emails copied to clipboard!`);
+            setAlertOpen(true);
+            setTimeout(() => setAlertOpen(false), 2000);
+        }).catch(() => {
+            setAlertType('error');
+            setAlertMessage('Failed to copy emails.');
+            setAlertOpen(true);
+            setTimeout(() => setAlertOpen(false), 2000);
+        });
     }
     // const printAttendanceHistory = () => {
     //     const printContent = document.getElementById('attendance-history-table');
@@ -315,6 +354,7 @@ const HomePage = (props) => {
                                 <th>#</th>
                                 <th>Student ID</th>
                                 <th>Student Name</th>
+                                ${includeEmailInPrint ? '<th>Email</th>' : ''}
                                 <th></th>
                                 <th></th>
                                 <th></th>
@@ -328,8 +368,9 @@ const HomePage = (props) => {
                             ${studentList.map((student, index) => `
                                 <tr>
                                     <td>${index + 1}</td>
-                                    <td>${student.spridenId}</td>
-                                    <td>${student.spridenCurrName}</td>
+                                    <td>${student.registrant12?.credentials[0]?.value}</td>
+                                    <td>${student.registrant12?.names[0]?.lastName}, ${student.registrant12?.names[0]?.firstName}</td>
+                                    ${includeEmailInPrint ? `<td>${student.registrant12?.emails[0]?.address || ''}</td>` : ''}
                                     <td class="empty-cell"></td>
                                     <td class="empty-cell"></td>
                                     <td class="empty-cell"></td>
@@ -352,7 +393,6 @@ const HomePage = (props) => {
 
     const handleChangeSection = useCallback((event) => {
         const { value } = event.target;
-        console.log('Selected Section:', value);
         setDropdownStateSection(value);
         localStorage.setItem('selectedSection', value);
         const [newCrn, newTermCode] = value.split('.');
@@ -371,10 +411,17 @@ const HomePage = (props) => {
         if (tabChange === 0) {
             return (
                 <div style={{ marginTop: spacing40, marginBottom: spacing40 }}>
-                    <div style={{ marginTop: spacing40, marginBottom: spacing40 }}>
+                    <div style={{ marginTop: spacing40, marginBottom: spacing40, display: 'flex', alignItems: 'center', gap: '16px' }}>
                         <Button onClick={printBlankSheet} variant="contained" color="primary">
                             Print Weekly Roster
                         </Button>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <Switch
+                                checked={includeEmailInPrint}
+                                onChange={(e) => setIncludeEmailInPrint(e.target.checked)}
+                            />
+                            <Typography>Include Email</Typography>
+                        </div>
                     </div>
                     <Typography variant="h5">Student Roster</Typography>
                     <Table>
@@ -383,6 +430,19 @@ const HomePage = (props) => {
                                 <TableCell><Typography variant="h6">#</Typography></TableCell>
                                 <TableCell><Typography variant="h6">Student ID</Typography></TableCell>
                                 <TableCell><Typography variant="h6">Student Name</Typography></TableCell>
+                                <TableCell>
+                                    <Typography variant="h6" style={{ display: 'inline' }}>Email</Typography>
+                                    <Tooltip title="Copy all emails">
+                                        <IconButton
+                                            size="small"
+                                            color="default"
+                                            onClick={handleCopyAllEmails}
+                                            style={{ marginLeft: '4px', padding: '2px' }}
+                                        >
+                                            <Icon name="copy" style={{ fontSize: '14px', color: '#666' }} />
+                                        </IconButton>
+                                    </Tooltip>
+                                </TableCell>
                                 {/* <TableCell><Typography variant="h6">{todayDate}</Typography></TableCell> */}
                             </TableRow>
                         </TableHead>
@@ -390,8 +450,23 @@ const HomePage = (props) => {
                             {studentList.map((item, index) => (
                                 <TableRow key={index}>
                                     <TableCell>{index + 1}</TableCell>
-                                    <TableCell>{item.spridenId}</TableCell>
-                                    <TableCell>{item.spridenCurrName}</TableCell>
+                                    <TableCell>{item.registrant12?.credentials[0]?.value}</TableCell>
+                                    <TableCell>{item.registrant12?.names[0]?.lastName}, {item.registrant12?.names[0]?.firstName}</TableCell>
+                                    <TableCell>
+                                        {item.registrant12?.emails[0]?.address}
+                                        {item.registrant12?.emails[0]?.address && (
+                                            <Tooltip title="Copy email">
+                                                <IconButton
+                                                    size="small"
+                                                    color="default"
+                                                    onClick={() => handleCopyEmail(item.registrant12?.emails[0]?.address)}
+                                                    style={{ marginLeft: '4px', padding: '2px' }}
+                                                >
+                                                    <Icon name="copy" style={{ fontSize: '14px', color: '#666' }} />
+                                                </IconButton>
+                                            </Tooltip>
+                                        )}
+                                    </TableCell>
                                     {/* <TableCell>
                                         <Checkbox
                                             checked={attendanceData[`${crn}-${termCode}-${todayDate}`]?.[item.spridenId] || false}

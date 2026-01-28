@@ -73,10 +73,10 @@ function Attendance({ classes }) {
 
         (async () => {
             try {
-                // const sectionResult = await getEthosQuery({
-                //     queryId: 'section-list', properties: { termCode: value }
-                // });
-                const sectionResult = await mock;
+                const sectionResult = await getEthosQuery({
+                    queryId: 'section-list', properties: { termCode: value }
+                });
+                // const sectionResult = await mock;
                 const sectionData = (sectionResult?.data?.sectionInstructors?.edges?.map(edge => edge.node));
                 setSections(sectionData);
                 setLoadingStatus(false);
