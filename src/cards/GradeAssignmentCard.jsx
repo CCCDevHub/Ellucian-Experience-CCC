@@ -15,6 +15,7 @@ import {
     TextLink,
     ListItemIcon
 } from '@ellucian/react-design-system/core';
+import mock from '../data/mock.json';
 
 const cacheKey = 'section-table-data';
 
@@ -66,6 +67,7 @@ function GradeAssignmentCard({ classes }) {
             setLoadingStatus(true);
             try {
                 const sectionResult = await getEthosQuery({ queryId: 'section-list' });
+                // const sectionResult = await mock;
 
                 const sections = sectionResult?.data?.sectionInstructors?.edges.map(edge => edge.node);
                 setSectionData(() => sections);
@@ -107,18 +109,21 @@ function GradeAssignmentCard({ classes }) {
             // console.log(crn);
             // const {alternateIds, code: crn, course:{number:csn, subject:{abbreviation:dept}}, maxEnrollment, reportingAcademicPeriod16: {code: termCode, registration, title: termName}, status: {detail11:{category, title:statusTitle}}, titles} = sectionData[i];
             // const {section16:{code: crn, course16: {subject, number: csn}, maxEnrollment, }}
-            const { section16: { id: sectionID, code: crn, alternateIds, course16, maxEnrollment, reportingAcademicPeriod16, titles } } = sectionData[i] || {};
-            const { subject, number: csn } = course16 || {};
-            const { code: termCode, title: termName } = reportingAcademicPeriod16 || {};
-            const { abbreviation: dept } = subject || {};
-            const gradeSubmitted = parseInt(assignedGradeSubmitted(sectionID), 10);
-            const [{ value: crnTerm }] = alternateIds || {};
+            const { section16 } = sectionData[i] || {};
+            if (section16) {
+                const { id: sectionID, code: crn, alternateIds, course16, maxEnrollment, reportingAcademicPeriod16, titles } = section16;
+                const { subject, number: csn } = course16 || {};
+                const { code: termCode, title: termName } = reportingAcademicPeriod16 || {};
+                const { abbreviation: dept } = subject || {};
+                const gradeSubmitted = parseInt(assignedGradeSubmitted(sectionID), 10);
+                const [{ value: crnTerm }] = alternateIds || {};
 
-            if (!crnSet.has(crnTerm)) {
-                tableData.push(createData(titles[0]?.value, dept, csn, termName, crn, maxEnrollment, termCode, gradeSubmitted));
+                if (!crnSet.has(crnTerm)) {
+                    tableData.push(createData(titles[0]?.value, dept, csn, termName, crn, maxEnrollment, termCode, gradeSubmitted));
+                }
+                crnSet.add(crnTerm);
+                terms.add(termName);
             }
-            crnSet.add(crnTerm);
-            terms.add(termName);
         }
     }
     // console.log(classType);

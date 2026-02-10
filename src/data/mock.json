@@ -1,0 +1,291 @@
+{
+  "data": {
+    "sectionInstructors": {
+      "edges": [
+        {
+          "node": {
+            "id": "9dc8c003-99c5-4de8-8398-5699bc473b1e",
+            "instructionalMethod6": {
+              "title": "DE Online Lecture",
+              "abbreviation": "OLD"
+            },
+            "section16": null,
+            "instructor12": {
+              "id": "fe0b19f0-85ac-41e9-89cd-651ee762b633",
+              "names": [
+                {
+                  "fullName": "David J Colley"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "aacf5017-eebf-4386-8c5d-27e4b5b51eb5",
+            "instructionalMethod6": {
+              "title": "DE Online Lecture",
+              "abbreviation": "OLD"
+            },
+            "section16": {
+              "id": "651e3c17-8d03-4aad-92ba-e8e83c0d6420",
+              "startOn": "2026-02-18",
+              "endOn": "2026-06-14",
+              "gradeSubmitted": null,
+              "code": "39577",
+              "titles": [
+                {
+                  "value": "INTRODUCTION TO THE HUMANITIES"
+                },
+                {
+                  "value": "INTRODUCTION TO THE HUMANITIES"
+                }
+              ],
+              "reportingAcademicPeriod16": {
+                "code": "202630",
+                "title": "Spring 2026",
+                "registration": "open",
+                "startOn": "2026-02-18T08:00:00Z",
+                "endOn": "2026-06-14T07:00:00Z"
+              },
+              "maxEnrollment": 40,
+              "crossListed": "notCrossListed",
+              "alternateIds": [
+                {
+                  "title": "Source Key",
+                  "value": "39577.202630"
+                }
+              ],
+              "course16": {
+                "subject6": {
+                  "abbreviation": "HUM"
+                },
+                "number": "001"
+              }
+            },
+            "instructor12": {
+              "id": "fe0b19f0-85ac-41e9-89cd-651ee762b633",
+              "names": [
+                {
+                  "fullName": "David J Colley"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "f2d22850-c23b-46cb-8f5f-40eb58b64cb1",
+            "instructionalMethod6": {
+              "title": "DE Online Lecture",
+              "abbreviation": "OLD"
+            },
+            "section16": {
+              "id": "ad9f5da1-78f3-40d4-a9d7-bc8a6adb7139",
+              "startOn": "2025-08-25",
+              "endOn": "2025-12-14",
+              "gradeSubmitted": 0,
+              "code": "78539",
+              "titles": [
+                {
+                  "value": "INTRODUCTION TO THE HUMANITIES"
+                },
+                {
+                  "value": "INTRODUCTION TO THE HUMANITIES"
+                }
+              ],
+              "reportingAcademicPeriod16": {
+                "code": "202570",
+                "title": "Fall 2025",
+                "registration": "open",
+                "startOn": "2025-08-25T07:00:00Z",
+                "endOn": "2025-12-14T08:00:00Z"
+              },
+              "maxEnrollment": 40,
+              "crossListed": "notCrossListed",
+              "alternateIds": [
+                {
+                  "title": "Source Key",
+                  "value": "78539.202570"
+                }
+              ],
+              "course16": {
+                "subject6": {
+                  "abbreviation": "HUM"
+                },
+                "number": "001"
+              }
+            },
+            "instructor12": {
+              "id": "fe0b19f0-85ac-41e9-89cd-651ee762b633",
+              "names": [
+                {
+                  "fullName": "David J Colley"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "2b463624-34e7-4c39-b84b-d4ec2561774e",
+            "instructionalMethod6": {
+              "title": "DE Online Lecture",
+              "abbreviation": "OLD"
+            },
+            "section16": {
+              "id": "1ea45152-e0c7-4a9f-a43b-98484aa9504e",
+              "startOn": "2025-02-18",
+              "endOn": "2025-06-16",
+              "gradeSubmitted": 1,
+              "code": "39577",
+              "titles": [
+                {
+                  "value": "INTRODUCTION TO THE HUMANITIES"
+                },
+                {
+                  "value": "INTRODUCTION TO THE HUMANITIES"
+                }
+              ],
+              "reportingAcademicPeriod16": {
+                "code": "202530",
+                "title": "Spring 2025",
+                "registration": "open",
+                "startOn": "2025-02-18T08:00:00Z",
+                "endOn": "2025-06-16T07:00:00Z"
+              },
+              "maxEnrollment": 40,
+              "crossListed": "notCrossListed",
+              "alternateIds": [
+                {
+                  "title": "Source Key",
+                  "value": "39577.202530"
+                }
+              ],
+              "course16": {
+                "subject6": {
+                  "abbreviation": "HUM"
+                },
+                "number": "001"
+              }
+            },
+            "instructor12": {
+              "id": "fe0b19f0-85ac-41e9-89cd-651ee762b633",
+              "names": [
+                {
+                  "fullName": "David J Colley"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "7d662787-cdc0-4aba-b585-93dec7caa9df",
+            "instructionalMethod6": {
+              "title": "DE Online Lecture",
+              "abbreviation": "OLD"
+            },
+            "section16": {
+              "id": "9ae6c679-87e4-47b4-a864-bd428f42dda1",
+              "startOn": "2024-08-26",
+              "endOn": "2024-12-15",
+              "gradeSubmitted": 1,
+              "code": "78539",
+              "titles": [
+                {
+                  "value": "INTRODUCTION TO THE HUMANITIES"
+                },
+                {
+                  "value": "INTRODUCTION TO THE HUMANITIES"
+                }
+              ],
+              "reportingAcademicPeriod16": {
+                "code": "202470",
+                "title": "Fall 2024",
+                "registration": "open",
+                "startOn": "2024-08-26T07:00:00Z",
+                "endOn": "2024-12-15T08:00:00Z"
+              },
+              "maxEnrollment": 40,
+              "crossListed": "notCrossListed",
+              "alternateIds": [
+                {
+                  "title": "Source Key",
+                  "value": "78539.202470"
+                }
+              ],
+              "course16": {
+                "subject6": {
+                  "abbreviation": "HUM"
+                },
+                "number": "001"
+              }
+            },
+            "instructor12": {
+              "id": "fe0b19f0-85ac-41e9-89cd-651ee762b633",
+              "names": [
+                {
+                  "fullName": "David J Colley"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "3b65a684-a334-4e60-a22f-f19aeda62e9e",
+            "instructionalMethod6": {
+              "title": "DE Online Lecture",
+              "abbreviation": "OLD"
+            },
+            "section16": {
+              "id": "93229e83-a6be-4bb6-85e0-b106e2076676",
+              "startOn": "2024-02-20",
+              "endOn": "2024-06-16",
+              "gradeSubmitted": 1,
+              "code": "39577",
+              "titles": [
+                {
+                  "value": "INTRODUCTION TO THE HUMANITIES"
+                },
+                {
+                  "value": "INTRODUCTION TO THE HUMANITIES"
+                }
+              ],
+              "reportingAcademicPeriod16": {
+                "code": "202430",
+                "title": "Spring 2024",
+                "registration": "open",
+                "startOn": "2024-02-20T08:00:00Z",
+                "endOn": "2024-06-16T07:00:00Z"
+              },
+              "maxEnrollment": 40,
+              "crossListed": "notCrossListed",
+              "alternateIds": [
+                {
+                  "title": "Source Key",
+                  "value": "39577.202430"
+                }
+              ],
+              "course16": {
+                "subject6": {
+                  "abbreviation": "HUM"
+                },
+                "number": "001"
+              }
+            },
+            "instructor12": {
+              "id": "fe0b19f0-85ac-41e9-89cd-651ee762b633",
+              "names": [
+                {
+                  "fullName": "David J Colley"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}
