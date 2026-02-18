@@ -30,7 +30,7 @@ function SectionAuthorizationCode({ classes }) {
             setLoadingStatus(true);
             try {
                 const futureDate = new Date();
-                futureDate.setDate(futureDate.getDate() + 3);
+                futureDate.setDate(futureDate.getDate() + 4);
                 const sectionResult = await getEthosQuery({
                     queryId: 'section-list', properties: { todayDate: new Date().toJSON().slice(0, 10), futureDate: futureDate.toJSON().slice(0, 10) }
                 });
