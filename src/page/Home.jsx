@@ -91,10 +91,11 @@ const HomePage = (props) => {
                 setTerms(termData);
                 const sectionResponse = await authenticatedEthosFetch(`${sectionPipelineAPI}?cardId=${cardId}&termCode=${termCode}`);
                 const sectionResult = await sectionResponse.json();
+                // console.log(sectionResult)
                 // const sectionResult = await mock;
                 const sectionDataResult = (sectionResult?.data?.sectionInstructors10?.edges?.map(edge => edge.node));
                 const seen = new Set();
-                console.log(sectionDataResult);
+                // console.log(sectionDataResult);
 
                 const dedupedSections = sectionDataResult.filter(sec => {
                     const key = sec?.section16?.alternateIds?.[0]?.value;
@@ -146,9 +147,7 @@ const HomePage = (props) => {
         try {
             const response = await authenticatedEthosFetch(`${pipelineAPI}?cardId=${cardId}&crn=${crn}&termCode=${termCode}`);
             const rawResult = await response.json();
-            console.log(rawResult);
             const studentDataResult = rawResult?.data?.sectionRegistrations16?.edges?.map(edge => edge.node);
-            console.log(studentDataResult);
             setStudentList(studentDataResult);
             // const studentAvailable = Array.isArray(studentDataResult)
             //     ? studentDataResult.filter(item =>
@@ -347,6 +346,7 @@ const HomePage = (props) => {
                 <body>
                     <h1>Roster Sheet</h1>
                     <p><strong>Section:</strong> ${courseName}</p>
+                    <p><strong>CRN:</strong> ${crn}</p>
                     <p><strong>Date:</strong> _______________</p>
                     <table>
                         <thead>
