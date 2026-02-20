@@ -68,6 +68,15 @@ const HomePage = (props) => {
     const [tabChange, setTabChange] = useState(0);
 
     const [courseName, setCourseName] = useState('');
+    const [courseTitle, setCourseTitle] = useState('');
+    const [courseSubject, setCourseSubject] = useState('');
+    const [courseCredits, setCourseCredits] = useState('');
+    const [courseInstructor, setCourseInstructor] = useState('');
+    const [courseMeetingTimes, setCourseMeetingTimes] = useState('');
+    const [courseBuilding, setCourseBuilding] = useState('');
+    const [courseRoom, setCourseRoom] = useState('');
+    const [courseMeetingDays, setCourseMeetingDays] = useState('');
+    const [courseType, setCourseType] = useState('');
     const [sectionData, setSectionData] = useState([]);
     const [dropdownStateSection, setDropdownStateSection] = useState(selected || '');
     const [terms, setTerms] = useState([]);
@@ -347,6 +356,15 @@ const HomePage = (props) => {
                     <h1>Roster Sheet</h1>
                     <p><strong>Section:</strong> ${courseName}</p>
                     <p><strong>CRN:</strong> ${crn}</p>
+                    <p><strong>Title:</strong> ${courseTitle}</p>
+                    <p><strong>Subject:</strong> ${courseSubject}</p>
+                    <p><strong>Credit:</strong> ${courseCredits}</p>
+                    <p><strong>Instructor:</strong> ${courseInstructor}</p>
+                    <p><strong>Class Type:</strong> ${courseType}</p>
+                    <p><strong>Meeting Days:</strong> ${courseMeetingDays}</p>
+                    <p><strong>Meeting Times:</strong> ${courseMeetingTimes}</p>
+                    <p><strong>Building:</strong> ${courseBuilding}</p>
+                    <p><strong>Room:</strong> ${courseRoom}</p>
                     <p><strong>Date:</strong> _______________</p>
                     <table>
                         <thead>
@@ -402,10 +420,38 @@ const HomePage = (props) => {
         // Set course name for the selected section
         const selectedSection = sectionData.find(sec => sec?.section16?.alternateIds?.[0]?.value === value);
         if (selectedSection) {
+            console.log(selectedSection);
             const course = selectedSection.section16?.course16;
             setCourseName(`${course?.subject6?.abbreviation} ${course?.number}`);
+            setCourseTitle(selectedSection.section16?.titles?.[0]?.value || '');
+            setCourseSubject(course?.subject6?.abbreviation || '');
+            setCourseCredits(course?.credits[0]?.minimum || '');
+            const instructor = selectedSection.instructor12;
+            setCourseInstructor(instructor ? instructor.names[0]?.fullName : '');
+            setCourseType(selectedSection?.instructionalMethod6?.title || '');
+            setCourseMeetingDays(selectedSection?.instructionalEvents11?.[0]?.recurrence?.repeatRule?.daysOfWeek?.join(', ') || '');
+            const startTime = selectedSection?.instructionalEvents11?.[0]?.recurrence?.timePeriod?.startOn || '';
+            const endTime = selectedSection?.instructionalEvents11?.[0]?.recurrence?.timePeriod?.endOn || '';
+            const meetingTimes = startTime && endTime ? `${formatTime(startTime)} - ${formatTime(endTime)}` : '';
+            const building = selectedSection?.instructionalEvents11?.[0]?.locations?.building?.code || '';
+            const room = selectedSection?.instructionalEvents11?.[0]?.locations?.roomNumber || '';
+            setCourseMeetingTimes(meetingTimes);
+            setCourseBuilding(building);
+            setCourseRoom(room);
+
         }
     }, [sectionData]);
+
+
+    const formatTime = (isoString) => {
+        if (!isoString) return '';
+        const date = new Date(isoString);
+        return date.toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        });
+    };
 
     const renderContent = () => {
         if (tabChange === 0) {
