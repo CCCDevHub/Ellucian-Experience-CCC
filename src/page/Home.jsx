@@ -60,7 +60,7 @@ const HomePage = (props) => {
     const getWithExpiry = (key) => {
         try {
             const raw = localStorage.getItem(key);
-            if (!raw) return null;
+            if (!raw) { return null; }
             const { value, expiry } = JSON.parse(raw);
             if (Date.now() > expiry) {
                 localStorage.removeItem(key);
