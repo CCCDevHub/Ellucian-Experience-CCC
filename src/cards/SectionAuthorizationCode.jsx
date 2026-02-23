@@ -46,12 +46,18 @@ function SectionAuthorizationCode({ classes }) {
         })();
     }, []);
 
+    const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+    const setWithExpiry = (key, value) => {
+        localStorage.setItem(key, JSON.stringify({ value, expiry: Date.now() + ONE_WEEK_MS }));
+    };
+
     const handleChangeSection = (event) => {
         const { value } = event.target;
         setDropdownStateSection(value);
         setLoadingStatus(true);
 
-        localStorage.setItem('selectedSection', value);
+        setWithExpiry('sac_selectedSection', value);
         navigateToPage({
             route: `/section-authorization-code`
         });
@@ -68,7 +74,7 @@ function SectionAuthorizationCode({ classes }) {
             seen.add(key);
             return true;
         });
-        localStorage.setItem('sectionData', JSON.stringify(deduped));
+        setWithExpiry('sac_sectionData', deduped);
         return deduped;
     }, [sections]);
 

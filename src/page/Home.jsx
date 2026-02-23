@@ -55,18 +55,38 @@ const HomePage = (props) => {
         }, cardId
     } = useCardInfo();
     const customId = 'Section-Add-Authorization-Code';
+    const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+    const getWithExpiry = (key) => {
+        try {
+            const raw = localStorage.getItem(key);
+            if (!raw) return null;
+            const { value, expiry } = JSON.parse(raw);
+            if (Date.now() > expiry) {
+                localStorage.removeItem(key);
+                return null;
+            }
+            return value;
+        } catch {
+            return null;
+        }
+    };
+
+    const setWithExpiry = (key, value) => {
+        localStorage.setItem(key, JSON.stringify({ value, expiry: Date.now() + ONE_WEEK_MS }));
+    };
 
     const [addCodes, setAddCodes] = useState([]);
     const [inputValues, setInputValues] = useState({});
     const [studentWithCodes, setStudentWithCodes] = useState([]);
     const [tabChange, setTabChange] = useState(0);
 
-    const selected = localStorage.getItem('selectedSection');
+    const selected = getWithExpiry('sac_selectedSection');
     const [initialCrn, initialTermCode] = selected ? selected.split('.') : ['', ''];
     const [crn, setCrn] = useState(initialCrn);
     const [termCode, setTermCode] = useState(initialTermCode);
 
-    const [sectionData, setSectionData] = useState(JSON.parse(localStorage.getItem('sectionData') || '[]'));
+    const [sectionData, setSectionData] = useState(getWithExpiry('sac_sectionData') || []);
     const [dropdownStateSection, setDropdownStateSection] = useState(selected);
     useEffect(() => {
         if (!sectionData || sectionData.length === 0) {
@@ -85,7 +105,7 @@ const HomePage = (props) => {
                         return true;
                     });
                     setSectionData(dedupedSections);
-                    localStorage.setItem('sectionData', JSON.stringify(dedupedSections));
+                    setWithExpiry('sac_sectionData', dedupedSections);
 
                     setLoadingStatus(false);
                 } catch (error) {
@@ -130,7 +150,7 @@ const HomePage = (props) => {
     const handleChangeSection = useCallback((event) => {
         const { value } = event.target;
         setDropdownStateSection(value);
-        localStorage.setItem('selectedSection', value);
+        setWithExpiry('sac_selectedSection', value);
         const [newCrn, newTermCode] = value.split('.');
         setCrn(newCrn);
         setTermCode(newTermCode);
