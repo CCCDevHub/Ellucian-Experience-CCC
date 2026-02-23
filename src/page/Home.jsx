@@ -339,33 +339,114 @@ const HomePage = (props) => {
                 <head>
                     <title>Blank Roster Sheet</title>
                     <style>
-                        body { font-family: Arial, sans-serif; margin: 20px; }
-                        h1 { color: #333; margin-bottom: 20px; }
+                        body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
+                        h1 { color: #333; margin-bottom: 10px; border-bottom: 3px solid #0066cc; padding-bottom: 10px; }
+                        .course-info {
+                            background: #f8f9fa;
+                            border: 2px solid #dee2e6;
+                            border-radius: 8px;
+                            padding: 20px;
+                            margin: 20px 0;
+                        }
+                        .info-grid {
+                            display: grid;
+                            grid-template-columns: repeat(2, 1fr);
+                            gap: 12px 24px;
+                            margin-bottom: 12px;
+                        }
+                        .info-item {
+                            display: flex;
+                            align-items: baseline;
+                            padding: 4px 0;
+                        }
+                        .info-label {
+                            font-weight: bold;
+                            color: #495057;
+                            min-width: 120px;
+                            margin-right: 8px;
+                        }
+                        .info-value {
+                            color: #212529;
+                        }
+                        .section-header {
+                            grid-column: 1 / -1;
+                            font-size: 1.1em;
+                            font-weight: bold;
+                            color: #0066cc;
+                            margin-top: 8px;
+                            padding-bottom: 4px;
+                            border-bottom: 1px solid #dee2e6;
+                        }
+                        .date-field {
+                            margin-top: 15px;
+                            padding: 12px;
+                            background: white;
+                            border: 1px solid #dee2e6;
+                            border-radius: 4px;
+                        }
                         table { border-collapse: collapse; width: 100%; margin-top: 20px; }
                         th, td { border: 1px solid #ddd; padding: 12px; text-align: left; min-height: 40px; }
-                        th { background-color: #f2f2f2; font-weight: bold; }
+                        th { background-color: #0066cc; color: white; font-weight: bold; }
                         .empty-cell { height: 40px; }
                         @media print {
                             body { margin: 0; }
                             table { page-break-inside: auto; }
                             tr { page-break-inside: avoid; page-break-after: auto; }
+                            .course-info { page-break-inside: avoid; }
                         }
                     </style>
                 </head>
                 <body>
                     <h1>Roster Sheet</h1>
-                    <p><strong>Section:</strong> ${courseName}</p>
-                    <p><strong>CRN:</strong> ${crn}</p>
-                    <p><strong>Title:</strong> ${courseTitle}</p>
-                    <p><strong>Subject:</strong> ${courseSubject}</p>
-                    <p><strong>Credit:</strong> ${courseCredits}</p>
-                    <p><strong>Instructor:</strong> ${courseInstructor}</p>
-                    <p><strong>Class Type:</strong> ${courseType}</p>
-                    <p><strong>Meeting Days:</strong> ${courseMeetingDays}</p>
-                    <p><strong>Meeting Times:</strong> ${courseMeetingTimes}</p>
-                    <p><strong>Building:</strong> ${courseBuilding}</p>
-                    <p><strong>Room:</strong> ${courseRoom}</p>
-                    <p><strong>Date:</strong> _______________</p>
+                    <div class="course-info">
+                        <div class="info-grid">
+                            <div class="section-header">Course Information</div>
+                            <div class="info-item">
+                                <span class="info-label">Section:</span>
+                                <span class="info-value">${courseName}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">CRN:</span>
+                                <span class="info-value">${crn}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Title:</span>
+                                <span class="info-value">${courseTitle}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Subject:</span>
+                                <span class="info-value">${courseSubject}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Credits:</span>
+                                <span class="info-value">${courseCredits}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Instructor:</span>
+                                <span class="info-value">${courseInstructor}</span>
+                            </div>
+                            <div class="section-header">Schedule & Location</div>
+                            <div class="info-item">
+                                <span class="info-label">Class Type:</span>
+                                <span class="info-value">${courseType}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Meeting Days:</span>
+                                <span class="info-value">${courseMeetingDays}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Meeting Times:</span>
+                                <span class="info-value">${courseMeetingTimes}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Location:</span>
+                                <span class="info-value">${courseBuilding} ${courseRoom}</span>
+                            </div>
+                        </div>
+                        <div class="date-field">
+                            <span class="info-label">Date:</span> _______________
+                        </div>
+                    </div>
                     <table>
                         <thead>
                             <tr>
@@ -444,7 +525,7 @@ const HomePage = (props) => {
 
 
     const formatTime = (isoString) => {
-        if (!isoString) return '';
+        if (!isoString) { return '' }
         const date = new Date(isoString);
         return date.toLocaleTimeString([], {
             hour: '2-digit',
