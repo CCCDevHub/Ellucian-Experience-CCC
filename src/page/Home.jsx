@@ -468,7 +468,7 @@ const HomePage = (props) => {
                                 <tr>
                                     <td>${index + 1}</td>
                                     <td>${student.registrant12?.credentials[0]?.value}</td>
-                                    <td>${student.registrant12?.names[0]?.lastName}, ${student.registrant12?.names[0]?.firstName}</td>
+                                    <td>${student.registrant12?.names.at(-1)?.lastName}, ${student.registrant12?.names.at(-1)?.firstName}</td>
                                     ${includeEmailInPrint ? `<td>${student.registrant12?.emails[0]?.address || ''}</td>` : ''}
                                     <td class="empty-cell"></td>
                                     <td class="empty-cell"></td>
