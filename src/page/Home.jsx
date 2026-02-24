@@ -192,6 +192,27 @@ const HomePage = (props) => {
         }
     }, [crn, termCode]);
 
+    useEffect(() => {
+        if (sectionData.length === 0 || !dropdownStateSection) { return; }
+        const selectedSection = sectionData.find(sec => sec?.section16?.alternateIds?.[0]?.value === dropdownStateSection);
+        if (selectedSection) {
+            const course = selectedSection.section16?.course16;
+            setCourseName(`${course?.subject6?.abbreviation} ${course?.number}`);
+            setCourseTitle(selectedSection.section16?.titles?.[0]?.value || '');
+            setCourseSubject(course?.subject6?.abbreviation || '');
+            setCourseCredits(course?.credits[0]?.minimum || '');
+            const instructor = selectedSection.instructor12;
+            setCourseInstructor(instructor ? instructor.names[0]?.fullName : '');
+            setCourseType(selectedSection?.instructionalMethod6?.title || '');
+            setCourseMeetingDays(selectedSection?.instructionalEvents11?.[0]?.recurrence?.repeatRule?.daysOfWeek?.join(', ') || '');
+            const startTime = selectedSection?.instructionalEvents11?.[0]?.recurrence?.timePeriod?.startOn || '';
+            const endTime = selectedSection?.instructionalEvents11?.[0]?.recurrence?.timePeriod?.endOn || '';
+            setCourseMeetingTimes(startTime && endTime ? `${formatTime(startTime)} - ${formatTime(endTime)}` : '');
+            setCourseBuilding(selectedSection?.instructionalEvents11?.[0]?.locations?.[0]?.location?.room10?.building6?.title || '');
+            setCourseRoom(selectedSection?.instructionalEvents11?.[0]?.locations?.[0]?.location?.room10?.number || '');
+        }
+    }, [sectionData]);
+
     const handleTabChange = (event, value) => {
         setTabChange(value);
     }
@@ -430,6 +451,7 @@ const HomePage = (props) => {
                                 <span class="info-label">Class Type:</span>
                                 <span class="info-value">${courseType}</span>
                             </div>
+                            ${!courseType.includes('Online') ? `
                             <div class="info-item">
                                 <span class="info-label">Meeting Days:</span>
                                 <span class="info-value">${courseMeetingDays}</span>
@@ -437,7 +459,7 @@ const HomePage = (props) => {
                             <div class="info-item">
                                 <span class="info-label">Meeting Times:</span>
                                 <span class="info-value">${courseMeetingTimes}</span>
-                            </div>
+                            </div>` : ''}
                             <div class="info-item">
                                 <span class="info-label">Location:</span>
                                 <span class="info-value">${courseBuilding} ${courseRoom}</span>
@@ -514,8 +536,8 @@ const HomePage = (props) => {
             const startTime = selectedSection?.instructionalEvents11?.[0]?.recurrence?.timePeriod?.startOn || '';
             const endTime = selectedSection?.instructionalEvents11?.[0]?.recurrence?.timePeriod?.endOn || '';
             const meetingTimes = startTime && endTime ? `${formatTime(startTime)} - ${formatTime(endTime)}` : '';
-            const building = selectedSection?.instructionalEvents11?.[0]?.locations?.building?.code || '';
-            const room = selectedSection?.instructionalEvents11?.[0]?.locations?.roomNumber || '';
+            const building = selectedSection?.instructionalEvents11?.[0]?.locations?.[0]?.location?.room10?.building6?.title || '';
+            const room = selectedSection?.instructionalEvents11?.[0]?.locations?.[0]?.location?.room10?.number || '';
             setCourseMeetingTimes(meetingTimes);
             setCourseBuilding(building);
             setCourseRoom(room);
