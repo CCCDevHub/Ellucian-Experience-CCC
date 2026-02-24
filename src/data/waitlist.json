@@ -1,0 +1,124 @@
+{
+  "data": {
+    "studentSectionWaitlists10": {
+      "edges": [
+        {
+          "node": {
+            "id": "baf2ceed-35db-414d-9f00-eb130f3d4a2b",
+            "person12": {
+              "id": "883abc0f-47bb-431e-8469-d6d054ee1cea",
+              "names": [
+                {
+                  "fullName": "Jeremy Pangan Gonzaga",
+                  "firstName": "Jeremy",
+                  "lastName": "Gonzaga"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "jgonzaga1@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "10726820",
+                  "type": "bannerId"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "a40afd0c-2dbb-4a35-8166-38c3d8afb07a",
+            "person12": {
+              "id": "c86010e6-7093-4964-a0f7-16325938c95c",
+              "names": [
+                {
+                  "fullName": "Peuzahnt S Orchanian",
+                  "firstName": "Peuzahnt",
+                  "lastName": "Orchanian"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "porchanian@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "00895132",
+                  "type": "bannerId"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "d8c1e987-faa9-4d53-96ba-a11e4512ba59",
+            "person12": {
+              "id": "ea84a3e9-677c-493b-a75b-e02503d37171",
+              "names": [
+                {
+                  "fullName": "Laurent Wang",
+                  "firstName": "Laurent",
+                  "lastName": "Wang"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "lwang217@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "10825298",
+                  "type": "bannerId"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "d2ac97cd-5b2e-40c1-af29-d319742fd09c",
+            "person12": {
+              "id": "72cc14ee-f27c-4729-a827-457af08b932e",
+              "names": [
+                {
+                  "fullName": "Steven Quoc Tien Huynh",
+                  "firstName": "Steven",
+                  "lastName": "Huynh"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "shuynh13@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "10245858",
+                  "type": "bannerId"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

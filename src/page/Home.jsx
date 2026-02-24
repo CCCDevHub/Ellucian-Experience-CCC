@@ -22,6 +22,8 @@ import {
 } from '@ellucian/experience-extension-utils';
 import Attendance from '../cards/Attendance';
 import mock from '../data/mock.json';
+import waitlist from '../data/waitlist.json';
+
 import { saveAttendanceData, loadAttendanceData } from '../utils/indexedDB';
 
 
@@ -53,7 +55,7 @@ const HomePage = (props) => {
     const { authenticatedEthosFetch, getEthosQuery } = useData();
     const { cardConfiguration:
         {
-            pipelineAPI, postPipelineAPI, putPipelineAPI, sectionPipelineAPI, termPipelineAPI
+            pipelineAPI, waitlistPipelineAPI, sectionPipelineAPI, termPipelineAPI
         }, cardId
     } = useCardInfo();
     const customId = 'Roster-Sheet';
@@ -64,6 +66,7 @@ const HomePage = (props) => {
     const [termCode, setTermCode] = useState(initialTermCode);
 
     const [studentList, setStudentList] = useState([]);
+    const [waitlistData, setWaitlistData] = useState([]);
     const [inputValues, setInputValues] = useState({});
     const [tabChange, setTabChange] = useState(0);
 
@@ -86,6 +89,8 @@ const HomePage = (props) => {
     const [alertType, setAlertType] = useState('success');
     const [alertOpen, setAlertOpen] = useState(false);
     const [includeEmailInPrint, setIncludeEmailInPrint] = useState(false);
+    const [showRoster, setShowRoster] = useState(true);
+    const [showWaitlist, setShowWaitlist] = useState(true);
     const allowedRsts = new Set(['RC', 'RE', 'RS', 'RW', 'AU']);
 
     const todayDate = new Date().toLocaleDateString()
@@ -158,6 +163,13 @@ const HomePage = (props) => {
             const rawResult = await response.json();
             const studentDataResult = rawResult?.data?.sectionRegistrations16?.edges?.map(edge => edge.node);
             setStudentList(studentDataResult);
+
+            const waitlistResponse = await authenticatedEthosFetch(`${waitlistPipelineAPI}?cardId=${cardId}&crn=${crn}&termCode=${termCode}`);
+            const rawWaitlistResult = await waitlistResponse.json();
+            // const rawWaitlistResult = await waitlist;
+            const waitlistDataResult = rawWaitlistResult?.data?.studentSectionWaitlists10?.edges?.map(edge => edge.node);
+            setWaitlistData(waitlistDataResult);
+
             // const studentAvailable = Array.isArray(studentDataResult)
             //     ? studentDataResult.filter(item =>
             //         'spridenId' in item && allowedRsts.has(item.rstsCode)
@@ -226,6 +238,7 @@ const HomePage = (props) => {
         setCrn('');
         setCourseName('');
         setStudentList([]);
+        setWaitlistData([]);
         localStorage.removeItem('selectedSection');
         setLoadingStatus(true);
 
@@ -317,6 +330,24 @@ const HomePage = (props) => {
             setTimeout(() => setAlertOpen(false), 2000);
         });
     }
+
+    const handleWaitlistCopyAllEmails = () => {
+        const emails = waitlistData
+            .map(item => item.person12?.emails[0]?.address)
+            .filter(Boolean)
+            .join('; ');
+        navigator.clipboard.writeText(emails).then(() => {
+            setAlertType('success');
+            setAlertMessage(`${waitlistData.length} emails copied to clipboard!`);
+            setAlertOpen(true);
+            setTimeout(() => setAlertOpen(false), 2000);
+        }).catch(() => {
+            setAlertType('error');
+            setAlertMessage('Failed to copy emails.');
+            setAlertOpen(true);
+            setTimeout(() => setAlertOpen(false), 2000);
+        });
+    }
     // const printAttendanceHistory = () => {
     //     const printContent = document.getElementById('attendance-history-table');
 
@@ -354,6 +385,36 @@ const HomePage = (props) => {
     // }
 
     const printBlankSheet = () => {
+        const waitlistPrintHtml = (() => {
+            if (!showWaitlist) { return ''; }
+            if (!waitlistData?.length) { return '<p style="margin-top: 32px; border-top: 2px solid #dee2e6; padding-top: 16px; color: #6c757d; font-style: italic;">No students on the waitlist.</p>'; }
+            return `<h3 style="margin-top: 32px; border-top: 2px solid #dee2e6; padding-top: 16px;">
+                        Waitlist <span style="font-size: 0.85em; background: #e9ecef; border-radius: 12px; padding: 2px 10px; margin-left: 8px;">${waitlistData.length}</span>
+                    </h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Student ID</th>
+                                <th>Student Name</th>
+                                ${includeEmailInPrint ? '<th>Email</th>' : ''}
+                                <th></th><th></th><th></th><th></th><th></th><th></th><th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${waitlistData.map((student, index) => `
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td>${student.person12?.credentials[0]?.value}</td>
+                                    <td>${student.person12?.names.at(-1)?.lastName}, ${student.person12?.names.at(-1)?.firstName}</td>
+                                    ${includeEmailInPrint ? `<td>${student.person12?.emails[0]?.address || ''}</td>` : ''}
+                                    <td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>`;
+        })();
+
         const printWindow = window.open('', '_blank');
         printWindow.document.write(`
             <html>
@@ -469,7 +530,7 @@ const HomePage = (props) => {
                             <span class="info-label">Date:</span> _______________
                         </div>
                     </div>
-                    <table>
+                    ${showRoster ? `<table>
                         <thead>
                             <tr>
                                 <th>#</th>
@@ -502,7 +563,9 @@ const HomePage = (props) => {
                                 </tr>
                             `).join('')}
                         </tbody>
-                    </table>
+                    </table>` : ''}
+
+                    ${waitlistPrintHtml}
                 </body>
             </html>
         `);
@@ -560,7 +623,7 @@ const HomePage = (props) => {
         if (tabChange === 0) {
             return (
                 <div style={{ marginTop: spacing40, marginBottom: spacing40 }}>
-                    <div style={{ marginTop: spacing40, marginBottom: spacing40, display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{ marginTop: spacing40, marginBottom: spacing40, display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
                         <Button onClick={printBlankSheet} variant="contained" color="primary">
                             Print Weekly Roster
                         </Button>
@@ -571,9 +634,30 @@ const HomePage = (props) => {
                             />
                             <Typography>Include Email</Typography>
                         </div>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <Switch
+                                checked={showRoster}
+                                onChange={(e) => setShowRoster(e.target.checked)}
+                            />
+                            <Typography>Show Roster</Typography>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <Switch
+                                checked={showWaitlist}
+                                onChange={(e) => setShowWaitlist(e.target.checked)}
+                            />
+                            <Typography>Show Waitlist</Typography>
+                        </div>
                     </div>
-                    <Typography variant="h5">Student Roster</Typography>
-                    <Table>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: spacing20 }}>
+                        <Typography variant="h5" style={{ display: 'inline' }}>Student Roster</Typography>
+                        {studentList?.length > 0 && (
+                            <Typography variant="body2" style={{ background: '#e0e0e0', borderRadius: '12px', padding: '2px 10px', fontWeight: 600 }}>
+                                {studentList.length}
+                            </Typography>
+                        )}
+                    </div>
+                    {showRoster && <Table>
                         <TableHead>
                             <TableRow>
                                 <TableCell><Typography variant="h6">#</Typography></TableCell>
@@ -600,7 +684,7 @@ const HomePage = (props) => {
                                 <TableRow key={index}>
                                     <TableCell>{index + 1}</TableCell>
                                     <TableCell>{item.registrant12?.credentials[0]?.value}</TableCell>
-                                    <TableCell>{item.registrant12?.names[0]?.lastName}, {item.registrant12?.names[0]?.firstName}</TableCell>
+                                    <TableCell>{item.registrant12?.names?.at(-1)?.lastName}, {item.registrant12?.names?.at(-1)?.firstName}</TableCell>
                                     <TableCell>
                                         {item.registrant12?.emails[0]?.address}
                                         {item.registrant12?.emails[0]?.address && (
@@ -625,7 +709,68 @@ const HomePage = (props) => {
                                 </TableRow>
                             ))}
                         </TableBody>
-                    </Table>
+                    </Table>}
+
+                    <div style={{ marginTop: spacing40, borderTop: '1px solid #e0e0e0', paddingTop: spacing40, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Typography variant="h5" style={{ display: 'inline' }}>Waitlist</Typography>
+                        {waitlistData?.length > 0 && (
+                            <Typography variant="body2" style={{ background: '#e0e0e0', borderRadius: '12px', padding: '2px 10px', fontWeight: 600 }}>
+                                {waitlistData.length}
+                            </Typography>
+                        )}
+                    </div>
+                    {showWaitlist && (!waitlistData || waitlistData.length === 0 ? (
+                        <Typography style={{ marginTop: spacing20, color: '#757575', fontStyle: 'italic' }}>
+                            No students on the waitlist.
+                        </Typography>
+                    ) : (
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell><Typography variant="h6">#</Typography></TableCell>
+                                    <TableCell><Typography variant="h6">Student ID</Typography></TableCell>
+                                    <TableCell><Typography variant="h6">Student Name</Typography></TableCell>
+                                    <TableCell>
+                                        <Typography variant="h6" style={{ display: 'inline' }}>Email</Typography>
+                                        <Tooltip title="Copy all emails">
+                                            <IconButton
+                                                size="small"
+                                                color="default"
+                                                onClick={handleWaitlistCopyAllEmails}
+                                                style={{ marginLeft: '4px', padding: '2px' }}
+                                            >
+                                                <Icon name="copy" style={{ fontSize: '14px', color: '#666' }} />
+                                            </IconButton>
+                                        </Tooltip>
+                                    </TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {waitlistData.map((item, index) => (
+                                    <TableRow key={index}>
+                                        <TableCell>{index + 1}</TableCell>
+                                        <TableCell>{item.person12?.credentials[0]?.value}</TableCell>
+                                        <TableCell>{item.person12?.names?.at(-1)?.lastName}, {item.person12?.names?.at(-1)?.firstName}</TableCell>
+                                        <TableCell>
+                                            {item.person12?.emails[0]?.address}
+                                            {item.person12?.emails[0]?.address && (
+                                                <Tooltip title="Copy email">
+                                                    <IconButton
+                                                        size="small"
+                                                        color="default"
+                                                        onClick={() => handleCopyEmail(item.person12?.emails[0]?.address)}
+                                                        style={{ marginLeft: '4px', padding: '2px' }}
+                                                    >
+                                                        <Icon name="copy" style={{ fontSize: '14px', color: '#666' }} />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            )}
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    ))}
                     {/* <div style={{ marginTop: spacing40 }}>
                         <Button onClick={saveAttendanceDataToDB} variant="contained" color="primary">
                             Save Attendance

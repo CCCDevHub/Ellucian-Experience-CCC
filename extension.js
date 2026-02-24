@@ -25,7 +25,12 @@ module.exports = {
                         key: "termPipelineAPI",
                         label: "Terms Pipeline API",
                         type: "text"
-                    }
+                    },
+                    {
+                        key: "waitlistPipelineAPI",
+                        label: "Waitlist Pipeline API",
+                        type: "text"
+                    },
                 ],
                 server: [
                     {
