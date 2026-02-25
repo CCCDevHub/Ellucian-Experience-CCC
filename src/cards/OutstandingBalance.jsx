@@ -18,6 +18,7 @@ import { useCardControl, useCardInfo, useExtensionControl, useUserInfo, useData,
 import PropTypes from 'prop-types';
 import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { Icon } from '@ellucian/ds-icons/lib';
+import mock from '../data/mock.json';
 
 const styles = () => ({
     root: {
@@ -137,8 +138,9 @@ function OutstandingBalance({ classes }) {
 
                 setPayLink(() => payLinkUS);
 
-                const balanceResponse = await authenticatedEthosFetch(`${pipelineAPI}?cardId=${cardId}&testPersonId=${personId}`);
-                const balanceResult = await balanceResponse.json();
+                // const balanceResponse = await authenticatedEthosFetch(`${pipelineAPI}?cardId=${cardId}&testPersonId=${personId}`);
+                // const balanceResult = await balanceResponse.json();
+                const balanceResult = mock;
                 const [{ TBRACCD_CTRL, TBRACCD }] = balanceResult;
 
                 setSumarize(() => TBRACCD_CTRL);
@@ -215,7 +217,6 @@ function OutstandingBalance({ classes }) {
     if (summarize && payLink && studentInfo) {
         const [{ accountBalance, amountDue }] = summarize;
         const specialCase = ["vetStatus", "financialAid", "eops", "calwork", "dualEnrollment"].some(key => studentInfo[key]);
-
         return (
             <div className={classes.root}>
                 <div className={classes.content}>
@@ -383,6 +384,8 @@ function OutstandingBalance({ classes }) {
             </div >
         );
     } else {
+        console.log('here')
+
         return (
             <div className={classes.root}>
                 <div className={classes.content}>
