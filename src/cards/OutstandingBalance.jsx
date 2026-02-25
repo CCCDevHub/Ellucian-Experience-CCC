@@ -138,13 +138,12 @@ function OutstandingBalance({ classes }) {
 
                 setPayLink(() => payLinkUS);
 
-                // const balanceResponse = await authenticatedEthosFetch(`${pipelineAPI}?cardId=${cardId}&testPersonId=${personId}`);
-                // const balanceResult = await balanceResponse.json();
-                const balanceResult = mock;
+                const balanceResponse = await authenticatedEthosFetch(`${pipelineAPI}?cardId=${cardId}&testPersonId=${personId}`);
+                const balanceResult = await balanceResponse.json();
+                // const balanceResult = mock;
                 const [{ TBRACCD_CTRL, TBRACCD }] = balanceResult;
 
                 setSumarize(() => TBRACCD_CTRL);
-
                 const groupByTermCode = TBRACCD.reduce((acc, item) => {
                     const key = item.termCode;
                     const lastTwo = key.slice(-2);
@@ -186,7 +185,7 @@ function OutstandingBalance({ classes }) {
 
             // Sort the entries by termCode in descending order
             entries.sort(([termCodeA], [termCodeB]) => termCodeB.localeCompare(termCodeA));
-            setDropdownStateTerm(groupTransByTerm[groupTransByTerm.length - 1].termCode);
+            setDropdownStateTerm(entries[0][0]);
             // Map over the sorted entries to generate the dropdown items
             return entries.map(([termCode, item]) => {
                 return (
@@ -212,7 +211,6 @@ function OutstandingBalance({ classes }) {
             formRef.current.submit();
         }
     };
-
 
     if (summarize && payLink && studentInfo) {
         const [{ accountBalance, amountDue }] = summarize;
@@ -354,7 +352,7 @@ function OutstandingBalance({ classes }) {
                                                     .map((item, index) => {
                                                         const transactionDate = formatTransDate.format(new Date(item.transDate));
                                                         return (
-                                                            <TableRow TableRow key={`${item.termCode} - ${index}`} className={classes.transactionsTableRow}>
+                                                            <TableRow key={`${item.termCode} - ${index}`} className={classes.transactionsTableRow}>
                                                                 <TableCell align='left' padding='none'>
                                                                     <Typography variant={'body3'}>
                                                                         {transactionDate}
@@ -383,12 +381,27 @@ function OutstandingBalance({ classes }) {
                 </div>
             </div >
         );
-    } else {
-        console.log('here')
+    } else if (summarize && payLink) {
+        const [{ accountBalance }] = summarize;
 
         return (
             <div className={classes.root}>
                 <div className={classes.content}>
+                    <form
+                        ref={formRef}
+                        className={classes.hiddenForm}
+                        id="tuitionForm"
+                        action="https://www.paymytuition.com/server/post_to_pmt.aspx"
+                        method="post"
+                    >
+                        <input type="hidden" name="External_Institute_Id" value="pasadena" />
+                        <input type="hidden" name="mtfx_website" value="https://www.paymytuition.com/server/post_to_pmt.aspx" />
+                        <input type="hidden" name="Routing_Type" value="International" />
+                        <input type="hidden" name="Student_Id" value={studentId || ''} />
+                        <input type="hidden" name="full_name" value={fullName || ''} />
+                        <input type="hidden" name="Balance_Due" value={summarize?.[0]?.accountBalance || ''} />
+                        <input type="hidden" name="Payment_Amount" value={summarize?.[0]?.accountBalance || ''} />
+                    </form>
                     <Tabs
                         id={`${customId}_Tabs`}
                         onChange={handleTabChange}
@@ -400,11 +413,39 @@ function OutstandingBalance({ classes }) {
                     {
                         tabChange === 0 ? (
                             <div id={`${customId}_Tab_Balance`} role="tabpanel">
+                                {accountBalance > 0}
                                 <div className={classes.balanceContainer}>
-                                    <Typography variant={'h4'} align={'center'}>
-                                        You have no balance.
+                                    <Typography variant={'h4'} className={classes.balanceAmount}>
+                                        Balance Due: <Typography color='error' variant={'h4'} className={classes.accountBalance}>${accountBalance}</Typography>
                                     </Typography>
                                 </div>
+
+                                <div className={classes.buttonContainer}>
+                                    <Button
+                                        id={`${customId}_PayMyTuitionButton`}
+                                        fluid
+                                        color="primary"
+                                        onClick={handlePayMyTuitionPayment}
+                                        disabled={isPayMyTuitionDisabled}
+                                    >
+                                        Pay with International Currency
+                                    </Button>
+                                </div>
+
+                                <div className={classes.buttonContainer}>
+                                    <Button
+                                        id={`${customId}_TouchNetButton`}
+                                        fluid
+                                        color="primary"
+                                        href={payLink}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        Pay with U.S. Currency
+                                    </Button>
+                                </div>
+
+
                             </div>
                         ) : (
                             <div id={`${customId}_Tab_Summarize`} role="tabpanel" >
@@ -419,23 +460,21 @@ function OutstandingBalance({ classes }) {
                                         {dropDownItems}
                                     </Dropdown>
                                 </div>
-                                <div className={classes.buttonContainer}>
-                                    {/* <div className={classes.linksRow}>
-                                        <TextLink
-                                            onClick={handlePayMyTuitionPayment}
-                                            className={classes.linkItem}
-                                            title={'Pay with International Currency'}
-                                        >
-                                            Pay with International Currency
-                                        </TextLink>
-                                        <TextLink
-                                            href={payLink}
-                                            className={classes.linkItem}
-                                            title={'Pay with U.S. Currency'}
-                                        >
-                                            Pay with U.S. Currency
-                                        </TextLink>
-                                    </div> */}
+                                <div className={classes.linksRow}>
+                                    <TextLink
+                                        onClick={handlePayMyTuitionPayment}
+                                        className={classes.linkItem}
+                                        title={'Pay with International Currency'}
+                                    >
+                                        Pay with International Currency
+                                    </TextLink>
+                                    <TextLink
+                                        href={payLink}
+                                        className={classes.linkItem}
+                                        title={'Pay with U.S. Currency'}
+                                    >
+                                        Pay with U.S. Currency
+                                    </TextLink>
                                 </div>
                                 <div>
                                     {dropdownStateTerm && (
@@ -445,11 +484,10 @@ function OutstandingBalance({ classes }) {
                                                     Transaction History
                                                 </Typography>
                                                 {groupTransByTerm[dropdownStateTerm].transactions
-                                                    // .filter(item => item.chargeAmount)
                                                     .map((item, index) => {
                                                         const transactionDate = formatTransDate.format(new Date(item.transDate));
                                                         return (
-                                                            <TableRow TableRow key={`${item.termCode} - ${index}`} className={classes.transactionsTableRow}>
+                                                            <TableRow key={`${item.termCode} - ${index}`} className={classes.transactionsTableRow}>
                                                                 <TableCell align='left' padding='none'>
                                                                     <Typography variant={'body3'}>
                                                                         {transactionDate}
@@ -477,6 +515,15 @@ function OutstandingBalance({ classes }) {
                     }
                 </div>
             </div >
+        );
+    }
+    else {
+        return (
+            <div className={classes.root}>
+                <Typography variant={'h4'} align={'center'}>
+                    Loading...
+                </Typography>
+            </div>
         );
     }
 
