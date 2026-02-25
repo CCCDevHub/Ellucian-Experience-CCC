@@ -1,0 +1,1078 @@
+{
+  "data": {
+    "sectionRegistrations16": {
+      "totalCount": 27,
+      "edges": [
+        {
+          "node": {
+            "id": "730280e2-711c-4aeb-9582-e0c2bf3c24a5",
+            "section16": {
+              "id": "44df51ed-68e4-4100-a79c-34f4106c5040",
+              "code": "40117",
+              "reportingAcademicPeriod16": {
+                "code": "202630"
+              }
+            },
+            "registrant12": {
+              "id": "8864051a-6bbb-4dd2-981a-516ea01c0e7e",
+              "names": [
+                {
+                  "fullName": "Isabel V Aguirre",
+                  "lastName": "Aguirre",
+                  "firstName": "Isabel"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "iaguirre4@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "10226052",
+                  "type": "bannerId"
+                }
+              ]
+            },
+            "status": {
+              "registrationStatus": "registered"
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "7f4ceafd-5e40-4149-a828-076798f82b49",
+            "section16": {
+              "id": "44df51ed-68e4-4100-a79c-34f4106c5040",
+              "code": "40117",
+              "reportingAcademicPeriod16": {
+                "code": "202630"
+              }
+            },
+            "registrant12": {
+              "id": "d346b36e-d50a-40e2-a4be-66612f6ef6d0",
+              "names": [
+                {
+                  "fullName": "Melissa Tadea Alvarez",
+                  "lastName": "Alvarez",
+                  "firstName": "Melissa"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "malvarez123@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "10725909",
+                  "type": "bannerId"
+                }
+              ]
+            },
+            "status": {
+              "registrationStatus": "registered"
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "50cb8e1d-ad97-4a3b-97bc-53e92b9efd11",
+            "section16": {
+              "id": "44df51ed-68e4-4100-a79c-34f4106c5040",
+              "code": "40117",
+              "reportingAcademicPeriod16": {
+                "code": "202630"
+              }
+            },
+            "registrant12": {
+              "id": "93fdd559-14da-4459-b0ab-f96b424f90d8",
+              "names": [
+                {
+                  "fullName": "Miles Strummer Brown",
+                  "lastName": "Brown",
+                  "firstName": "Miles"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "mbrown115@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "10679237",
+                  "type": "bannerId"
+                }
+              ]
+            },
+            "status": {
+              "registrationStatus": "registered"
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "8289ed6b-9a62-43de-8402-eb9fb900090c",
+            "section16": {
+              "id": "44df51ed-68e4-4100-a79c-34f4106c5040",
+              "code": "40117",
+              "reportingAcademicPeriod16": {
+                "code": "202630"
+              }
+            },
+            "registrant12": {
+              "id": "638923a9-d1a0-4300-b610-ad0f99c6d72b",
+              "names": [
+                {
+                  "fullName": "Obi Keon Lim Cagatao",
+                  "lastName": "Cagatao",
+                  "firstName": "Obi Keon"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "ocagatao1@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "10809010",
+                  "type": "bannerId"
+                }
+              ]
+            },
+            "status": {
+              "registrationStatus": "registered"
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "ff5f5f1b-5f45-4b84-aace-f2565a7bfb0f",
+            "section16": {
+              "id": "44df51ed-68e4-4100-a79c-34f4106c5040",
+              "code": "40117",
+              "reportingAcademicPeriod16": {
+                "code": "202630"
+              }
+            },
+            "registrant12": {
+              "id": "9278bd08-14fd-4218-b9a7-843128c71731",
+              "names": [
+                {
+                  "fullName": "Carlos Daniel Castillo Montoya",
+                  "lastName": "Castillo Montoya",
+                  "firstName": "Carlos"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "ccastillomontoya@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "10827152",
+                  "type": "bannerId"
+                }
+              ]
+            },
+            "status": {
+              "registrationStatus": "registered"
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "48b0a534-16c5-4a06-adb1-cd329112a1be",
+            "section16": {
+              "id": "44df51ed-68e4-4100-a79c-34f4106c5040",
+              "code": "40117",
+              "reportingAcademicPeriod16": {
+                "code": "202630"
+              }
+            },
+            "registrant12": {
+              "id": "0a032275-d3f2-4895-a300-36f42d030280",
+              "names": [
+                {
+                  "fullName": "Zachary Parker Countryman",
+                  "lastName": "Countryman",
+                  "firstName": "Zachary"
+                },
+                {
+                  "fullName": "Natalie Countryman",
+                  "lastName": "Countryman",
+                  "firstName": "Natalie"
+                },
+                {
+                  "fullName": "Natalie Parker Countryman",
+                  "lastName": "Countryman",
+                  "firstName": "Natalie"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "zcountryman@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "10759098",
+                  "type": "bannerId"
+                }
+              ]
+            },
+            "status": {
+              "registrationStatus": "registered"
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "8106f583-a4c4-437c-a20a-bd3cb222dc9c",
+            "section16": {
+              "id": "44df51ed-68e4-4100-a79c-34f4106c5040",
+              "code": "40117",
+              "reportingAcademicPeriod16": {
+                "code": "202630"
+              }
+            },
+            "registrant12": {
+              "id": "064a5989-4c6c-411b-aa4e-8e9e9eef16f7",
+              "names": [
+                {
+                  "fullName": "Ryu M Crosby",
+                  "lastName": "Crosby",
+                  "firstName": "Ryu"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "rcrosby1@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "10724642",
+                  "type": "bannerId"
+                }
+              ]
+            },
+            "status": {
+              "registrationStatus": "registered"
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "2c4ed76f-0bb8-46ad-8ab7-5777c4ca6956",
+            "section16": {
+              "id": "44df51ed-68e4-4100-a79c-34f4106c5040",
+              "code": "40117",
+              "reportingAcademicPeriod16": {
+                "code": "202630"
+              }
+            },
+            "registrant12": {
+              "id": "2109becf-e1d8-4bba-bfc7-55052a3dcc23",
+              "names": [
+                {
+                  "fullName": "Arron Fajardo Duran",
+                  "lastName": "Duran",
+                  "firstName": "Arron"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "aduran24@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "10184881",
+                  "type": "bannerId"
+                }
+              ]
+            },
+            "status": {
+              "registrationStatus": "registered"
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "f750e950-8e19-4448-93af-6962e36a527f",
+            "section16": {
+              "id": "44df51ed-68e4-4100-a79c-34f4106c5040",
+              "code": "40117",
+              "reportingAcademicPeriod16": {
+                "code": "202630"
+              }
+            },
+            "registrant12": {
+              "id": "3bf6c822-2d00-4adf-96f9-7732022957ac",
+              "names": [
+                {
+                  "fullName": "Nahum Hernandez",
+                  "lastName": "Hernandez",
+                  "firstName": "Nahum"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "nhernandez125@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "10725762",
+                  "type": "bannerId"
+                }
+              ]
+            },
+            "status": {
+              "registrationStatus": "registered"
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "a6e6fe23-43c0-4f22-915e-52e3dafade78",
+            "section16": {
+              "id": "44df51ed-68e4-4100-a79c-34f4106c5040",
+              "code": "40117",
+              "reportingAcademicPeriod16": {
+                "code": "202630"
+              }
+            },
+            "registrant12": {
+              "id": "7cd879d5-1c43-48c8-8f8b-8aefa09e769e",
+              "names": [
+                {
+                  "fullName": "Axel Yarell Hernandez",
+                  "lastName": "Hernandez",
+                  "firstName": "Axel"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "ahernandez423@pasadena.edu",
+                  "type": {
+                    "emailType": "hr"
+                  }
+                },
+                {
+                  "address": "ahernandez423@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "10324450",
+                  "type": "bannerId"
+                }
+              ]
+            },
+            "status": {
+              "registrationStatus": "registered"
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "965f4ecf-d319-4851-a192-dcaec591440b",
+            "section16": {
+              "id": "44df51ed-68e4-4100-a79c-34f4106c5040",
+              "code": "40117",
+              "reportingAcademicPeriod16": {
+                "code": "202630"
+              }
+            },
+            "registrant12": {
+              "id": "acf8af66-7b00-4af6-830f-d63727ec5fbe",
+              "names": [
+                {
+                  "fullName": "Brian H Hong",
+                  "lastName": "Hong",
+                  "firstName": "Brian"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "bhong1@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "01005106",
+                  "type": "bannerId"
+                }
+              ]
+            },
+            "status": {
+              "registrationStatus": "registered"
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "2f8416c5-b448-4566-9347-8f4b7693fca2",
+            "section16": {
+              "id": "44df51ed-68e4-4100-a79c-34f4106c5040",
+              "code": "40117",
+              "reportingAcademicPeriod16": {
+                "code": "202630"
+              }
+            },
+            "registrant12": {
+              "id": "e216cbeb-85ed-4223-a460-1e9a515cfc96",
+              "names": [
+                {
+                  "fullName": "Dat Khanh Le",
+                  "lastName": "Le",
+                  "firstName": "Dat"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "dle52@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "10811671",
+                  "type": "bannerId"
+                }
+              ]
+            },
+            "status": {
+              "registrationStatus": "registered"
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "9d93240f-ce2b-477b-94e2-15dab7141fe6",
+            "section16": {
+              "id": "44df51ed-68e4-4100-a79c-34f4106c5040",
+              "code": "40117",
+              "reportingAcademicPeriod16": {
+                "code": "202630"
+              }
+            },
+            "registrant12": {
+              "id": "04b43354-68d6-4490-b3d5-dbe367738b24",
+              "names": [
+                {
+                  "fullName": "Jonah Lippmann",
+                  "lastName": "Lippmann",
+                  "firstName": "Jonah"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "jlippmann@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "10818362",
+                  "type": "bannerId"
+                }
+              ]
+            },
+            "status": {
+              "registrationStatus": "registered"
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "9af06c9d-827f-4394-9d23-46b49f51f59e",
+            "section16": {
+              "id": "44df51ed-68e4-4100-a79c-34f4106c5040",
+              "code": "40117",
+              "reportingAcademicPeriod16": {
+                "code": "202630"
+              }
+            },
+            "registrant12": {
+              "id": "d443d71e-1ea5-4ca0-b69c-28398a0b41d2",
+              "names": [
+                {
+                  "fullName": "Adrian Joaquin Magana-Miller",
+                  "lastName": "Magana-Miller",
+                  "firstName": "Adrian"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "amaganamiller@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "10809490",
+                  "type": "bannerId"
+                }
+              ]
+            },
+            "status": {
+              "registrationStatus": "registered"
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "aa6518bf-e565-4149-9b92-452b0d4e1f14",
+            "section16": {
+              "id": "44df51ed-68e4-4100-a79c-34f4106c5040",
+              "code": "40117",
+              "reportingAcademicPeriod16": {
+                "code": "202630"
+              }
+            },
+            "registrant12": {
+              "id": "d7bdb19a-cef0-4a85-b72f-1e62091427b3",
+              "names": [
+                {
+                  "fullName": "Alejandro Jesus Manzo",
+                  "lastName": "Manzo",
+                  "firstName": "Alejandro"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "amanzo10@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "10778041",
+                  "type": "bannerId"
+                }
+              ]
+            },
+            "status": {
+              "registrationStatus": "registered"
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "3aa295aa-5fe8-487d-b22d-737d1cde5580",
+            "section16": {
+              "id": "44df51ed-68e4-4100-a79c-34f4106c5040",
+              "code": "40117",
+              "reportingAcademicPeriod16": {
+                "code": "202630"
+              }
+            },
+            "registrant12": {
+              "id": "8adf4ef8-3895-4224-8637-709c029e35a0",
+              "names": [
+                {
+                  "fullName": "Adrian Medina",
+                  "lastName": "Medina",
+                  "firstName": "Adrian"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "amedina152@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "10814549",
+                  "type": "bannerId"
+                }
+              ]
+            },
+            "status": {
+              "registrationStatus": "registered"
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "6c746e30-8302-44c8-a88c-13d61dccf9e5",
+            "section16": {
+              "id": "44df51ed-68e4-4100-a79c-34f4106c5040",
+              "code": "40117",
+              "reportingAcademicPeriod16": {
+                "code": "202630"
+              }
+            },
+            "registrant12": {
+              "id": "fcd8bc61-783e-4cf7-ad98-9a52794fa125",
+              "names": [
+                {
+                  "fullName": "Emily Muditar",
+                  "lastName": "Muditar",
+                  "firstName": "Emily"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "emuditar@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "10655182",
+                  "type": "bannerId"
+                }
+              ]
+            },
+            "status": {
+              "registrationStatus": "registered"
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "547fc348-4950-4294-b054-2ba6c2a19de8",
+            "section16": {
+              "id": "44df51ed-68e4-4100-a79c-34f4106c5040",
+              "code": "40117",
+              "reportingAcademicPeriod16": {
+                "code": "202630"
+              }
+            },
+            "registrant12": {
+              "id": "2dff8be6-9341-4162-8110-05e84b1ae45b",
+              "names": [
+                {
+                  "fullName": "Patricio Nordenflycht-Darby",
+                  "lastName": "Nordenflycht-Darby",
+                  "firstName": "Patricio"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "pnordenflychtdar@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "10661328",
+                  "type": "bannerId"
+                }
+              ]
+            },
+            "status": {
+              "registrationStatus": "registered"
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "f01d06b8-6475-4be2-a7b8-cb8716d5ae26",
+            "section16": {
+              "id": "44df51ed-68e4-4100-a79c-34f4106c5040",
+              "code": "40117",
+              "reportingAcademicPeriod16": {
+                "code": "202630"
+              }
+            },
+            "registrant12": {
+              "id": "78b1786e-b0ae-4a38-84fe-f88b5b6f98c3",
+              "names": [
+                {
+                  "fullName": "Lizzie Isabella Olivet",
+                  "lastName": "Olivet",
+                  "firstName": "Lizzie"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "lolivet@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "10754918",
+                  "type": "bannerId"
+                }
+              ]
+            },
+            "status": {
+              "registrationStatus": "registered"
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "87d7759b-9475-447e-a328-9f1d0c3dc642",
+            "section16": {
+              "id": "44df51ed-68e4-4100-a79c-34f4106c5040",
+              "code": "40117",
+              "reportingAcademicPeriod16": {
+                "code": "202630"
+              }
+            },
+            "registrant12": {
+              "id": "f20d1bea-9231-4822-8d33-0e42ccb4e3d0",
+              "names": [
+                {
+                  "fullName": "Mia Palma",
+                  "lastName": "Palma",
+                  "firstName": "Mia"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "mpalma13@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "10815549",
+                  "type": "bannerId"
+                }
+              ]
+            },
+            "status": {
+              "registrationStatus": "registered"
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "8a1f4d2b-32fe-4dc4-a08d-2920eb7baffa",
+            "section16": {
+              "id": "44df51ed-68e4-4100-a79c-34f4106c5040",
+              "code": "40117",
+              "reportingAcademicPeriod16": {
+                "code": "202630"
+              }
+            },
+            "registrant12": {
+              "id": "5fa9b25a-99eb-4d9b-b13e-39ef7744e635",
+              "names": [
+                {
+                  "fullName": "Sara Rausalova",
+                  "lastName": "Rausalova",
+                  "firstName": "Sara"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "srausalova@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "10685820",
+                  "type": "bannerId"
+                }
+              ]
+            },
+            "status": {
+              "registrationStatus": "registered"
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "8c7c9a65-f52d-419b-a578-da74ce408ff6",
+            "section16": {
+              "id": "44df51ed-68e4-4100-a79c-34f4106c5040",
+              "code": "40117",
+              "reportingAcademicPeriod16": {
+                "code": "202630"
+              }
+            },
+            "registrant12": {
+              "id": "c49c1e69-edbd-4fdd-a830-0534e26781b3",
+              "names": [
+                {
+                  "fullName": "Jefferson Stewart",
+                  "lastName": "Stewart",
+                  "firstName": "Jefferson"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "jstewart64@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "10832289",
+                  "type": "bannerId"
+                }
+              ]
+            },
+            "status": {
+              "registrationStatus": "registered"
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "eed279ca-4109-460a-8ca4-7fd7a43db561",
+            "section16": {
+              "id": "44df51ed-68e4-4100-a79c-34f4106c5040",
+              "code": "40117",
+              "reportingAcademicPeriod16": {
+                "code": "202630"
+              }
+            },
+            "registrant12": {
+              "id": "7097efae-893f-459f-bc87-a590e1c9e76e",
+              "names": [
+                {
+                  "fullName": "Raymond Tang",
+                  "lastName": "Tang",
+                  "firstName": "Raymond"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "rtang5@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "10084401",
+                  "type": "bannerId"
+                }
+              ]
+            },
+            "status": {
+              "registrationStatus": "registered"
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "310a9be0-f8ee-433c-8ce1-4da41d2518be",
+            "section16": {
+              "id": "44df51ed-68e4-4100-a79c-34f4106c5040",
+              "code": "40117",
+              "reportingAcademicPeriod16": {
+                "code": "202630"
+              }
+            },
+            "registrant12": {
+              "id": "cc6d42a7-1c29-4a4c-84b6-4f8cde22fb09",
+              "names": [
+                {
+                  "fullName": "Raymond Thaing",
+                  "lastName": "Thaing",
+                  "firstName": "Raymond"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "rthaing@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "10663967",
+                  "type": "bannerId"
+                }
+              ]
+            },
+            "status": {
+              "registrationStatus": "registered"
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "1a5d5697-2eb9-485c-adb7-7eab2b9a81e0",
+            "section16": {
+              "id": "44df51ed-68e4-4100-a79c-34f4106c5040",
+              "code": "40117",
+              "reportingAcademicPeriod16": {
+                "code": "202630"
+              }
+            },
+            "registrant12": {
+              "id": "04c9df97-4246-4567-aed2-16dbd10b66ba",
+              "names": [
+                {
+                  "fullName": "Rosa Nayelin Victoriano",
+                  "lastName": "Victoriano",
+                  "firstName": "Rosa"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "rvictoriano@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "10708001",
+                  "type": "bannerId"
+                }
+              ]
+            },
+            "status": {
+              "registrationStatus": "registered"
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "28465382-9bd0-4fad-bf2c-085989ba120f",
+            "section16": {
+              "id": "44df51ed-68e4-4100-a79c-34f4106c5040",
+              "code": "40117",
+              "reportingAcademicPeriod16": {
+                "code": "202630"
+              }
+            },
+            "registrant12": {
+              "id": "b359ffc4-f5f8-4bc5-933d-f7bfb600a1dc",
+              "names": [
+                {
+                  "fullName": "Andrew Tyler Yu",
+                  "lastName": "Yu",
+                  "firstName": "Andrew"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "ayu54@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "10613887",
+                  "type": "bannerId"
+                }
+              ]
+            },
+            "status": {
+              "registrationStatus": "registered"
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "4788922f-a453-4606-8880-982b05b81b29",
+            "section16": {
+              "id": "44df51ed-68e4-4100-a79c-34f4106c5040",
+              "code": "40117",
+              "reportingAcademicPeriod16": {
+                "code": "202630"
+              }
+            },
+            "registrant12": {
+              "id": "9ba1d384-5fea-49f3-ad99-9ec83ccb9f3f",
+              "names": [
+                {
+                  "fullName": "Emily Xin Zhao Zhao",
+                  "lastName": "Zhao",
+                  "firstName": "Emily Xin Zhao"
+                }
+              ],
+              "emails": [
+                {
+                  "address": "ezhao11@go.pasadena.edu",
+                  "type": {
+                    "emailType": "school"
+                  }
+                }
+              ],
+              "credentials": [
+                {
+                  "value": "10731909",
+                  "type": "bannerId"
+                }
+              ]
+            },
+            "status": {
+              "registrationStatus": "registered"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
