@@ -315,7 +315,7 @@ const HomePage = (props) => {
 
     const handleCopyAllEmails = () => {
         const emails = studentList
-            .map(item => item.registrant12?.emails[0]?.address)
+            ?.map(item => item.registrant12?.emails[0]?.address)
             .filter(Boolean)
             .join('; ');
         navigator.clipboard.writeText(emails).then(() => {
@@ -333,7 +333,7 @@ const HomePage = (props) => {
 
     const handleWaitlistCopyAllEmails = () => {
         const emails = waitlistData
-            .map(item => item.person12?.emails[0]?.address)
+            ?.map(item => item.person12?.emails[0]?.address)
             .filter(Boolean)
             .join('; ');
         navigator.clipboard.writeText(emails).then(() => {
@@ -402,7 +402,7 @@ const HomePage = (props) => {
                             </tr>
                         </thead>
                         <tbody>
-                            ${waitlistData.map((student, index) => `
+                            ${waitlistData?.map((student, index) => `
                                 <tr>
                                     <td>${index + 1}</td>
                                     <td>${student.person12?.credentials[0]?.value}</td>
@@ -547,7 +547,7 @@ const HomePage = (props) => {
                             </tr>
                         </thead>
                         <tbody>
-                            ${studentList.map((student, index) => `
+                            ${studentList?.map((student, index) => `
                                 <tr>
                                     <td>${index + 1}</td>
                                     <td>${student.registrant12?.credentials[0]?.value}</td>
@@ -680,7 +680,7 @@ const HomePage = (props) => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {studentList.map((item, index) => (
+                            {studentList?.map((item, index) => (
                                 <TableRow key={index}>
                                     <TableCell>{index + 1}</TableCell>
                                     <TableCell>{item.registrant12?.credentials[0]?.value}</TableCell>
@@ -746,7 +746,7 @@ const HomePage = (props) => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {waitlistData.map((item, index) => (
+                                {waitlistData?.map((item, index) => (
                                     <TableRow key={index}>
                                         <TableCell>{index + 1}</TableCell>
                                         <TableCell>{item.person12?.credentials[0]?.value}</TableCell>
@@ -892,7 +892,7 @@ const HomePage = (props) => {
                         disableEnforceFocus: true
                     }}
                 >
-                    {sectionData.map(sec => {
+                    {sectionData?.map(sec => {
                         const section = sec?.section16;
                         const course = section?.course16;
 
