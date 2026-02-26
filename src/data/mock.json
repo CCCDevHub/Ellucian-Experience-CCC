@@ -467,6 +467,474 @@
           }
         }
       ]
+    },
+     "sectionInstructors": {
+      "edges": [
+        {
+          "node": {
+            "id": "b0ac7ac0-929a-4716-8217-4989ca469df8",
+            "instructionalMethod6": {
+              "title": "DE Online Lecture",
+              "abbreviation": "OLD"
+            },
+            "instructionalEvents11": [
+              {
+                "recurrence": {
+                  "timePeriod": {
+                    "startOn": "2026-04-20T18:00:00-07:00",
+                    "endOn": "2026-06-14T19:15:00-07:00"
+                  },
+                  "repeatRule": {
+                    "daysOfWeek": [
+                      "monday",
+                      "tuesday",
+                      "wednesday",
+                      "thursday"
+                    ]
+                  }
+                },
+                "locations": []
+              }
+            ],
+            "section16": {
+              "id": "dbbd31ae-b251-457f-b07a-370af45ab4bc",
+              "gradeSubmitted": null,
+              "startOn": "2026-04-20",
+              "endOn": "2026-06-14",
+              "titles": [
+                {
+                  "value": "FUNDAMENTALS OF GRAMMAR A"
+                },
+                {
+                  "value": "FUNDAMENTALS OF GRAMMAR A"
+                }
+              ],
+              "code": "33816",
+              "reportingAcademicPeriod16": {
+                "code": "202630",
+                "title": "Spring 2026",
+                "registration": "open"
+              },
+              "maxEnrollment": 25,
+              "crossListed": "notCrossListed",
+              "alternateIds": [
+                {
+                  "title": "Source Key",
+                  "value": "33816.202630"
+                }
+              ],
+              "course16": {
+                "subject6": {
+                  "abbreviation": "AHSD"
+                },
+                "number": "6401",
+                "credits": [
+                  {
+                    "minimum": 0
+                  }
+                ]
+              }
+            },
+            "instructor12": {
+              "id": "7fb8ed27-bfb3-4906-83ff-5e2960795f10",
+              "names": [
+                {
+                  "fullName": "Tae Yong Yang"
+                }
+              ],
+              "credentials": [
+                {
+                  "type": "bannerSourcedId",
+                  "value": "664"
+                },
+                {
+                  "type": "bannerUserName",
+                  "value": "tyyang"
+                },
+                {
+                  "type": "bannerUdcId",
+                  "value": "D85721C208653866E0430100007F86A9"
+                },
+                {
+                  "type": "bannerId",
+                  "value": "00645076"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "21d0ef7b-e66b-46eb-a115-ebf87e8065be",
+            "instructionalMethod6": {
+              "title": "DE Online Lecture",
+              "abbreviation": "OLD"
+            },
+            "instructionalEvents11": [
+              {
+                "recurrence": {
+                  "timePeriod": {
+                    "startOn": "2026-04-20T00:00:00-07:00",
+                    "endOn": "2026-06-14T00:00:00-07:00"
+                  },
+                  "repeatRule": {
+                    "daysOfWeek": null
+                  }
+                },
+                "locations": []
+              }
+            ],
+            "section16": {
+              "id": "dbbd31ae-b251-457f-b07a-370af45ab4bc",
+              "gradeSubmitted": null,
+              "startOn": "2026-04-20",
+              "endOn": "2026-06-14",
+              "titles": [
+                {
+                  "value": "FUNDAMENTALS OF GRAMMAR A"
+                },
+                {
+                  "value": "FUNDAMENTALS OF GRAMMAR A"
+                }
+              ],
+              "code": "33816",
+              "reportingAcademicPeriod16": {
+                "code": "202630",
+                "title": "Spring 2026",
+                "registration": "open"
+              },
+              "maxEnrollment": 25,
+              "crossListed": "notCrossListed",
+              "alternateIds": [
+                {
+                  "title": "Source Key",
+                  "value": "33816.202630"
+                }
+              ],
+              "course16": {
+                "subject6": {
+                  "abbreviation": "AHSD"
+                },
+                "number": "6401",
+                "credits": [
+                  {
+                    "minimum": 0
+                  }
+                ]
+              }
+            },
+            "instructor12": {
+              "id": "7fb8ed27-bfb3-4906-83ff-5e2960795f10",
+              "names": [
+                {
+                  "fullName": "Tae Yong Yang"
+                }
+              ],
+              "credentials": [
+                {
+                  "type": "bannerSourcedId",
+                  "value": "664"
+                },
+                {
+                  "type": "bannerUserName",
+                  "value": "tyyang"
+                },
+                {
+                  "type": "bannerUdcId",
+                  "value": "D85721C208653866E0430100007F86A9"
+                },
+                {
+                  "type": "bannerId",
+                  "value": "00645076"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "d4b12200-f390-4058-ba2f-2115339484c5",
+            "instructionalMethod6": {
+              "title": "DE Online Lecture",
+              "abbreviation": "OLD"
+            },
+            "instructionalEvents11": [
+              {
+                "recurrence": {
+                  "timePeriod": {
+                    "startOn": "2026-02-18T00:00:00-08:00",
+                    "endOn": "2026-04-12T00:00:00-07:00"
+                  },
+                  "repeatRule": {
+                    "daysOfWeek": null
+                  }
+                },
+                "locations": []
+              }
+            ],
+            "section16": {
+              "id": "1aafa796-2a40-48dd-807a-4f6c887a0116",
+              "gradeSubmitted": null,
+              "startOn": "2026-02-18",
+              "endOn": "2026-04-12",
+              "titles": [
+                {
+                  "value": "FUNDAMENTALS OF GRAMMAR B"
+                },
+                {
+                  "value": "FUNDAMENTALS OF GRAMMAR B"
+                }
+              ],
+              "code": "37477",
+              "reportingAcademicPeriod16": {
+                "code": "202630",
+                "title": "Spring 2026",
+                "registration": "open"
+              },
+              "maxEnrollment": 25,
+              "crossListed": "notCrossListed",
+              "alternateIds": [
+                {
+                  "title": "Source Key",
+                  "value": "37477.202630"
+                }
+              ],
+              "course16": {
+                "subject6": {
+                  "abbreviation": "AHSD"
+                },
+                "number": "6402",
+                "credits": [
+                  {
+                    "minimum": 0
+                  }
+                ]
+              }
+            },
+            "instructor12": {
+              "id": "7fb8ed27-bfb3-4906-83ff-5e2960795f10",
+              "names": [
+                {
+                  "fullName": "Tae Yong Yang"
+                }
+              ],
+              "credentials": [
+                {
+                  "type": "bannerSourcedId",
+                  "value": "664"
+                },
+                {
+                  "type": "bannerUserName",
+                  "value": "tyyang"
+                },
+                {
+                  "type": "bannerUdcId",
+                  "value": "D85721C208653866E0430100007F86A9"
+                },
+                {
+                  "type": "bannerId",
+                  "value": "00645076"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "49a987cf-2edc-4eb6-85e4-4e7e40dfe8b1",
+            "instructionalMethod6": {
+              "title": "DE Online Lecture",
+              "abbreviation": "OLD"
+            },
+            "instructionalEvents11": [
+              {
+                "recurrence": {
+                  "timePeriod": {
+                    "startOn": "2026-02-18T18:00:00-08:00",
+                    "endOn": "2026-04-12T19:15:00-07:00"
+                  },
+                  "repeatRule": {
+                    "daysOfWeek": [
+                      "monday",
+                      "tuesday",
+                      "wednesday",
+                      "thursday"
+                    ]
+                  }
+                },
+                "locations": []
+              }
+            ],
+            "section16": {
+              "id": "1aafa796-2a40-48dd-807a-4f6c887a0116",
+              "gradeSubmitted": null,
+              "startOn": "2026-02-18",
+              "endOn": "2026-04-12",
+              "titles": [
+                {
+                  "value": "FUNDAMENTALS OF GRAMMAR B"
+                },
+                {
+                  "value": "FUNDAMENTALS OF GRAMMAR B"
+                }
+              ],
+              "code": "37477",
+              "reportingAcademicPeriod16": {
+                "code": "202630",
+                "title": "Spring 2026",
+                "registration": "open"
+              },
+              "maxEnrollment": 25,
+              "crossListed": "notCrossListed",
+              "alternateIds": [
+                {
+                  "title": "Source Key",
+                  "value": "37477.202630"
+                }
+              ],
+              "course16": {
+                "subject6": {
+                  "abbreviation": "AHSD"
+                },
+                "number": "6402",
+                "credits": [
+                  {
+                    "minimum": 0
+                  }
+                ]
+              }
+            },
+            "instructor12": {
+              "id": "7fb8ed27-bfb3-4906-83ff-5e2960795f10",
+              "names": [
+                {
+                  "fullName": "Tae Yong Yang"
+                }
+              ],
+              "credentials": [
+                {
+                  "type": "bannerSourcedId",
+                  "value": "664"
+                },
+                {
+                  "type": "bannerUserName",
+                  "value": "tyyang"
+                },
+                {
+                  "type": "bannerUdcId",
+                  "value": "D85721C208653866E0430100007F86A9"
+                },
+                {
+                  "type": "bannerId",
+                  "value": "00645076"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "node": {
+            "id": "b4b7ea08-41cb-408f-ac8a-a503d24557aa",
+            "instructionalMethod6": {
+              "title": "Lecture",
+              "abbreviation": "L"
+            },
+            "instructionalEvents11": [
+              {
+                "recurrence": {
+                  "timePeriod": {
+                    "startOn": "2026-02-18T08:30:00-08:00",
+                    "endOn": "2026-04-12T12:05:00-07:00"
+                  },
+                  "repeatRule": {
+                    "daysOfWeek": [
+                      "tuesday",
+                      "thursday"
+                    ]
+                  }
+                },
+                "locations": [
+                  {
+                    "location": {
+                      "room10": {
+                        "number": "116",
+                        "building6": {
+                          "title": "CEC FOOTHILL"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ],
+            "section16": {
+              "id": "348df7a0-b4b8-41ea-9c90-085b217a9e14",
+              "gradeSubmitted": null,
+              "startOn": "2026-02-18",
+              "endOn": "2026-04-12",
+              "titles": [
+                {
+                  "value": "LANGUAGE ARTS"
+                },
+                {
+                  "value": "LANGUAGE ARTS"
+                }
+              ],
+              "code": "34171",
+              "reportingAcademicPeriod16": {
+                "code": "202630",
+                "title": "Spring 2026",
+                "registration": "open"
+              },
+              "maxEnrollment": 25,
+              "crossListed": "notCrossListed",
+              "alternateIds": [
+                {
+                  "title": "Source Key",
+                  "value": "34171.202630"
+                }
+              ],
+              "course16": {
+                "subject6": {
+                  "abbreviation": "ABE"
+                },
+                "number": "3001",
+                "credits": [
+                  {
+                    "minimum": 0
+                  }
+                ]
+              }
+            },
+            "instructor12": {
+              "id": "7fb8ed27-bfb3-4906-83ff-5e2960795f10",
+              "names": [
+                {
+                  "fullName": "Tae Yong Yang"
+                }
+              ],
+              "credentials": [
+                {
+                  "type": "bannerSourcedId",
+                  "value": "664"
+                },
+                {
+                  "type": "bannerUserName",
+                  "value": "tyyang"
+                },
+                {
+                  "type": "bannerUdcId",
+                  "value": "D85721C208653866E0430100007F86A9"
+                },
+                {
+                  "type": "bannerId",
+                  "value": "00645076"
+                }
+              ]
+            }
+          }
+        }
+      ]
     }
   }
 }

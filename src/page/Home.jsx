@@ -25,6 +25,7 @@ import mock from '../data/mock.json';
 import waitlist from '../data/waitlist.json';
 
 import { saveAttendanceData, loadAttendanceData } from '../utils/indexedDB';
+import * as XLSX from 'xlsx';
 
 
 const styles = () => ({
@@ -574,6 +575,62 @@ const HomePage = (props) => {
         printWindow.print();
     }
 
+    const exportToExcel = () => {
+        const wb = XLSX.utils.book_new();
+
+        // --- Roster sheet ---
+        const rosterRows = [];
+
+        // Course info header block
+        rosterRows.push(['Course Information']);
+        rosterRows.push(['Section', courseName, 'CRN', crn]);
+        rosterRows.push(['Title', courseTitle, 'Subject', courseSubject]);
+        rosterRows.push(['Credits', courseCredits, 'Instructor', courseInstructor]);
+        rosterRows.push(['Class Type', courseType]);
+        if (!courseType.includes('Online')) {
+            rosterRows.push(['Meeting Days', courseMeetingDays, 'Meeting Times', courseMeetingTimes]);
+        }
+        rosterRows.push(['Location', `${courseBuilding} ${courseRoom}`.trim()]);
+        rosterRows.push([]);
+
+        // Roster table header
+        rosterRows.push(['#', 'Student ID', 'Student Name', 'Email']);
+
+        // Roster data
+        studentList?.forEach((item, index) => {
+            rosterRows.push([
+                index + 1,
+                item.registrant12?.credentials[0]?.value || '',
+                `${item.registrant12?.names?.at(-1)?.lastName || ''}, ${item.registrant12?.names?.at(-1)?.firstName || ''}`,
+                item.registrant12?.emails[0]?.address || ''
+            ]);
+        });
+
+        // Waitlist section
+        if (waitlistData?.length > 0) {
+            rosterRows.push([]);
+            rosterRows.push(['Waitlist']);
+            rosterRows.push(['#', 'Student ID', 'Student Name', 'Email']);
+            waitlistData.forEach((item, index) => {
+                rosterRows.push([
+                    index + 1,
+                    item.person12?.credentials[0]?.value || '',
+                    `${item.person12?.names?.at(-1)?.lastName || ''}, ${item.person12?.names?.at(-1)?.firstName || ''}`,
+                    item.person12?.emails[0]?.address || ''
+                ]);
+            });
+        }
+
+        const ws = XLSX.utils.aoa_to_sheet(rosterRows);
+
+        // Widen columns for readability
+        ws['!cols'] = [{ wch: 16 }, { wch: 20 }, { wch: 30 }, { wch: 35 }];
+
+        XLSX.utils.book_append_sheet(wb, ws, 'Roster');
+
+        const fileName = `Roster_${courseName || crn}_${new Date().toLocaleDateString('en-CA')}.xlsx`;
+        XLSX.writeFile(wb, fileName);
+    };
 
     const handleChangeSection = useCallback((event) => {
         const { value } = event.target;
@@ -626,6 +683,9 @@ const HomePage = (props) => {
                     <div style={{ marginTop: spacing40, marginBottom: spacing40, display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
                         <Button onClick={printBlankSheet} variant="contained" color="primary">
                             Print Weekly Roster
+                        </Button>
+                        <Button onClick={exportToExcel} variant="contained" color="primary">
+                            Export to Excel
                         </Button>
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                             <Switch
