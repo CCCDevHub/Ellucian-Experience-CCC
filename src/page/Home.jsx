@@ -22,6 +22,7 @@ import {
 } from '@ellucian/experience-extension-utils';
 import Attendance from '../cards/Attendance';
 import mock from '../data/mock.json';
+import students from '../data/students.json';
 import waitlist from '../data/waitlist.json';
 
 import { saveAttendanceData, loadAttendanceData } from '../utils/indexedDB';
@@ -162,6 +163,7 @@ const HomePage = (props) => {
         try {
             const response = await authenticatedEthosFetch(`${pipelineAPI}?cardId=${cardId}&crn=${crn}&termCode=${termCode}`);
             const rawResult = await response.json();
+            // const rawResult = await students;
             const studentDataResult = rawResult?.data?.sectionRegistrations16?.edges?.map(edge => edge.node);
             setStudentList(studentDataResult);
 
