@@ -99,6 +99,13 @@ const HomePage = (props) => {
 
     const todayDate = new Date().toLocaleDateString()
 
+    const formatDate = (dateStr) => {
+        if (!dateStr) return 'N/A';
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return dateStr;
+        return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'America/Los_Angeles' });
+    };
+
     useEffect(() => {
         (async () => {
             setLoadingStatus(true);
@@ -178,7 +185,7 @@ const HomePage = (props) => {
             const criticalDatesResponse = await authenticatedEthosFetch(`${criticalDatesPipelineAPI}?cardId=${cardId}&termCode=${termCode}&crn=${crn}`);
             const rawCriticalDatesResult = await criticalDatesResponse.json();
             // const rawCriticalDatesResult = await dates;
-            setCriticalDatesData(rawCriticalDatesResult?.data?.sectionCriticalDates10?.edges?.map(edge => edge.node) || []);
+            setCriticalDatesData(rawCriticalDatesResult[0]);
 
             // const studentAvailable = Array.isArray(studentDataResult)
             //     ? studentDataResult.filter(item =>
@@ -393,7 +400,6 @@ const HomePage = (props) => {
     //     printWindow.focus();
     //     printWindow.print();
     // }
-
     const printBlankSheet = () => {
         const waitlistPrintHtml = (() => {
             if (!showWaitlist) { return ''; }
@@ -535,6 +541,35 @@ const HomePage = (props) => {
                                 <span class="info-label">Location:</span>
                                 <span class="info-value">${courseBuilding} ${courseRoom}</span>
                             </div>
+                            <div class="section-header">Critical Dates</div>
+                            <div class="info-item">
+                                <span class="info-label">Date to Enroll:</span>
+                                <span class="info-value">${formatDate(criticalDatesData?.enrlCutOffDate)}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Last day to add:</span>
+                                <span class="info-value">${formatDate(criticalDatesData?.enrlCutOffDate)}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Drop with refund:</span>
+                                <span class="info-value">${formatDate(criticalDatesData?.rfndCutOffDate)}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Census Date:</span>
+                                <span class="info-value">${formatDate(criticalDatesData?.censusEnrlDate)}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Drop w/o a "W":</span>
+                                <span class="info-value">${formatDate(criticalDatesData?.acadCutOffDate)}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Declare grade mode:</span>
+                                <span class="info-value">${formatDate(criticalDatesData?.ptrmEndDate)}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Drop with a "W":</span>
+                                <span class="info-value">${formatDate(criticalDatesData?.dropCutOffDate)}</span>
+                            </div>
                         </div>
                         <div class="date-field">
                             <span class="info-label">Date:</span> _______________
@@ -600,6 +635,17 @@ const HomePage = (props) => {
             rosterRows.push(['Meeting Days', courseMeetingDays, 'Meeting Times', courseMeetingTimes]);
         }
         rosterRows.push(['Location', `${courseBuilding} ${courseRoom}`.trim()]);
+        rosterRows.push([]);
+
+        // Critical dates
+        rosterRows.push(['Critical Dates']);
+        rosterRows.push(['Date to Enroll', formatDate(criticalDatesData?.enrlCutOffDate)]);
+        rosterRows.push(['Last day to add class', formatDate(criticalDatesData?.enrlCutOffDate)]);
+        rosterRows.push(['Last day to drop with a refund', formatDate(criticalDatesData?.rfndCutOffDate)]);
+        rosterRows.push(['Census Date', formatDate(criticalDatesData?.censusEnrlDate)]);
+        rosterRows.push(['Last day to drop without a "W"', formatDate(criticalDatesData?.acadCutOffDate)]);
+        rosterRows.push(['Last day to declare grade mode', formatDate(criticalDatesData?.ptrmEndDate)]);
+        rosterRows.push(['Last day to drop with a "W"', formatDate(criticalDatesData?.dropCutOffDate)]);
         rosterRows.push([]);
 
         // Roster table header
