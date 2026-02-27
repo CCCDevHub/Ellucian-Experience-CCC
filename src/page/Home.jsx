@@ -100,9 +100,9 @@ const HomePage = (props) => {
     const todayDate = new Date().toLocaleDateString()
 
     const formatDate = (dateStr) => {
-        if (!dateStr) return 'N/A';
-        const d = new Date(dateStr);
-        if (isNaN(d.getTime())) return dateStr;
+        if (!dateStr) { return 'N/A' }
+        const d = new Date(dateStr)
+        if (isNaN(d.getTime())) { return dateStr }
         return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'America/Los_Angeles' });
     };
 
