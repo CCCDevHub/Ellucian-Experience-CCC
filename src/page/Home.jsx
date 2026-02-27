@@ -24,6 +24,7 @@ import Attendance from '../cards/Attendance';
 import mock from '../data/mock.json';
 import students from '../data/students.json';
 import waitlist from '../data/waitlist.json';
+import dates from '../data/dates.json';
 
 import { saveAttendanceData, loadAttendanceData } from '../utils/indexedDB';
 import * as XLSX from 'xlsx';
@@ -57,7 +58,7 @@ const HomePage = (props) => {
     const { authenticatedEthosFetch, getEthosQuery } = useData();
     const { cardConfiguration:
         {
-            pipelineAPI, waitlistPipelineAPI, sectionPipelineAPI, termPipelineAPI
+            pipelineAPI, waitlistPipelineAPI, sectionPipelineAPI, termPipelineAPI, criticalDatesPipelineAPI
         }, cardId
     } = useCardInfo();
     const customId = 'Roster-Sheet';
@@ -69,6 +70,7 @@ const HomePage = (props) => {
 
     const [studentList, setStudentList] = useState([]);
     const [waitlistData, setWaitlistData] = useState([]);
+    const [criticalDatesData, setCriticalDatesData] = useState([]);
     const [inputValues, setInputValues] = useState({});
     const [tabChange, setTabChange] = useState(0);
 
@@ -172,6 +174,11 @@ const HomePage = (props) => {
             // const rawWaitlistResult = await waitlist;
             const waitlistDataResult = rawWaitlistResult?.data?.studentSectionWaitlists10?.edges?.map(edge => edge.node);
             setWaitlistData(waitlistDataResult);
+
+            const criticalDatesResponse = await authenticatedEthosFetch(`${criticalDatesPipelineAPI}?cardId=${cardId}&termCode=${termCode}&crn=${crn}`);
+            const rawCriticalDatesResult = await criticalDatesResponse.json();
+            // const rawCriticalDatesResult = await dates;
+            setCriticalDatesData(rawCriticalDatesResult?.data?.sectionCriticalDates10?.edges?.map(edge => edge.node) || []);
 
             // const studentAvailable = Array.isArray(studentDataResult)
             //     ? studentDataResult.filter(item =>

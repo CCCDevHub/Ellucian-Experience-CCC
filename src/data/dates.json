@@ -1,0 +1,25 @@
+[
+  {
+    "acclDesc": "Open Entry/Exit Calendar",
+    "ptrmDesc": "8 Week first session",
+    "sectBeginDate": "2026-02-18T00:00:00.000+0000",
+    "sectEndDate": "2026-04-12T00:00:00.000+0000",
+    "sectNumDay": "14",
+    "sectNumWeek": "7.71",
+    "sectStartDate": "2026-02-19T00:00:00.000+0000",
+    "acadCutOffDate": "2026-04-07T00:00:00.000+0000",
+    "acclCode": "OE",
+    "census2Date": "2026-04-09T00:00:00.000+0000",
+    "census2Enrl": "9",
+    "censusEnrl": "9",
+    "censusEnrlDate": "2026-04-09T00:00:00.000+0000",
+    "dropCutOffDate": "2026-04-09T00:00:00.000+0000",
+    "enrl": "9",
+    "enrlCutOffDate": "2026-04-07T00:00:00.000+0000",
+    "ptrmCode": "8A",
+    "ptrmEndDate": "2026-04-12T00:00:00.000+0000",
+    "ptrmStartDate": "2026-02-18T00:00:00.000+0000",
+    "ptrmWeeks": "8",
+    "rfndCutOffDate": "2026-04-07T00:00:00.000+0000"
+  }
+]

@@ -31,6 +31,11 @@ module.exports = {
                         label: "Waitlist Pipeline API",
                         type: "text"
                     },
+                    {
+                        key: "criticalDatesPipelineAPI",
+                        label: "Critical Dates Pipeline API",
+                        type: "text"
+                    },
                 ],
                 server: [
                     {
