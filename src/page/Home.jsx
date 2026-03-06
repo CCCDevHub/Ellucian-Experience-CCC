@@ -266,7 +266,31 @@ const HomePage = (props) => {
                     )
                 }
             } else {
-                return null;
+                return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: spacing40 }}>
+                        <Typography>No authorization codes found. Click Generate Codes to create them.</Typography>
+                        <div>
+                            <Button
+                                onClick={async () => {
+                                    setLoadingStatus(true);
+                                    try {
+                                        const response = await authenticatedEthosFetch(`${postPipelineAPI}?cardId=${cardId}&crn=${crn}&termCode=${termCode}`, {
+                                            method: 'POST'
+                                        });
+                                        await response.json();
+                                        await fetchAuthorizationData(crn, termCode);
+                                    } catch (error) {
+                                        console.error('Failed to generate codes:', error);
+                                    } finally {
+                                        setLoadingStatus(false);
+                                    }
+                                }}
+                            >
+                                Generate Codes
+                            </Button>
+                        </div>
+                    </div>
+                );
             }
         }
         if (tabChange === 1) {
