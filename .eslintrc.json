@@ -19,5 +19,8 @@
     "react": {
       "version": "detect"
     }
+  },
+  "rules": {
+    "no-unused-vars": "warn"
   }
 }
