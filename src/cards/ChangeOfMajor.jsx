@@ -64,7 +64,7 @@ function ChangeOfMajor({ classes }) {
                 className={classes.spacing}
                 onClick={handleSubmit}
             >
-                Open
+                Lookup
             </Button>
         </div>
     );

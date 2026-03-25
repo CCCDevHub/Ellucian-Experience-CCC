@@ -12,7 +12,7 @@ import {
     PAGE_VARIANT
 } from '@ellucian/react-design-system/core';
 import PropTypes from 'prop-types';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     useCardInfo,
     useData,
@@ -84,7 +84,7 @@ const HomePage = (props) => {
     const { authenticatedEthosFetch } = useData();
     const { cardConfiguration:
         {
-            studentInfoAPI, majorInfoAPI, termListAPI, updateMajorAPI, updateConcentrationAPI
+            studentInfoAPI, majorInfoAPI, termListAPI, registrationTimeAPI, updateMajorAPI, updateConcentrationAPI
         }, cardId
     } = useCardInfo();
     setPageTitle("Change of Major");
@@ -98,12 +98,16 @@ const HomePage = (props) => {
     const [selectedProgram, setSelectedProgram] = useState('');
     const [selectedConcentration, setSelectedConcentration] = useState('');
     const [selectedMajrCode, setSelectedMajrCode] = useState('');
+    const [selectedDegcCode, setSelectedDegcCode] = useState('');
+    const majorCache = useRef({});
     const [submitting, setSubmitting] = useState(false);
     const [finaidAlertDismissed, setFinaidAlertDismissed] = useState(false);
     const [loadingStudent, setLoadingStudent] = useState(false);
     const [loadingMajors, setLoadingMajors] = useState(false);
     const [alertState, setAlertState] = useState(null);
     const [holdAlertDismissed, setHoldAlertDismissed] = useState(false); // { type: 'success'|'error', message: string }
+    const zeroMins = "0";
+    const fiveMins = "5";
 
     const fetchStudent = async (id) => {
         setLoadingStudent(true);
@@ -115,6 +119,7 @@ const HomePage = (props) => {
         setSelectedProgram('');
         setSelectedConcentration('');
         setSelectedMajrCode('');
+        setSelectedDegcCode('');
         setHoldAlertDismissed(false);
         try {
             const response = await authenticatedEthosFetch(`${studentInfoAPI}?cardId=${cardId}&studentId=${id}`);
@@ -147,25 +152,25 @@ const HomePage = (props) => {
     const selectedProgramInfo = majorList.find(item => item.sobcurrProgram === selectedProgram);
     const finaidIneligible = selectedProgramInfo?.finaidElig === 'NO';
 
-    // Derive unique degree options from majorList
+    // Derive unique degree options — deduplicate by label so same-named degrees don't repeat
     const degreeOptions = majorList.reduce((acc, item) => {
-        if (!acc.find(d => d.code === item.sobcurrDegcCode)) {
-            acc.push({ code: item.sobcurrDegcCode, label: item.degree });
+        if (!acc.find(d => d.label === item.degree)) {
+            acc.push({ label: item.degree });
         }
         return acc;
     }, []);
 
-    // Filter programs by selected degree
+    // Filter programs by selected degree label (covers all codes sharing the same degree name)
     const programOptions = majorList.reduce((acc, item) => {
-        if (item.sobcurrDegcCode === selectedDegree && !acc.find(p => p.code === item.sobcurrProgram)) {
-            acc.push({ code: item.sobcurrProgram, label: item.program, majorCode: item.sorcmjrMajrCode });
+        if (item.degree === selectedDegree && !acc.find(p => p.code === item.sobcurrProgram)) {
+            acc.push({ code: item.sobcurrProgram, label: item.program, degcCode: item.sobcurrDegcCode });
         }
         return acc;
     }, []);
 
-    // Filter concentrations by selected degree + program
+    // Filter concentrations by selected degree label + program
     const concentrationOptions = majorList.filter(
-        item => item.sobcurrDegcCode === selectedDegree && item.sobcurrProgram === selectedProgram
+        item => item.degree === selectedDegree && item.sobcurrProgram === selectedProgram && item.concentration?.trim()
     );
 
     useEffect(() => {
@@ -185,9 +190,48 @@ const HomePage = (props) => {
 
         (async () => {
             try {
-                const response = await authenticatedEthosFetch(`${majorInfoAPI}?cardId=${cardId}&termCode=${value}`);
-                const majorResult = await response.json();
-                setMajorList(majorResult);
+                // Return cached result if this term was already fetched
+                if (majorCache.current[value]) {
+                    setMajorList(majorCache.current[value]);
+                    setLoadingMajors(false);
+                    return;
+                }
+
+                const pageSize = 1000;
+                let allRecords = [];
+                let offset = 0;
+                let hasMore = true;
+
+                while (hasMore) {
+                    const response = await authenticatedEthosFetch(`${majorInfoAPI}?cardId=${cardId}&pageSize=${pageSize}&offset=${offset}`);
+                    const page = await response.json();
+                    if (!Array.isArray(page) || page.length === 0) {
+                        hasMore = false;
+                    } else {
+                        allRecords = allRecords.concat(page);
+                        hasMore = page.length === pageSize;
+                        offset += pageSize;
+                    }
+                }
+
+                // For each item, find the MAX(termEff) <= selectedTerm for the same program + majorCode
+                const filtered = allRecords.filter(item => {
+                    if (item.sorcmjrRecInd !== 'Y' || item.sorcmjrAdmInd !== 'Y' || item.sorcmjrStuInd !== 'Y') return false;
+                    const maxTermEff = allRecords
+                        .filter(r =>
+                            r.termEff <= value &&
+                            r.sobcurrProgram === item.sobcurrProgram &&
+                            r.sorcmjrMajrCode === item.sorcmjrMajrCode &&
+                            r.sorcmjrRecInd === 'Y' &&
+                            r.sorcmjrAdmInd === 'Y' &&
+                            r.sorcmjrStuInd === 'Y'
+                        )
+                        .reduce((max, r) => r.termEff > max ? r.termEff : max, '');
+                    return item.termEff === maxTermEff;
+                });
+
+                majorCache.current[value] = filtered;
+                setMajorList(filtered);
             } catch (error) {
                 console.error(error);
             }
@@ -200,14 +244,18 @@ const HomePage = (props) => {
         setSelectedProgram('');
         setSelectedConcentration('');
         setSelectedMajrCode('');
+        setSelectedDegcCode('');
         setFinaidAlertDismissed(false);
     };
 
     const handleChangeProgram = (event) => {
-        setSelectedProgram(event.target.value);
+        const program = event.target.value;
+        setSelectedProgram(program);
         setSelectedConcentration('');
         setSelectedMajrCode('');
         setFinaidAlertDismissed(false);
+        const match = programOptions.find(p => p.code === program);
+        setSelectedDegcCode(match?.degcCode || '');
     };
 
     const handleChangeConcentration = (event) => {
@@ -219,10 +267,10 @@ const HomePage = (props) => {
 
 
     const fields = studentInfo ? [
-        { label: 'Student ID', value: studentInfo.studentId },
+        // { label: 'Student ID', value: studentInfo.studentId },
         { label: 'First Name', value: studentInfo.studentFirstName },
         { label: 'Last Name', value: studentInfo.studentLastName },
-        { label: 'Latest Program Term', value: studentInfo.latestProgramTerm },
+        { label: 'Latest Program Term', value: studentInfo.latestTermDesc },
         { label: 'Degree', value: studentInfo.degreeDesc },
         { label: 'Program', value: studentInfo.programDesc },
         { label: 'Concentration', value: studentInfo.concentration },
@@ -242,16 +290,24 @@ const HomePage = (props) => {
     };
 
     const handleSubmitMajorChange = async () => {
-        const term = '202630';
         setSubmitting(true);
 
         setAlertState(null);
         try {
-            const majorResponse = await authenticatedEthosFetch(`${updateMajorAPI}?cardId=${cardId}&program=${selectedProgram}&degcCode=${selectedDegree}&majrCode=${selectedMajrCode}&id=${studentInfo.studentId}&term=${term}`);
+            const initWaitTime = await authenticatedEthosFetch(`${registrationTimeAPI}?cardId=${cardId}&waitTime=${zeroMins}&previousTime=${fiveMins}`);
+            const initWaitResult = await initWaitTime.json();
+            console.log(initWaitResult);
+            if (initWaitTime.status !== 200) {
+                setAlertState({ type: 'error', message: 'Failed to initialize wait time. Please try again.' });
+                setSubmitting(false);
+                return;
+            }
+
+            const majorResponse = await authenticatedEthosFetch(`${updateMajorAPI}?cardId=${cardId}&program=${selectedProgram}&degcCode=${selectedDegcCode}&majrCode=${selectedMajrCode}&id=${studentInfo.studentId}&term=${dropdownStateTerm}`);
             const majorUpdateResult = await majorResponse.json();
             console.log('Major Update Result:', majorUpdateResult);
             if (majorResponse.status === 200) {
-                const concentrationResponse = await authenticatedEthosFetch(`${updateConcentrationAPI}?cardId=${cardId}&majorCode=${selectedMajrCode}&concentrationCode=${selectedConcentration}&majrCode=${selectedMajrCode}&id=${studentInfo.studentId}&term=${term}`);
+                const concentrationResponse = await authenticatedEthosFetch(`${updateConcentrationAPI}?cardId=${cardId}&majorCode=${selectedMajrCode}&concentrationCode=${selectedConcentration}&majrCode=${selectedMajrCode}&id=${studentInfo.studentId}&term=${dropdownStateTerm}`);
                 const concentrationUpdateResult = await concentrationResponse.json();
                 console.log('Concentration Update Result:', concentrationUpdateResult);
                 if (concentrationResponse.status === 200) {
@@ -263,6 +319,9 @@ const HomePage = (props) => {
             } else {
                 setAlertState({ type: 'error', message: 'Failed to update major. Please try again.' });
             }
+
+            const revertWaitTime = await authenticatedEthosFetch(`${registrationTimeAPI}?cardId=${cardId}&waitTime=${fiveMins}&previousTime=${zeroMins}`);
+            console.log(await revertWaitTime.json());
         } catch (error) {
             console.error('Submit error:', error);
             setAlertState({ type: 'error', message: 'An unexpected error occurred. Please try again.' });
@@ -344,7 +403,7 @@ const HomePage = (props) => {
                     MenuProps={{ disablePortal: true, disableEnforceFocus: true }}
                 >
                     {degreeOptions.map(d => (
-                        <DropdownItem key={d.code} label={d.label} value={d.code} />
+                        <DropdownItem key={d.label} label={d.label} value={d.label} />
                     ))}
                 </Dropdown>
 
@@ -362,19 +421,21 @@ const HomePage = (props) => {
                     ))}
                 </Dropdown>
 
-                <Dropdown
-                    id={`${customId}_DropdownConcentration`}
-                    label="Select Concentration"
-                    onChange={handleChangeConcentration}
-                    value={selectedConcentration}
-                    disabled={hasHold || concentrationOptions.length === 0}
-                    fullWidth
-                    MenuProps={{ disablePortal: true, disableEnforceFocus: true }}
-                >
-                    {concentrationOptions.map(c => (
-                        <DropdownItem key={c.sorcconCconRule} label={c.concentration} value={c.concentration} />
-                    ))}
-                </Dropdown>
+                {concentrationOptions.length > 0 && (
+                    <Dropdown
+                        id={`${customId}_DropdownConcentration`}
+                        label="Select Concentration"
+                        onChange={handleChangeConcentration}
+                        value={selectedConcentration}
+                        disabled={hasHold}
+                        fullWidth
+                        MenuProps={{ disablePortal: true, disableEnforceFocus: true }}
+                    >
+                        {concentrationOptions.map(c => (
+                            <DropdownItem key={c.sorcconCconRule} label={c.concentration} value={c.concentration} />
+                        ))}
+                    </Dropdown>
+                )}
             </div>
 
             <Alert
@@ -399,7 +460,7 @@ const HomePage = (props) => {
                 id={`${customId}_SubmitButton`}
                 color="primary"
                 variant="contained"
-                disabled={hasHold || !selectedDegree || !selectedProgram || !selectedConcentration}
+                disabled={hasHold || !selectedDegree || !selectedProgram || (concentrationOptions.length > 0 && !selectedConcentration)}
                 onClick={handleSubmitMajorChange}
                 fluid
             >
