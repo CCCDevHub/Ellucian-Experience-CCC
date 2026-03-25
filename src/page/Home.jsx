@@ -99,9 +99,11 @@ const HomePage = (props) => {
     const [selectedConcentration, setSelectedConcentration] = useState('');
     const [selectedMajrCode, setSelectedMajrCode] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const [finaidAlertDismissed, setFinaidAlertDismissed] = useState(false);
     const [loadingStudent, setLoadingStudent] = useState(false);
     const [loadingMajors, setLoadingMajors] = useState(false);
-    const [alertState, setAlertState] = useState(null); // { type: 'success'|'error', message: string }
+    const [alertState, setAlertState] = useState(null);
+    const [holdAlertDismissed, setHoldAlertDismissed] = useState(false); // { type: 'success'|'error', message: string }
 
     const fetchStudent = async (id) => {
         setLoadingStudent(true);
@@ -113,6 +115,7 @@ const HomePage = (props) => {
         setSelectedProgram('');
         setSelectedConcentration('');
         setSelectedMajrCode('');
+        setHoldAlertDismissed(false);
         try {
             const response = await authenticatedEthosFetch(`${studentInfoAPI}?cardId=${cardId}&studentId=${id}`);
             const studentResult = await response.json();
@@ -127,6 +130,22 @@ const HomePage = (props) => {
         }
         setLoadingStudent(false);
     };
+
+    const refreshStudentInfo = async (id) => {
+        try {
+            const response = await authenticatedEthosFetch(`${studentInfoAPI}?cardId=${cardId}&studentId=${id}`);
+            const studentResult = await response.json();
+            if (Array.isArray(studentResult) && studentResult.length > 0) {
+                setStudentInfo(studentResult[0]);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    const hasHold = !!(studentInfo?.holds?.trim());
+    const selectedProgramInfo = majorList.find(item => item.sobcurrProgram === selectedProgram);
+    const finaidIneligible = selectedProgramInfo?.finaidElig === 'NO';
 
     // Derive unique degree options from majorList
     const degreeOptions = majorList.reduce((acc, item) => {
@@ -181,12 +200,14 @@ const HomePage = (props) => {
         setSelectedProgram('');
         setSelectedConcentration('');
         setSelectedMajrCode('');
+        setFinaidAlertDismissed(false);
     };
 
     const handleChangeProgram = (event) => {
         setSelectedProgram(event.target.value);
         setSelectedConcentration('');
         setSelectedMajrCode('');
+        setFinaidAlertDismissed(false);
     };
 
     const handleChangeConcentration = (event) => {
@@ -224,14 +245,6 @@ const HomePage = (props) => {
         const term = '202630';
         setSubmitting(true);
 
-        console.log('Submitting major change with:', {
-            studentId: studentInfo.studentId,
-            selectedDegree,
-            selectedProgram,
-            selectedMajrCode,
-            selectedConcentration,
-            term
-        });
         setAlertState(null);
         try {
             const majorResponse = await authenticatedEthosFetch(`${updateMajorAPI}?cardId=${cardId}&program=${selectedProgram}&degcCode=${selectedDegree}&majrCode=${selectedMajrCode}&id=${studentInfo.studentId}&term=${term}`);
@@ -243,6 +256,7 @@ const HomePage = (props) => {
                 console.log('Concentration Update Result:', concentrationUpdateResult);
                 if (concentrationResponse.status === 200) {
                     setAlertState({ type: 'success', message: 'Major and Concentration updated successfully!' });
+                    await refreshStudentInfo(studentInfo.studentId);
                 } else {
                     setAlertState({ type: 'error', message: 'Failed to update concentration. Please try again.' });
                 }
@@ -296,12 +310,22 @@ const HomePage = (props) => {
                 Change of Major
             </Typography>
 
+            <Alert
+                alertType="warning"
+                id={`${customId}_HoldAlert`}
+                onClose={() => setHoldAlertDismissed(true)}
+                open={hasHold && !holdAlertDismissed}
+                text={`This student has an active hold (${studentInfo?.holds?.trim()}) and cannot change their major.`}
+                variant={PAGE_VARIANT}
+            />
+
             <div className={classes.dropdownGrid}>
                 <Dropdown
                     id={`${customId}_DropdownTerm`}
                     label="Select Term"
                     onChange={handleChangeTerm}
                     value={dropdownStateTerm}
+                    disabled={hasHold}
                     fullWidth
                     MenuProps={{ disablePortal: true, disableEnforceFocus: true }}
                 >
@@ -315,7 +339,7 @@ const HomePage = (props) => {
                     label="Select Degree"
                     onChange={handleChangeDegree}
                     value={selectedDegree}
-                    disabled={degreeOptions.length === 0}
+                    disabled={hasHold || degreeOptions.length === 0}
                     fullWidth
                     MenuProps={{ disablePortal: true, disableEnforceFocus: true }}
                 >
@@ -329,7 +353,7 @@ const HomePage = (props) => {
                     label="Select Program"
                     onChange={handleChangeProgram}
                     value={selectedProgram}
-                    disabled={programOptions.length === 0}
+                    disabled={hasHold || programOptions.length === 0}
                     fullWidth
                     MenuProps={{ disablePortal: true, disableEnforceFocus: true }}
                 >
@@ -343,7 +367,7 @@ const HomePage = (props) => {
                     label="Select Concentration"
                     onChange={handleChangeConcentration}
                     value={selectedConcentration}
-                    disabled={concentrationOptions.length === 0}
+                    disabled={hasHold || concentrationOptions.length === 0}
                     fullWidth
                     MenuProps={{ disablePortal: true, disableEnforceFocus: true }}
                 >
@@ -352,6 +376,15 @@ const HomePage = (props) => {
                     ))}
                 </Dropdown>
             </div>
+
+            <Alert
+                alertType="warning"
+                id={`${customId}_FinaidAlert`}
+                onClose={() => setFinaidAlertDismissed(true)}
+                open={finaidIneligible && !finaidAlertDismissed}
+                text={`The program "${selectedProgramInfo?.program}" is not eligible for financial aid.`}
+                variant={PAGE_VARIANT}
+            />
 
             <Alert
                 alertType={alertState?.type}
@@ -366,7 +399,7 @@ const HomePage = (props) => {
                 id={`${customId}_SubmitButton`}
                 color="primary"
                 variant="contained"
-                disabled={!selectedDegree || !selectedProgram || !selectedConcentration}
+                disabled={hasHold || !selectedDegree || !selectedProgram || !selectedConcentration}
                 onClick={handleSubmitMajorChange}
                 fluid
             >
