@@ -25,7 +25,7 @@ function ChangeOfMajor({ classes }) {
 
     const handleSubmit = async () => {
         setLoadingStatus(true);
-        navigateToPage({ route: '/change-of-major' });
+        navigateToPage({ route: `/change-of-major/${studentId}` });
         setLoadingStatus(false);
     };
 
