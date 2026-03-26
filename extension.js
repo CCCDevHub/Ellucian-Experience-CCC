@@ -32,6 +32,11 @@ module.exports = {
                         type: "text"
                     },
                     {
+                        key: "getRegistrationTimeAPI",
+                        label: "Get Registration Time API",
+                        type: "text"
+                    },
+                    {
                         key: "updateMajorAPI",
                         label: "Update Major API",
                         type: "text"

@@ -84,7 +84,7 @@ const HomePage = (props) => {
     const { authenticatedEthosFetch } = useData();
     const { cardConfiguration:
         {
-            studentInfoAPI, majorInfoAPI, termListAPI, registrationTimeAPI, updateMajorAPI, updateConcentrationAPI
+            studentInfoAPI, majorInfoAPI, termListAPI, registrationTimeAPI, getRegistrationTimeAPI, updateMajorAPI, updateConcentrationAPI
         }, cardId
     } = useCardInfo();
     setPageTitle("Change of Major");
@@ -102,6 +102,7 @@ const HomePage = (props) => {
     const majorCache = useRef({});
     const allMajorRecordsRef = useRef([]);
     const [submitting, setSubmitting] = useState(false);
+    const [progressText, setProgressText] = useState('');
     const [finaidAlertDismissed, setFinaidAlertDismissed] = useState(false);
     const [loadingStudent, setLoadingStudent] = useState(false);
     const [loadingMajors, setLoadingMajors] = useState(false);
@@ -281,7 +282,6 @@ const HomePage = (props) => {
         setSelectedMajrCode(match?.sorcmjrMajrCode || '');
     };
 
-
     const fields = studentInfo ? [
         // { label: 'Student ID', value: studentInfo.studentId },
         { label: 'First Name', value: studentInfo.studentFirstName },
@@ -319,26 +319,25 @@ const HomePage = (props) => {
         }
 
         setSubmitting(true);
+        let wasRestricted = false;
         try {
-            const initWaitTime = await authenticatedEthosFetch(`${registrationTimeAPI}?cardId=${cardId}&waitTime=${zeroMins}&previousTime=${fiveMins}`);
-            if (initWaitTime.status !== 200) {
-                setAlertState({ type: 'error', message: 'Failed to initialize wait time. Please try again.' });
-                setSubmitting(false);
-                await authenticatedEthosFetch(`${registrationTimeAPI}?cardId=${cardId}&waitTime=${fiveMins}&previousTime=${zeroMins}`);
-                return;
+            const getWaitTime = await authenticatedEthosFetch(`${getRegistrationTimeAPI}?cardId=${cardId}`);
+            const waitTimeResult = await getWaitTime.json();
+            console.log('Current registration time restriction:', waitTimeResult[0]?.externalCode);
+            wasRestricted = waitTimeResult[0]?.externalCode === '5';
+            console.log('Current registration time restriction status:', wasRestricted);
+            if (wasRestricted) {
+                await authenticatedEthosFetch(`${registrationTimeAPI}?cardId=${cardId}&waitTime=${zeroMins}&previousTime=${fiveMins}`);
             }
 
-            // Find the global max termEff across all records
-            const maxTermEff = allMajorRecordsRef.current
-                .reduce((max, r) => r.termEff > max ? r.termEff : max, dropdownStateTerm);
-            console.log('[DEBUG] maxTermEff:', maxTermEff);
+
             // Generate all terms from selectedTerm up to maxTermEff using the YYYYTT suffix pattern
             const termSuffixes = ['10', '30', '50', '70'];
             const termsToUpdate = [];
             let year = parseInt(dropdownStateTerm.slice(0, 4));
             let suffixIdx = termSuffixes.indexOf(dropdownStateTerm.slice(4));
             let currentTerm = dropdownStateTerm;
-            while (currentTerm <= maxTermEff) {
+            while (currentTerm <= studentInfo.latestProgramTerm) {
                 termsToUpdate.push(currentTerm);
                 suffixIdx++;
                 if (suffixIdx >= termSuffixes.length) {
@@ -349,50 +348,63 @@ const HomePage = (props) => {
             }
             console.log('Terms to update:', termsToUpdate);
 
-            for (const term of termsToUpdate) {
-                console.log('Terms to update:', term);
-                console.log('Selected Degree:', selectedDegcCode);
-                console.log('Selected Program:', selectedProgram);
-                console.log('Selected Concentration:', selectedConcentration);
-                console.log('Selected MajrCode:', selectedMajrCode);
+            const termStartDates = { '10': '01-05', '30': '03-01', '50': '07-01', '70': '09-01' };
+            const getEstsDate = (termCode) => {
+                const y = termCode.slice(0, 4);
+                const suffix = termCode.slice(4);
+                return `${y}-${termStartDates[suffix]}`;
+            };
+
+            for (let i = 0; i < termsToUpdate.length; i++) {
+                const term = termsToUpdate[i];
+                setProgressText(`Updating term ${i + 1} of ${termsToUpdate.length} (${term})...`);
+                const rstsEstsDate = getEstsDate(term);
                 if (!sameDegreeAndProgram) {
-                    const majorResponse = await authenticatedEthosFetch(`${updateMajorAPI}?cardId=${cardId}&program=${selectedProgram}&degcCode=${selectedDegcCode}&majrCode=${selectedMajrCode}&id=${studentInfo.studentId}&term=${term}`);
+                    const majorResponse = await authenticatedEthosFetch(`${updateMajorAPI}?cardId=${cardId}&program=${selectedProgram}&degcCode=${selectedDegcCode}&majrCode=${selectedMajrCode}&id=${studentInfo.studentId}&term=${term}&rstsEstsDate=${rstsEstsDate}`);
                     const majorUpdateResult = await majorResponse.json();
                     console.log(`Major Update [${term}]:`, majorUpdateResult);
                     if (majorResponse.status !== 200) {
                         setAlertState({ type: 'error', message: `Failed to update major for term ${term}. Please try again.` });
-                        await authenticatedEthosFetch(`${registrationTimeAPI}?cardId=${cardId}&waitTime=${fiveMins}&previousTime=${zeroMins}`);
+                        if (wasRestricted) await authenticatedEthosFetch(`${registrationTimeAPI}?cardId=${cardId}&waitTime=${fiveMins}&previousTime=${zeroMins}`);
                         setSubmitting(false);
                         return;
                     }
                 }
 
                 if (concentrationOptions.length > 0) {
-                    const concentrationResponse = await authenticatedEthosFetch(`${updateConcentrationAPI}?cardId=${cardId}&majorCode=${selectedMajrCode}&concentrationCode=${selectedConcentration}&majrCode=${selectedMajrCode}&id=${studentInfo.studentId}&term=${term}`);
+                    const concentrationResponse = await authenticatedEthosFetch(`${updateConcentrationAPI}?cardId=${cardId}&majorCode=${selectedMajrCode}&concentrationCode=${selectedConcentration}&majrCode=${selectedMajrCode}&id=${studentInfo.studentId}&term=${term}&rstsEstsDate=${rstsEstsDate}`);
                     const concentrationUpdateResult = await concentrationResponse.json();
                     console.log(`Concentration Update [${term}]:`, concentrationUpdateResult);
                     if (concentrationResponse.status !== 200) {
                         setAlertState({ type: 'error', message: `Failed to update concentration for term ${term}. Please try again.` });
-                        await authenticatedEthosFetch(`${registrationTimeAPI}?cardId=${cardId}&waitTime=${fiveMins}&previousTime=${zeroMins}`);
+                        if (wasRestricted) await authenticatedEthosFetch(`${registrationTimeAPI}?cardId=${cardId}&waitTime=${fiveMins}&previousTime=${zeroMins}`);
                         setSubmitting(false);
                         return;
                     }
                 }
             }
 
-            const successMsg = sameDegreeAndProgram
-                ? 'Concentration updated successfully!'
+            const firstTerm = termsToUpdate[0];
+            const lastTerm = termsToUpdate[termsToUpdate.length - 1];
+            const termRange = termsToUpdate.length > 1 ? `${firstTerm} – ${lastTerm}` : firstTerm;
+            const updateType = sameDegreeAndProgram
+                ? 'Concentration'
                 : concentrationOptions.length > 0
-                    ? 'Major and Concentration updated successfully!'
-                    : 'Major updated successfully!';
+                    ? 'Major and Concentration'
+                    : 'Major';
+            const successMsg = `${updateType} updated successfully for ${termsToUpdate.length} term${termsToUpdate.length > 1 ? 's' : ''} (${termRange}).`;
+            setProgressText('');
             setAlertState({ type: 'success', message: successMsg });
             await refreshStudentInfo(studentInfo.studentId);
 
-            await authenticatedEthosFetch(`${registrationTimeAPI}?cardId=${cardId}&waitTime=${fiveMins}&previousTime=${zeroMins}`);
+            if (wasRestricted) {
+                await authenticatedEthosFetch(`${registrationTimeAPI}?cardId=${cardId}&waitTime=${fiveMins}&previousTime=${zeroMins}`);
+            }
         } catch (error) {
             console.error('Submit error:', error);
+            setProgressText('');
             setAlertState({ type: 'error', message: 'An unexpected error occurred. Please try again.' });
-            await authenticatedEthosFetch(`${registrationTimeAPI}?cardId=${cardId}&waitTime=${fiveMins}&previousTime=${zeroMins}`);
+            if (wasRestricted) await authenticatedEthosFetch(`${registrationTimeAPI}?cardId=${cardId}&waitTime=${fiveMins}&previousTime=${zeroMins}`);
         }
         setSubmitting(false);
     };
@@ -540,6 +552,9 @@ const HomePage = (props) => {
                 open={loadingStudent || loadingMajors || submitting}
             >
                 <CircularProgress color="inherit" />
+                {progressText && (
+                    <Typography style={{ color: '#fff' }}>{progressText}</Typography>
+                )}
             </Backdrop>
         </div>
     );
