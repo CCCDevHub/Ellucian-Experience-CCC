@@ -334,18 +334,13 @@ const HomePage = (props) => {
             }
 
 
-            // Generate all terms from latestProgramTerm through dropdownStateTerm using the YYYYTT suffix pattern
+            // Generate all terms from dropdownStateTerm through latestProgramTerm using the YYYYTT suffix pattern
             const termSuffixes = ['10', '30', '50', '70'];
             const termsToUpdate = [];
-            if (dropdownStateTerm < studentInfo.latestProgramTerm) {
-                setAlertState({ type: 'error', message: `Selected term must be the same or later than the student's latest program term (${studentInfo.latestTermDesc}).` });
-                setSubmitting(false);
-                return;
-            }
-            let year = parseInt(studentInfo.latestProgramTerm.slice(0, 4));
-            let suffixIdx = termSuffixes.indexOf(studentInfo.latestProgramTerm.slice(4));
-            let currentTerm = studentInfo.latestProgramTerm;
-            while (currentTerm <= dropdownStateTerm) {
+            let year = parseInt(dropdownStateTerm.slice(0, 4));
+            let suffixIdx = termSuffixes.indexOf(dropdownStateTerm.slice(4));
+            let currentTerm = dropdownStateTerm;
+            while (currentTerm <= studentInfo.latestProgramTerm) {
                 termsToUpdate.push(currentTerm);
                 suffixIdx++;
                 if (suffixIdx >= termSuffixes.length) {
