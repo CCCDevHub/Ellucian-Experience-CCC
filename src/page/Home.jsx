@@ -189,7 +189,6 @@ const HomePage = (props) => {
         setSelectedProgram('');
         setSelectedConcentration('');
         setLoadingMajors(true);
-
         (async () => {
             try {
                 // Return cached result if this term was already fetched
@@ -219,20 +218,24 @@ const HomePage = (props) => {
                     allMajorRecordsRef.current = allRecords;
                 }
 
-                // For each item, find the MAX(termEff) <= selectedTerm for the same program + majorCode
+                // For each item, keep it only if it is the most recent record (active or inactive)
+                // for its program+majorCode up to selectedTerm AND that most recent record is active.
                 const filtered = allRecords.filter(item => {
                     if (item.sorcmjrRecInd !== 'Y' || item.sorcmjrAdmInd !== 'Y' || item.sorcmjrStuInd !== 'Y') return false;
-                    const maxTermEff = allRecords
-                        .filter(r =>
-                            r.termEff <= value &&
-                            r.sobcurrProgram === item.sobcurrProgram &&
-                            r.sorcmjrMajrCode === item.sorcmjrMajrCode &&
-                            r.sorcmjrRecInd === 'Y' &&
-                            r.sorcmjrAdmInd === 'Y' &&
-                            r.sorcmjrStuInd === 'Y'
-                        )
+
+                    const sameGroup = allRecords.filter(r =>
+                        r.termEff <= value &&
+                        r.sobcurrProgram === item.sobcurrProgram &&
+                        r.sorcmjrMajrCode === item.sorcmjrMajrCode
+                    );
+
+                    const globalMax = sameGroup.reduce((max, r) => r.termEff > max ? r.termEff : max, '');
+
+                    const activeMax = sameGroup
+                        .filter(r => r.sorcmjrRecInd === 'Y' && r.sorcmjrAdmInd === 'Y' && r.sorcmjrStuInd === 'Y')
                         .reduce((max, r) => r.termEff > max ? r.termEff : max, '');
-                    return item.termEff === maxTermEff;
+
+                    return item.termEff === activeMax && activeMax === globalMax;
                 });
 
                 majorCache.current[value] = filtered;
@@ -337,6 +340,12 @@ const HomePage = (props) => {
             let year = parseInt(dropdownStateTerm.slice(0, 4));
             let suffixIdx = termSuffixes.indexOf(dropdownStateTerm.slice(4));
             let currentTerm = dropdownStateTerm;
+            console.log(currentTerm, studentInfo.latestProgramTerm);
+            if (currentTerm < studentInfo.latestProgramTerm) {
+                setAlertState({ type: 'error', message: `Selected term must be the same or later than the student's latest program term (${studentInfo.latestTermDesc}).` });
+                setSubmitting(false);
+                return;
+            }
             while (currentTerm <= studentInfo.latestProgramTerm) {
                 termsToUpdate.push(currentTerm);
                 suffixIdx++;
@@ -346,6 +355,7 @@ const HomePage = (props) => {
                 }
                 currentTerm = `${year}${termSuffixes[suffixIdx]}`;
             }
+
             console.log('Terms to update:', termsToUpdate);
 
             const termStartDates = { '10': '01-05', '30': '03-01', '50': '07-01', '70': '09-01' };
