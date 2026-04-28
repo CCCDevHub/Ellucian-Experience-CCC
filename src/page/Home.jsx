@@ -334,19 +334,18 @@ const HomePage = (props) => {
             }
 
 
-            // Generate all terms from selectedTerm up to maxTermEff using the YYYYTT suffix pattern
+            // Generate all terms from latestProgramTerm through dropdownStateTerm using the YYYYTT suffix pattern
             const termSuffixes = ['10', '30', '50', '70'];
             const termsToUpdate = [];
-            let year = parseInt(dropdownStateTerm.slice(0, 4));
-            let suffixIdx = termSuffixes.indexOf(dropdownStateTerm.slice(4));
-            let currentTerm = dropdownStateTerm;
-            console.log(currentTerm, studentInfo.latestProgramTerm);
-            if (currentTerm < studentInfo.latestProgramTerm) {
+            if (dropdownStateTerm < studentInfo.latestProgramTerm) {
                 setAlertState({ type: 'error', message: `Selected term must be the same or later than the student's latest program term (${studentInfo.latestTermDesc}).` });
                 setSubmitting(false);
                 return;
             }
-            while (currentTerm <= studentInfo.latestProgramTerm) {
+            let year = parseInt(studentInfo.latestProgramTerm.slice(0, 4));
+            let suffixIdx = termSuffixes.indexOf(studentInfo.latestProgramTerm.slice(4));
+            let currentTerm = studentInfo.latestProgramTerm;
+            while (currentTerm <= dropdownStateTerm) {
                 termsToUpdate.push(currentTerm);
                 suffixIdx++;
                 if (suffixIdx >= termSuffixes.length) {
@@ -478,7 +477,7 @@ const HomePage = (props) => {
                     fullWidth
                     MenuProps={{ disablePortal: true, disableEnforceFocus: true }}
                 >
-                    {termList.map(term => (
+                    {termList.slice(0, 5).map(term => (
                         <DropdownItem key={term.termCode} label={term.termName} value={term.termCode} />
                     ))}
                 </Dropdown>
