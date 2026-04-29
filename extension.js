@@ -45,6 +45,16 @@ module.exports = {
                         key: "updateConcentrationAPI",
                         label: "Update Concentration API",
                         type: "text"
+                    },
+                    {
+                        key: "educationalGoalsAPI",
+                        label: "Educational Goals Pipeline API",
+                        type: "text"
+                    },
+                    {
+                        key: "updateEducationalGoalsAPI",
+                        label: "Update Educational Goals Pipeline API",
+                        type: "text"
                     }
                 ],
                 server: [

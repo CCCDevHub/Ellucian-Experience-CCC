@@ -84,7 +84,9 @@ const HomePage = (props) => {
     const { authenticatedEthosFetch } = useData();
     const { cardConfiguration:
         {
-            studentInfoAPI, majorInfoAPI, termListAPI, registrationTimeAPI, getRegistrationTimeAPI, updateMajorAPI, updateConcentrationAPI
+            studentInfoAPI, majorInfoAPI, termListAPI, registrationTimeAPI,
+            getRegistrationTimeAPI, updateMajorAPI, updateConcentrationAPI,
+            educationalGoalsAPI, updateEducationalGoalsAPI
         }, cardId
     } = useCardInfo();
     setPageTitle("Change of Major");
@@ -99,6 +101,8 @@ const HomePage = (props) => {
     const [selectedConcentration, setSelectedConcentration] = useState('');
     const [selectedMajrCode, setSelectedMajrCode] = useState('');
     const [selectedDegcCode, setSelectedDegcCode] = useState('');
+    const [educationalGoals, setEducationalGoals] = useState([]);
+    const [selectedEducationalGoal, setSelectedEducationalGoal] = useState('');
     const majorCache = useRef({});
     const allMajorRecordsRef = useRef([]);
     const [submitting, setSubmitting] = useState(false);
@@ -122,6 +126,7 @@ const HomePage = (props) => {
         setSelectedConcentration('');
         setSelectedMajrCode('');
         setSelectedDegcCode('');
+        setSelectedEducationalGoal('');
         setHoldAlertDismissed(false);
         try {
             const response = await authenticatedEthosFetch(`${studentInfoAPI}?cardId=${cardId}&studentId=${id}`);
@@ -132,6 +137,11 @@ const HomePage = (props) => {
             const termResponse = await authenticatedEthosFetch(`${termListAPI}?cardId=${cardId}`);
             const termResult = await termResponse.json();
             setTermList(termResult.filter(term => term.termDisplayControl == 'Y'));
+
+            const educationalGoalsResponse = await authenticatedEthosFetch(`${educationalGoalsAPI}?cardId=${cardId}`);
+            const educationalGoalsResult = await educationalGoalsResponse.json();
+            setEducationalGoals(educationalGoalsResult);
+
         } catch (error) {
             console.log(error);
         }
@@ -285,6 +295,11 @@ const HomePage = (props) => {
         setSelectedMajrCode(match?.sorcmjrMajrCode || '');
     };
 
+    const handleChangeEducationalGoal = (event) => {
+        const goal = event.target.value;
+        setSelectedEducationalGoal(goal || '');
+    };
+
     const fields = studentInfo ? [
         // { label: 'Student ID', value: studentInfo.studentId },
         { label: 'First Name', value: studentInfo.studentFirstName },
@@ -316,8 +331,8 @@ const HomePage = (props) => {
             studentInfo.programCode === selectedProgram;
         const sameConcentration = studentInfo.concentration === selectedConcentration;
 
-        if (sameDegreeAndProgram && sameConcentration) {
-            setAlertState({ type: 'warning', message: 'No changes detected. Please select a different degree, program, or concentration.' });
+        if (sameDegreeAndProgram && sameConcentration && !selectedEducationalGoal) {
+            setAlertState({ type: 'warning', message: 'No changes detected. Please select a different degree, program, concentration, or educational goal.' });
             return;
         }
 
@@ -386,16 +401,31 @@ const HomePage = (props) => {
                         return;
                     }
                 }
+
+                if (selectedEducationalGoal) {
+                    console.log(`Updating educational goal for term ${term} with code ${selectedEducationalGoal}...`);
+                    console.log(`API call: ${updateEducationalGoalsAPI}?cardId=${cardId}&studentId=${studentInfo.studentId}&termCode=${term}&eduGoalCode=${selectedEducationalGoal}`);
+                    const educationalGoalResponse = await authenticatedEthosFetch(`${updateEducationalGoalsAPI}?cardId=${cardId}&studentId=${studentInfo.studentId}&termCode=${term}&eduGoalCode=${selectedEducationalGoal}`);
+                    const educationalGoalUpdateResult = await educationalGoalResponse.json();
+                    console.log(`Educational Goal Update [${term}]:`, educationalGoalUpdateResult);
+                    if (educationalGoalResponse.status !== 200) {
+                        setAlertState({ type: 'error', message: `Failed to update educational goal for term ${term}. Please try again.` });
+                        if (wasRestricted) await authenticatedEthosFetch(`${registrationTimeAPI}?cardId=${cardId}&waitTime=${fiveMins}&previousTime=${zeroMins}`);
+                        setSubmitting(false);
+                        return;
+                    }
+                }
             }
 
             const firstTerm = termsToUpdate[0];
             const lastTerm = termsToUpdate[termsToUpdate.length - 1];
             const termRange = termsToUpdate.length > 1 ? `${firstTerm} – ${lastTerm}` : firstTerm;
-            const updateType = sameDegreeAndProgram
-                ? 'Concentration'
-                : concentrationOptions.length > 0
-                    ? 'Major and Concentration'
-                    : 'Major';
+            let updateType = sameDegreeAndProgram
+                ? (sameConcentration ? '' : 'Concentration')
+                : concentrationOptions.length > 0 ? 'Major and Concentration' : 'Major';
+            if (selectedEducationalGoal) {
+                updateType = updateType ? `${updateType} and Educational Goal` : 'Educational Goal';
+            }
             const successMsg = `${updateType} updated successfully for ${termsToUpdate.length} term${termsToUpdate.length > 1 ? 's' : ''} (${termRange}).`;
             setProgressText('');
             setAlertState({ type: 'success', message: successMsg });
@@ -520,6 +550,19 @@ const HomePage = (props) => {
                         ))}
                     </Dropdown>
                 )}
+                <Dropdown
+                    id={`${customId}_DropdownEducationalGoal`}
+                    label="Select Educational Goal"
+                    onChange={handleChangeEducationalGoal}
+                    value={selectedEducationalGoal}
+                    disabled={hasHold || educationalGoals.length === 0}
+                    fullWidth
+                    MenuProps={{ disablePortal: true, disableEnforceFocus: true }}
+                >
+                    {educationalGoals.map(e => (
+                        <DropdownItem key={e.code} label={e.desc} value={e.code} />
+                    ))}
+                </Dropdown>
             </div>
 
             <Alert
