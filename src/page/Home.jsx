@@ -349,13 +349,15 @@ const HomePage = (props) => {
             }
 
 
-            // Generate all terms from dropdownStateTerm through latestProgramTerm using the YYYYTT suffix pattern
+            // Generate all terms between dropdownStateTerm and latestProgramTerm (inclusive), whichever is earlier
             const termSuffixes = ['10', '30', '50', '70'];
             const termsToUpdate = [];
-            let year = parseInt(dropdownStateTerm.slice(0, 4));
-            let suffixIdx = termSuffixes.indexOf(dropdownStateTerm.slice(4));
-            let currentTerm = dropdownStateTerm;
-            while (currentTerm <= studentInfo.latestProgramTerm) {
+            const startTerm = dropdownStateTerm < studentInfo.latestProgramTerm ? dropdownStateTerm : studentInfo.latestProgramTerm;
+            const endTerm = dropdownStateTerm > studentInfo.latestProgramTerm ? dropdownStateTerm : studentInfo.latestProgramTerm;
+            let year = parseInt(startTerm.slice(0, 4));
+            let suffixIdx = termSuffixes.indexOf(startTerm.slice(4));
+            let currentTerm = startTerm;
+            while (currentTerm <= endTerm) {
                 termsToUpdate.push(currentTerm);
                 suffixIdx++;
                 if (suffixIdx >= termSuffixes.length) {
@@ -403,8 +405,6 @@ const HomePage = (props) => {
                 }
 
                 if (selectedEducationalGoal) {
-                    console.log(`Updating educational goal for term ${term} with code ${selectedEducationalGoal}...`);
-                    console.log(`API call: ${updateEducationalGoalsAPI}?cardId=${cardId}&studentId=${studentInfo.studentId}&termCode=${term}&eduGoalCode=${selectedEducationalGoal}`);
                     const educationalGoalResponse = await authenticatedEthosFetch(`${updateEducationalGoalsAPI}?cardId=${cardId}&studentId=${studentInfo.studentId}&termCode=${term}&eduGoalCode=${selectedEducationalGoal}`);
                     const educationalGoalUpdateResult = await educationalGoalResponse.json();
                     console.log(`Educational Goal Update [${term}]:`, educationalGoalUpdateResult);
