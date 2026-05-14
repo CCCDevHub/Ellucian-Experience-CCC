@@ -1,7 +1,7 @@
 {
-  "name": "TestExtension",
+  "name": "DegreeAudit",
   "version": "1.0.0",
-  "description": "Description of TestExtension",
+  "description": "Description of DegreeAudit",
   "main": "index.js",
   "license": "UNLICENSED",
   "scripts": {
