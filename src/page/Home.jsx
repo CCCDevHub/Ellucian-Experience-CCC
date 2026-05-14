@@ -1,135 +1,193 @@
-import { spacing40, spacing24, spacing16, spacing8 } from '@ellucian/react-design-system/core/styles/tokens';
-import { makeStyles, Typography } from '@ellucian/react-design-system/core';
+import { spacing40, spacing16, spacing8 } from '@ellucian/react-design-system/core/styles/tokens';
+import { makeStyles, Typography, Button } from '@ellucian/react-design-system/core';
 import { usePageControl } from '@ellucian/experience-extension-utils';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 
-const STORAGE_KEY = 'degreeAuditResults';
-
-const TIERS = [
-    { label: '✓ Completed',       min: 100, max: 100, color: '#2e7d32', bg: '#f0faf0' },
-    { label: '⬆ Nearly Complete', min: 70,  max: 99,  color: '#0066cc', bg: '#f0f5ff' },
-    { label: '◌ In Progress',     min: 40,  max: 69,  color: '#ed6c02', bg: '#fff8f0' },
-    { label: '✗ Starting',        min: 0,   max: 39,  color: '#d32f2f', bg: '#fff5f5' },
-];
+const SETTINGS_KEY = 'degreeAuditSettings';
+const CACHE_PREFIX = 'degreeAuditResults_';
+const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 const useStyles = makeStyles()({
     page: {
-        margin: `${spacing24} ${spacing40}`,
+        margin: `0 ${spacing40}`,
         display: 'flex',
         flexDirection: 'column',
-        gap: spacing24,
-    },
-    section: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: spacing8,
-    },
-    sectionHeader: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: spacing8,
-        paddingBottom: spacing8,
-        borderBottom: '2px solid currentColor',
-    },
-    count: {
-        fontSize: '0.8rem',
-        opacity: 0.7,
-        marginLeft: spacing8,
-    },
-    row: {
-        display: 'flex',
-        alignItems: 'center',
         gap: spacing16,
-        padding: `${spacing8} ${spacing16}`,
-        borderRadius: '8px',
-        fontSize: '0.9rem',
     },
-    rowLabel: {
-        width: '220px',
+    header: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    meta: {
+        fontSize: '0.75rem',
+        color: '#888',
+    },
+    results: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '4px',
+    },
+    resultRow: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: spacing8,
+    },
+    resultLabel: {
+        width: '180px',
         flexShrink: 0,
+        fontSize: '0.75rem',
     },
-    barTrack: {
+    progressTrack: {
         flex: 1,
-        height: '6px',
+        height: '5px',
+        backgroundColor: '#e0e0e0',
         borderRadius: '3px',
         overflow: 'hidden',
-        backgroundColor: 'rgba(0,0,0,0.08)',
     },
-    barFill: {
+    progressFill: {
         height: '100%',
+        backgroundColor: '#0066cc',
         borderRadius: '3px',
+        transition: 'width 0.4s ease',
     },
-    pct: {
-        width: '40px',
+    resultPct: {
+        width: '36px',
         textAlign: 'right',
+        fontSize: '0.75rem',
         fontWeight: 'bold',
-        flexShrink: 0,
     },
 });
 
+const getCacheKey = (studentId) => `${CACHE_PREFIX}${studentId}`;
+
+const loadCache = (studentId) => {
+    try {
+        const raw = window.localStorage.getItem(getCacheKey(studentId));
+        if (!raw) return null;
+        const { timestamp, results } = JSON.parse(raw);
+        if (Date.now() - timestamp > ONE_WEEK_MS) return null;
+        return results;
+    } catch {
+        return null;
+    }
+};
+
+const saveCache = (studentId, results) => {
+    window.localStorage.setItem(getCacheKey(studentId), JSON.stringify({
+        timestamp: Date.now(),
+        results
+    }));
+};
+
 const HomePage = () => {
     const { classes } = useStyles();
-    const { setPageTitle, setLoadingStatus } = usePageControl();
-    const [auditData, setAuditData] = useState(null);
+    const { setPageTitle, setLoadingStatus, setErrorMessage } = usePageControl();
+    const { studentId } = useParams();
 
-    setPageTitle('Degree Audit Results');
+    const [auditData, setAuditData] = useState(null);
+    const [cachedAt, setCachedAt] = useState(null);
+
+    setPageTitle(`Major Audit for ${studentId ?? ''}`);
+
+    const runAudit = useCallback(async (force = false) => {
+        if (!studentId) return;
+
+        if (!force) {
+            const cached = loadCache(studentId);
+            if (cached) {
+                setAuditData(cached);
+                const raw = window.localStorage.getItem(getCacheKey(studentId));
+                setCachedAt(new Date(JSON.parse(raw).timestamp));
+                setLoadingStatus(false);
+                return;
+            }
+        }
+
+        setLoadingStatus(true);
+        setAuditData(null);
+
+        const { includeInProgress = false, token, whatIfUrl, catalogYear, majorCodes = '', majorDisp = '' } = JSON.parse(window.localStorage.getItem(SETTINGS_KEY) || '{}');
+        const majorOptions = majorCodes.split(',').map((code, i) => ({
+            value: code.trim(),
+            label: majorDisp.split(',')[i]?.trim() ?? code.trim()
+        }));
+
+        try {
+            const results = [];
+            for (const opt of majorOptions) {
+                const [degree, major] = opt.value.split(' ');
+                const res = await fetch(whatIfUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': token
+                    },
+                    body: JSON.stringify({
+                        studentId,
+                        school: 'CR',
+                        degree,
+                        catalogYear,
+                        keepCurriculum: false,
+                        includeInprogress: includeInProgress,
+                        includePreregistered: false,
+                        includeInternalNotes: false,
+                        refreshStudentData: false,
+                        goals: [{ code: 'MAJOR', value: major, catalogYear }],
+                        classes: [],
+                        saveAudit: { saveAudit: false, freeze: false }
+                    })
+                });
+                if (!res.ok) throw new Error(`Audit error: ${res.statusText}`);
+                const data = await res.json();
+                data?.blockArray?.[0]?.ruleArray
+                    ?.filter(rule => rule?.requirement?.type === 'MAJOR')
+                    .forEach(rule => results.push({ [opt.label]: rule.percentComplete }));
+            }
+
+            saveCache(studentId, results);
+            setAuditData(results);
+            setCachedAt(new Date());
+        } catch (error) {
+            console.error('Audit failed:', error);
+            setErrorMessage('Failed to fetch degree audit data. Please check your configuration and try again.');
+        } finally {
+            setLoadingStatus(false);
+        }
+    }, [studentId, setLoadingStatus, setErrorMessage]);
 
     useEffect(() => {
-        setLoadingStatus(true);
-        const onUpdate = () => {
-            const updated = window.localStorage.getItem(STORAGE_KEY);
-            if (updated) {
-                setAuditData(JSON.parse(updated));
-                setLoadingStatus(false);
-            }
-        };
-        onUpdate();
-        window.addEventListener('degreeAuditUpdate', onUpdate);
-        return () => window.removeEventListener('degreeAuditUpdate', onUpdate);
-    }, [setLoadingStatus]);
+        runAudit();
+    }, [runAudit]);
 
-    if (!auditData) return null;
+    const sortedResults = auditData
+        ? [...auditData].sort((a, b) => parseFloat(Object.values(b)[0]) - parseFloat(Object.values(a)[0]))
+        : null;
 
     return (
         <div className={classes.page}>
-            <Typography variant="h2">Degree Completion</Typography>
-            {TIERS.map(tier => {
-                const items = auditData.filter(item => {
-                    const pct = parseFloat(Object.values(item)[0]);
-                    return pct >= tier.min && pct <= tier.max;
-                }).sort((a, b) => parseFloat(Object.values(b)[0]) - parseFloat(Object.values(a)[0]));
-
-                if (items.length === 0) return null;
-
-                return (
-                    <div key={tier.label} className={classes.section}>
-                        <div className={classes.sectionHeader} style={{ color: tier.color }}>
-                            <Typography variant="h4" style={{ color: tier.color }}>
-                                {tier.label}
-                            </Typography>
-                            <span className={classes.count}>({items.length})</span>
-                        </div>
-                        {items.map((item, i) => {
-                            const label = Object.keys(item)[0];
-                            const pct = Math.round(parseFloat(Object.values(item)[0]));
-                            return (
-                                <div key={i} className={classes.row} style={{ backgroundColor: tier.bg }}>
-                                    <span className={classes.rowLabel}>{label}</span>
-                                    <div className={classes.barTrack}>
-                                        <div
-                                            className={classes.barFill}
-                                            style={{ width: `${pct}%`, backgroundColor: tier.color }}
-                                        />
-                                    </div>
-                                    <span className={classes.pct} style={{ color: tier.color }}>
-                                        {pct}%
-                                    </span>
+            <div className={classes.header}>
+                <Typography variant="h2">Major Audit Results</Typography>
+            </div>
+            {sortedResults && (
+                <div className={classes.results}>
+                    {sortedResults.map((item, i) => {
+                        const label = Object.keys(item)[0];
+                        const pct = parseFloat(Object.values(item)[0]);
+                        return (
+                            <div key={i} className={classes.resultRow}>
+                                <span className={classes.resultLabel}>{label}</span>
+                                <div className={classes.progressTrack}>
+                                    <div className={classes.progressFill} style={{ width: `${pct}%` }} />
                                 </div>
-                            );
-                        })}
-                    </div>
-                );
-            })}
+                                <span className={classes.resultPct}>{Math.round(pct)}%</span>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
         </div>
     );
 };

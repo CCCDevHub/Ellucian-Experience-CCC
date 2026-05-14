@@ -7,12 +7,13 @@ import {
 } from "react-router-dom";
 import Home from "./Home";
 
-// for more information on react router: https://v5.reactrouter.com/web/guides/quick-start
-
 const RouterPage = (props) => {
     return (
         <Router basename={props.pageInfo.basePath}>
             <Switch>
+                <Route path="/degree-audit/:studentId">
+                    <Home {...props} />
+                </Route>
                 <Route path="/">
                     <Home {...props} />
                 </Route>

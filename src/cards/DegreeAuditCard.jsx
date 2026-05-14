@@ -1,9 +1,9 @@
 import { spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
 import { makeStyles, TextField, Button, Switch, FormControlLabel } from '@ellucian/react-design-system/core';
 import { useCardControl, useCardInfo } from '@ellucian/experience-extension-utils';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
-const STORAGE_KEY = 'degreeAuditResults';
+const SETTINGS_KEY = 'degreeAuditSettings';
 
 const useStyles = makeStyles()({
     card: {
@@ -19,91 +19,44 @@ const useStyles = makeStyles()({
 
 const DegreeAuditCard = () => {
     const { classes } = useStyles();
-    const { setLoadingStatus, setErrorMessage, navigateToPage } = useCardControl();
+    const { setErrorMessage, navigateToPage } = useCardControl();
     const { configuration: {
         catalogYear, majorCodes, majorDisp, tokenUrl, whatIfUrl, username, password
     } } = useCardInfo();
 
-    const codes = majorCodes.split(',');
-    const disps = majorDisp.split(',');
-    const majorOptions = codes.map((code, i) => ({
-        value: code.trim(),
-        label: disps[i]?.trim() ?? code.trim()
-    }));
-
-    const [token, setToken] = useState(null);
     const [studentId, setStudentId] = useState('');
     const [inProgress, setInProgress] = useState(false);
-    const [disabled, setDisabled] = useState(false);
     const [includeInProgress, setIncludeInProgress] = useState(false);
 
-    useEffect(() => {
-        setLoadingStatus(true);
-        const fetchToken = async () => {
-            try {
-                const response = await fetch('https://dwadmin-dev.ec.pasadena.edu/dwtest/transit/api/stateless-token', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password: 'whatifapi' })
-                });
-                if (!response.ok) throw new Error(`Error: ${response.statusText}`);
-                const data = await response.json();
-                setToken(data.token);
-            } catch (error) {
-                console.error('Error fetching token:', error);
-                setErrorMessage('Failed to fetch token. Please check your configuration and try again.');
-            } finally {
-                setLoadingStatus(false);
-            }
-        };
-        fetchToken();
-    }, [tokenUrl, username, password, setLoadingStatus, setErrorMessage]);
-
-    const runAudit = async () => {
+    const handleClick = async () => {
         setInProgress(true);
-        const results = [];
+
         try {
-            for (const opt of majorOptions) {
-                const [degree, major] = opt.value.split(' ');
-                const response = await fetch(whatIfUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'Authorization': token
-                    },
-                    body: JSON.stringify({
-                        studentId,
-                        school: 'CR',
-                        degree,
-                        catalogYear,
-                        keepCurriculum: false,
-                        includeInprogress: includeInProgress,
-                        includePreregistered: false,
-                        includeInternalNotes: false,
-                        refreshStudentData: false,
-                        goals: [{ code: 'MAJOR', value: major, catalogYear }],
-                        classes: [],
-                        saveAudit: { saveAudit: false, freeze: false }
-                    })
-                });
-                if (!response.ok) throw new Error(`Error: ${response.statusText}`);
-                const data = await response.json();
-                results.push({ [opt.label]: data?.blockArray?.[0]?.ruleArray?.[0]?.percentComplete });
-            }
-            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(results));
-            window.dispatchEvent(new window.CustomEvent('degreeAuditUpdate'));
+            const tokenRes = await fetch('https://dwadmin-dev.ec.pasadena.edu/dwtest/transit/api/stateless-token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password: 'whatifapi' })
+            });
+            if (!tokenRes.ok) throw new Error(`Token error: ${tokenRes.statusText}`);
+            const { token } = await tokenRes.json();
+
+            // token is now a plain string from the API — safe to store
+            window.localStorage.setItem(SETTINGS_KEY, JSON.stringify({
+                includeInProgress,
+                token,
+                whatIfUrl,
+                catalogYear,
+                majorCodes,
+                majorDisp
+            }));
+
+            navigateToPage({ route: `/degree-audit/${studentId}` });
         } catch (error) {
-            console.error('Error fetching degree audit data:', error);
-            setErrorMessage('Failed to fetch degree audit data. Please check your configuration and try again.');
+            console.error('Token fetch failed:', error);
+            setErrorMessage('Failed to authenticate with DegreeWorks. Please check your configuration.');
         } finally {
             setInProgress(false);
         }
-    };
-
-    const handleClick = () => {
-        navigateToPage({ route: `/degree-audit/${studentId}` });
-        runAudit();
     };
 
     return (
@@ -132,10 +85,10 @@ const DegreeAuditCard = () => {
                 fluid
                 variant="contained"
                 className={classes.spacing}
-                disabled={disabled || !/^\d{8}$/.test(studentId)}
+                disabled={inProgress || !/^\d{8}$/.test(studentId)}
                 onClick={handleClick}
             >
-                Run Audit
+                {inProgress ? 'Authenticating…' : 'Run Audit'}
             </Button>
         </div>
     );
