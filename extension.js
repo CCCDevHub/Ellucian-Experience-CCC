@@ -51,6 +51,20 @@ module.exports = {
                     label: "degreeworks token",
                     type: "password"
                 }
+            ],
+            server: [
+                {
+                    key: "apiUser",
+                    label: "degreeworks username",
+                    type: "password",
+                    required: true
+                },
+                {
+                    key: "apiPassword",
+                    label: "degreeworks password",
+                    type: "password",
+                    required: true
+                }
             ]
         }
 
