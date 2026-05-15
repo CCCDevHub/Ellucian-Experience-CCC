@@ -1,24 +1,12 @@
-import { withStyles } from '@ellucian/react-design-system/core/styles';
 import { spacing20, spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
 import {
-    Typography, Tab, Tabs, Table, TableRow, TableCell, TableBody, TableHead, TextField, Button, Dropdown, DropdownItem, Checkbox, Alert, IconButton, Tooltip, Switch
+    makeStyles, Typography, Tab, Tabs, Table, TableRow, TableCell, TableBody, TableHead, TextField, Button, Dropdown, DropdownItem, Checkbox, Alert, IconButton, Tooltip, Switch
 } from '@ellucian/react-design-system/core';
 import { Icon } from '@ellucian/ds-icons/lib';
-import PropTypes from 'prop-types';
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import {
-    useCache,
-    useCardInfo,
     useData,
-    useExperienceInfo,
-    useExtensionControl,
-    useExtensionInfo,
-    useThemeInfo,
-    useUserInfo,
-    useDashboardInfo,
-    useCardControl,
     usePageControl,
-    usePageInfo
 } from '@ellucian/experience-extension-utils';
 import Attendance from '../cards/Attendance';
 import mock from '../data/mock.json';
@@ -30,7 +18,7 @@ import { saveAttendanceData, loadAttendanceData } from '../utils/indexedDB';
 import * as XLSX from 'xlsx';
 
 
-const styles = () => ({
+const useStyles = makeStyles()({
     card: {
         marginTop: 0,
         marginRight: spacing40,
@@ -52,18 +40,16 @@ const styles = () => ({
     }
 });
 
-const HomePage = (props) => {
-    const { classes } = props;
+const HomePage = () => {
+    const { classes } = useStyles();
     const { setPageTitle, setLoadingStatus } = usePageControl();
-    const { authenticatedEthosFetch, getEthosQuery } = useData();
-    const { cardConfiguration:
-        {
-            pipelineAPI, waitlistPipelineAPI, sectionPipelineAPI, termPipelineAPI, criticalDatesPipelineAPI
-        }, cardId
-    } = useCardInfo();
+    const { authenticatedEthosFetch } = useData();
+    const {
+        pipelineAPI, waitlistPipelineAPI, sectionPipelineAPI, termPipelineAPI, criticalDatesPipelineAPI, cardId
+    } = JSON.parse(window.localStorage.getItem('cardConfig') || '{}');
     const customId = 'Roster-Sheet';
 
-    const selected = localStorage.getItem('selectedSection');
+    const selected = window.localStorage.getItem('selectedSection');
     const [initialCrn, initialTermCode] = selected ? selected.split('.') : ['', ''];
     const [crn, setCrn] = useState(initialCrn);
     const [termCode, setTermCode] = useState(initialTermCode);
@@ -129,7 +115,7 @@ const HomePage = (props) => {
                     return true;
                 });
                 setSectionData(dedupedSections);
-                localStorage.setItem('sectionData', JSON.stringify(dedupedSections));
+                window.localStorage.setItem('sectionData', JSON.stringify(dedupedSections));
 
                 setLoadingStatus(false);
             } catch (error) {
@@ -167,7 +153,7 @@ const HomePage = (props) => {
     //     }
     // }, []);
 
-    const fetchAuthorizationData = async (crn, termCode) => {
+    const fetchAuthorizationData = useCallback(async (crn, termCode) => {
         setLoadingStatus(true);
         try {
             const response = await authenticatedEthosFetch(`${pipelineAPI}?cardId=${cardId}&crn=${crn}&termCode=${termCode}`);
@@ -182,29 +168,22 @@ const HomePage = (props) => {
             const waitlistDataResult = rawWaitlistResult?.data?.studentSectionWaitlists10?.edges?.map(edge => edge.node);
             setWaitlistData(waitlistDataResult);
 
-            const criticalDatesResponse = await authenticatedEthosFetch(`${criticalDatesPipelineAPI}?cardId=${cardId}&termCode=${termCode}&crn=${crn}`);
+            const criticalDatesResponse = await fetch(`https://prod-apiweb.pasadena.edu/api/classSchedule/${termCode}`);
             const rawCriticalDatesResult = await criticalDatesResponse.json();
+            rawCriticalDatesResult.filter(crnItem => crnItem.crn === crn).forEach(item => { setCriticalDatesData(item) });
             // const rawCriticalDatesResult = await dates;
-            setCriticalDatesData(rawCriticalDatesResult[0]);
-
-            // const studentAvailable = Array.isArray(studentDataResult)
-            //     ? studentDataResult.filter(item =>
-            //         'spridenId' in item && allowedRsts.has(item.rstsCode)
-            //     )
-            //         .sort((a, b) => a.spridenCurrName.localeCompare(b.spridenCurrName))
-            //     : [];
-            // setStudentList(studentAvailable);
+            // setCriticalDatesData(rawCriticalDatesResult[0]);
         } catch (error) {
             console.error(error);
         } finally {
             setLoadingStatus(false);
         }
-    };
+    }, [pipelineAPI, waitlistPipelineAPI, cardId, authenticatedEthosFetch, setLoadingStatus]);
 
     useEffect(() => {
         setPageTitle("Roster Sheet");
         loadAttendanceDataFromDB();
-    }, []);
+    }, [setPageTitle]);
 
     const loadAttendanceDataFromDB = async () => {
         try {
@@ -219,7 +198,7 @@ const HomePage = (props) => {
         if (crn && termCode) {
             fetchAuthorizationData(crn, termCode);
         }
-    }, [crn, termCode]);
+    }, [crn, termCode, fetchAuthorizationData]);
 
     useEffect(() => {
         if (sectionData.length === 0 || !dropdownStateSection) { return; }
@@ -240,7 +219,7 @@ const HomePage = (props) => {
             setCourseBuilding(selectedSection?.instructionalEvents11?.[0]?.locations?.[0]?.location?.room10?.building6?.title || '');
             setCourseRoom(selectedSection?.instructionalEvents11?.[0]?.locations?.[0]?.location?.room10?.number || '');
         }
-    }, [sectionData]);
+    }, [sectionData, dropdownStateSection]);
 
     const handleTabChange = (event, value) => {
         setTabChange(value);
@@ -256,7 +235,7 @@ const HomePage = (props) => {
         setCourseName('');
         setStudentList([]);
         setWaitlistData([]);
-        localStorage.removeItem('selectedSection');
+        window.localStorage.removeItem('selectedSection');
         setLoadingStatus(true);
 
         (async () => {
@@ -274,7 +253,7 @@ const HomePage = (props) => {
                     return true;
                 });
                 setSectionData(dedupedSections);
-                localStorage.setItem('sectionData', JSON.stringify(dedupedSections));
+                window.localStorage.setItem('sectionData', JSON.stringify(dedupedSections));
 
                 setLoadingStatus(false);
             } catch (error) {
@@ -544,31 +523,31 @@ const HomePage = (props) => {
                             <div class="section-header">Critical Dates</div>
                             <div class="info-item">
                                 <span class="info-label">Date to Enroll:</span>
-                                <span class="info-value">${formatDate(criticalDatesData?.enrlCutOffDate)}</span>
+                                <span class="info-value">${formatDate(criticalDatesData?.lastDateToEnroll)}</span>
                             </div>
                             <div class="info-item">
                                 <span class="info-label">Last day to add:</span>
-                                <span class="info-value">${formatDate(criticalDatesData?.enrlCutOffDate)}</span>
+                                <span class="info-value">${formatDate(criticalDatesData?.lastDateToEnroll)}</span>
                             </div>
                             <div class="info-item">
                                 <span class="info-label">Drop with refund:</span>
-                                <span class="info-value">${formatDate(criticalDatesData?.rfndCutOffDate)}</span>
+                                <span class="info-value">${formatDate(criticalDatesData?.refundDate)}</span>
                             </div>
                             <div class="info-item">
                                 <span class="info-label">Census Date:</span>
-                                <span class="info-value">${formatDate(criticalDatesData?.censusEnrlDate)}</span>
+                                <span class="info-value">${formatDate(criticalDatesData?.censusDate)}</span>
                             </div>
                             <div class="info-item">
                                 <span class="info-label">Drop w/o a "W":</span>
-                                <span class="info-value">${formatDate(criticalDatesData?.acadCutOffDate)}</span>
+                                <span class="info-value">${formatDate(criticalDatesData?.dropNoWDate)}</span>
                             </div>
                             <div class="info-item">
                                 <span class="info-label">Declare grade mode:</span>
-                                <span class="info-value">${formatDate(criticalDatesData?.ptrmEndDate)}</span>
+                                <span class="info-value">${formatDate(criticalDatesData?.grademodeDate)}</span>
                             </div>
                             <div class="info-item">
                                 <span class="info-label">Drop with a "W":</span>
-                                <span class="info-value">${formatDate(criticalDatesData?.dropCutOffDate)}</span>
+                                <span class="info-value">${formatDate(criticalDatesData?.dropWDate)}</span>
                             </div>
                         </div>
                         <div class="date-field">
@@ -690,7 +669,7 @@ const HomePage = (props) => {
     const handleChangeSection = useCallback((event) => {
         const { value } = event.target;
         setDropdownStateSection(value);
-        localStorage.setItem('selectedSection', value);
+        window.localStorage.setItem('selectedSection', value);
         const [newCrn, newTermCode] = value.split('.');
         setCrn(newCrn);
         setTermCode(newTermCode);
@@ -1032,8 +1011,4 @@ const HomePage = (props) => {
 
 }
 
-HomePage.propTypes = {
-    classes: PropTypes.object.isRequired
-};
-
-export default withStyles(styles)(HomePage);
+export default HomePage;

@@ -1,12 +1,10 @@
-import { withStyles } from '@ellucian/react-design-system/core/styles';
-import { spacing40, spacing20 } from '@ellucian/react-design-system/core/styles/tokens';
-import { Typography, Dropdown, DropdownItem } from '@ellucian/react-design-system/core';
+import { spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
+import { makeStyles, Typography, Dropdown, DropdownItem } from '@ellucian/react-design-system/core';
 import { useCardControl, useData, useCardInfo } from '@ellucian/experience-extension-utils';
-import PropTypes from 'prop-types';
 import React, { useEffect, useMemo, useState } from 'react';
 import mock from '../data/mock.json';
 
-const styles = () => ({
+const useStyles = makeStyles()({
     card: {
         marginTop: 0,
         marginRight: spacing40,
@@ -18,14 +16,24 @@ const styles = () => ({
     }
 });
 
-function Attendance({ classes }) {
+const Attendance = () => {
     const customId = 'Class-Roster';
+    const { classes } = useStyles();
     const { configuration:
         {
             pipelineAPI,
-            termPipelineAPI
+            waitlistPipelineAPI,
+            sectionPipelineAPI,
+            termPipelineAPI,
+            criticalDatesPipelineAPI
         }, cardId
     } = useCardInfo();
+
+    useEffect(() => {
+        window.localStorage.setItem('cardConfig', JSON.stringify({
+            pipelineAPI, waitlistPipelineAPI, sectionPipelineAPI, termPipelineAPI, criticalDatesPipelineAPI, cardId
+        }));
+    }, [pipelineAPI, waitlistPipelineAPI, sectionPipelineAPI, termPipelineAPI, criticalDatesPipelineAPI, cardId]);
     const { setLoadingStatus, setErrorMessage, navigateToPage } = useCardControl();
     const { authenticatedEthosFetch, getEthosQuery } = useData();
     const [sections, setSections] = useState([]);
@@ -57,7 +65,7 @@ function Attendance({ classes }) {
         setDropdownStateSection(value);
         setLoadingStatus(true);
 
-        localStorage.setItem('selectedSection', value);
+        window.localStorage.setItem('selectedSection', value);
         navigateToPage({
             route: `/class-roster`
         });
@@ -98,7 +106,7 @@ function Attendance({ classes }) {
             seen.add(key);
             return true;
         });
-        localStorage.setItem('sectionData', JSON.stringify(deduped));
+        window.localStorage.setItem('sectionData', JSON.stringify(deduped));
         return deduped;
     }, [sections]);
 
@@ -161,12 +169,4 @@ function Attendance({ classes }) {
     );
 
 }
-
-
-
-
-Attendance.propTypes = {
-    classes: PropTypes.object.isRequired
-};
-
-export default withStyles(styles)(Attendance);
+export default Attendance;
