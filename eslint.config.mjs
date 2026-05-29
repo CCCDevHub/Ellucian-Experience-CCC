@@ -36,7 +36,9 @@ export default [
         navigator: 'readonly',
         process: 'readonly',
         console: 'readonly',
-        fetch: 'readonly'
+        fetch: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly'
       },
     },
     settings: {
