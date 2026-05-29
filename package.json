@@ -1,7 +1,7 @@
 {
-  "name": "TestExtension",
+  "name": "GoPass",
   "version": "1.0.0",
-  "description": "Description of TestExtension",
+  "description": "GoPass",
   "main": "index.js",
   "license": "UNLICENSED",
   "scripts": {

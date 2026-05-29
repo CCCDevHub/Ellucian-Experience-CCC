@@ -1,18 +1,75 @@
 module.exports = {
-    name: "Extension Name",
-    publisher: "Your Name",
+    name: "GoPass",
+    publisher: "Huey Phan",
     cards: [{
-        type: "TestExtCard",
-        source: "./src/cards/TestExtCard",
-        title: "Card Title",
-        displayCardType: "Card Type",
-        description: "Card Description",
-        pageRoute: {
-            "route": "/",
-            "excludeClickSelectors": ['a']
+        type: "API Card",
+        source: "./src/cards/GoPass",
+        title: "GoPass",
+        displayCardType: "API Card",
+        description: "GoPass Code",
+        configuration: {
+            client: [
+                {
+                    key: "getData",
+                    label: "Get Data from Insight",
+                    type: "text"
+                },
+                {
+                    key: "insertData",
+                    label: "Insert Data to Insight",
+                    type: "text"
+                }
+            ]
+        },
+        queries: {
+            "person-info": [
+                {
+                    "resourceVersions": {
+                        "persons": { min: 12 }
+                    },
+                    "query":
+                        `query personInfo($personId: ID){
+                            persons: {persons} (
+                                    filter: {
+                                        id: {EQ: $personId}
+                                    }
+                                )
+                                {
+                                    edges {
+                                        node {
+                                            id
+                                            gender
+                                            names {
+                                                fullName
+                                            }
+                                            dateOfBirth
+                                            veteranStatus {
+                                                category
+                                            }
+                                            citizenshipStatus {
+                                                category
+                                            }
+                                            roles {
+                                                role
+                                            }
+
+                                            credentials {
+                                                value
+                                                type
+                                            }
+
+                                            emails {
+                                                type {
+                                                    emailType
+                                                }
+                                                address
+                                            }
+                                        }
+                                    }
+                                }
+                        }`
+                }
+            ]
         }
-    }],
-    page: {
-        source: "./src/page/router.jsx"
-    }
+    }]
 }
