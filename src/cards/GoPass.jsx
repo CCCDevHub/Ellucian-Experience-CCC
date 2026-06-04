@@ -78,6 +78,8 @@ const GoPass = () => {
     const { authenticatedEthosFetch, getEthosQuery } = useData();
 
     const [personId, setPersonId] = useState(null);
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
     const [goPassData, setGoPassData] = useState(undefined);
     const [requesting, setRequesting] = useState(false);
     const [copied, setCopied] = useState(false);
@@ -100,9 +102,14 @@ const GoPass = () => {
             try {
                 const personResult = await getEthosQuery({ queryId: 'person-info' });
                 const _personData = personResult?.data?.persons?.edges?.map(edge => edge.node) || [];
+                console.log(_personData);
                 const personId = _personData[0]?.credentials?.find(cred => cred.type === 'bannerId')?.value;
-                // const personId = '11331';
+                const firstName = _personData[0]?.names?.[0]?.firstName;
+                const lastName = _personData[0]?.names?.[0]?.lastName;
+                // const personId = '111331';
                 setPersonId(personId);
+                setFirstName(firstName);
+                setLastName(lastName);
                 await fetchGoPass(personId);
             } catch (_error) {
                 setErrorMessage('Failed to fetch GoPass data');
@@ -115,7 +122,7 @@ const GoPass = () => {
     const handleGetPass = useCallback(async () => {
         setRequesting(true);
         try {
-            await authenticatedEthosFetch(`${insertData}?cardId=${cardId}&studentId=${personId}`);
+            await authenticatedEthosFetch(`${insertData}?cardId=${cardId}&studentId=${personId}&firstName=${firstName}&lastName=${lastName}`);
             await fetchGoPass(personId);
         } catch (_error) {
             setErrorMessage('Failed to request GoPass');

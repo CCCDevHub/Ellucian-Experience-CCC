@@ -40,7 +40,8 @@ module.exports = {
                                             id
                                             gender
                                             names {
-                                                fullName
+                                                firstName
+                                                lastName
                                             }
                                             dateOfBirth
                                             veteranStatus {
