@@ -1,5 +1,5 @@
 import { spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
-import { makeStyles, Typography, Button, Tooltip } from '@ellucian/react-design-system/core';
+import { makeStyles, Typography, Button, Tooltip, Dropdown, DropdownItems } from '@ellucian/react-design-system/core';
 import { useCardControl, useCardInfo, useData } from '@ellucian/experience-extension-utils';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Bus, Copy, Check } from '@ellucian/ds-icons/lib';
@@ -83,6 +83,7 @@ const GoPass = () => {
     const [goPassData, setGoPassData] = useState(undefined);
     const [requesting, setRequesting] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [termData, setTermData] = useState([]);
 
     const handleCopy = useCallback(() => {
         navigator.clipboard.writeText(goPassData?.code || '');
@@ -91,9 +92,19 @@ const GoPass = () => {
     }, [goPassData]);
 
     const fetchGoPass = useCallback(async (personId) => {
-        const response = await authenticatedEthosFetch(`${getData}?cardId=${cardId}&studentId=${personId}`);
-        const result = await response.json();
-        setGoPassData(result);
+        const termList = [];
+        const gopassResponse = await authenticatedEthosFetch(`${getData}?cardId=${cardId}&studentId=${personId}`);
+        const gopassResult = await gopassResponse.json();
+        console.log('GoPass result:', gopassResult);
+        termList.push(gopassResult?.term);
+        setGoPassData(gopassResult);
+
+        const termResponse = await authenticatedEthosFetch(`${getData}?cardId=${cardId}&studentId=${personId}&isNew=true`);
+        const termResult = await termResponse.json();
+        console.log('Term result:', termResult);
+        termList.push(termResult?.term);
+        setTermData(termList);
+
     }, [authenticatedEthosFetch, getData, cardId]);
 
     useEffect(() => {
@@ -102,7 +113,6 @@ const GoPass = () => {
             try {
                 const personResult = await getEthosQuery({ queryId: 'person-info' });
                 const _personData = personResult?.data?.persons?.edges?.map(edge => edge.node) || [];
-                console.log(_personData);
                 const personId = _personData[0]?.credentials?.find(cred => cred.type === 'bannerId')?.value;
                 const firstName = _personData[0]?.names?.[0]?.firstName;
                 const lastName = _personData[0]?.names?.[0]?.lastName;
@@ -129,10 +139,10 @@ const GoPass = () => {
         } finally {
             setRequesting(false);
         }
-    }, [authenticatedEthosFetch, insertData, cardId, personId, fetchGoPass, setErrorMessage]);
+    }, [authenticatedEthosFetch, insertData, cardId, personId, fetchGoPass, setErrorMessage, firstName, lastName]);
 
     const hasPass = goPassData && goPassData.code;
-
+    console.log(termData);
     return (
         <div className={classes.card}>
             {hasPass ? (
@@ -154,7 +164,7 @@ const GoPass = () => {
                         </div>
                         <div className={classes.badgeRow}>
                             <Typography variant="body2" className={classes.validDate}>
-                                Valid: {goPassData.date_valid}
+                                Valid: {goPassData.date_from} - {goPassData.date_to}
                             </Typography>
                         </div>
                     </div>
