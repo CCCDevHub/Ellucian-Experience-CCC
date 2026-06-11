@@ -1,5 +1,5 @@
 import { spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
-import { makeStyles, Typography, Button, Tooltip, Dropdown, DropdownItems } from '@ellucian/react-design-system/core';
+import { makeStyles, Typography, Button, Tooltip, DropdownTypeahead, DropdownTypeaheadItem } from '@ellucian/react-design-system/core';
 import { useCardControl, useCardInfo, useData } from '@ellucian/experience-extension-utils';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Bus, Copy, Check } from '@ellucian/ds-icons/lib';
@@ -80,29 +80,44 @@ const GoPass = () => {
     const [personId, setPersonId] = useState(null);
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
-    const [goPassData, setGoPassData] = useState(undefined);
+    const [goPassData, setGoPassData] = useState([]);
     const [requesting, setRequesting] = useState(false);
     const [copied, setCopied] = useState(false);
     const [termData, setTermData] = useState([]);
+    const [selectedTerm, setSelectedTerm] = useState('');
+
+    useEffect(() => {
+        if (termData.length > 0 && !selectedTerm) {
+            setSelectedTerm(termData[0]);
+        }
+    }, [termData, selectedTerm]);
+
+    const filteredPass = goPassData.find(pass => pass.term === selectedTerm) || null;
 
     const handleCopy = useCallback(() => {
-        navigator.clipboard.writeText(goPassData?.code || '');
+        navigator.clipboard.writeText(filteredPass?.code || '');
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
-    }, [goPassData]);
+    }, [filteredPass]);
 
     const fetchGoPass = useCallback(async (personId) => {
         const termList = [];
         const gopassResponse = await authenticatedEthosFetch(`${getData}?cardId=${cardId}&studentId=${personId}`);
         const gopassResult = await gopassResponse.json();
-        console.log('GoPass result:', gopassResult);
-        termList.push(gopassResult?.term);
-        setGoPassData(gopassResult);
+
+        const passes =
+            typeof gopassResult.results === "string"
+                ? JSON.parse(gopassResult.results)
+                : gopassResult.results || [];
+        passes.forEach(pass => { termList.push(pass.term); });
+
+        setGoPassData(passes);
 
         const termResponse = await authenticatedEthosFetch(`${getData}?cardId=${cardId}&studentId=${personId}&isNew=true`);
         const termResult = await termResponse.json();
-        console.log('Term result:', termResult);
-        termList.push(termResult?.term);
+        if (termResult?.term && !termList.includes(termResult.term)) {
+            termList.push(termResult.term);
+        }
         setTermData(termList);
 
     }, [authenticatedEthosFetch, getData, cardId]);
@@ -132,20 +147,33 @@ const GoPass = () => {
     const handleGetPass = useCallback(async () => {
         setRequesting(true);
         try {
-            await authenticatedEthosFetch(`${insertData}?cardId=${cardId}&studentId=${personId}&firstName=${firstName}&lastName=${lastName}`);
+            await authenticatedEthosFetch(`${insertData}?cardId=${cardId}&studentId=${personId}&firstName=${firstName}&lastName=${lastName}&term=${encodeURIComponent(selectedTerm)}`);
             await fetchGoPass(personId);
         } catch (_error) {
             setErrorMessage('Failed to request GoPass');
         } finally {
             setRequesting(false);
         }
-    }, [authenticatedEthosFetch, insertData, cardId, personId, fetchGoPass, setErrorMessage, firstName, lastName]);
+    }, [authenticatedEthosFetch, insertData, cardId, personId, fetchGoPass, setErrorMessage, firstName, lastName, selectedTerm]);
 
-    const hasPass = goPassData && goPassData.code;
-    console.log(termData);
     return (
         <div className={classes.card}>
-            {hasPass ? (
+            <div className={classes.spacing}>
+                <DropdownTypeahead
+                    id="gopass-term-dropdown"
+                    label="Term"
+                    value={selectedTerm}
+                    onChange={(newValue) => { if (newValue) setSelectedTerm(newValue); }}
+                    fullWidth
+                >
+                    {termData.map(term => (
+                        <DropdownTypeaheadItem key={term} value={term} label={term}>
+                            {term}
+                        </DropdownTypeaheadItem>
+                    ))}
+                </DropdownTypeahead>
+            </div>
+            {filteredPass ? (
                 <div className={classes.passBox}>
                     <div className={classes.iconWrap}>
                         <Bus large />
@@ -155,7 +183,7 @@ const GoPass = () => {
                     </Typography>
                     <div className={classes.codeCard}>
                         <div className={classes.codeRow}>
-                            <div className={classes.codeText}>{goPassData.code}</div>
+                            <div className={classes.codeText}>{filteredPass.code}</div>
                             <Tooltip title={copied ? 'Copied!' : 'Copy code'}>
                                 <button className={classes.copyBtn} onClick={handleCopy} aria-label="Copy code">
                                     {copied ? <Check small /> : <Copy small />}
@@ -164,7 +192,7 @@ const GoPass = () => {
                         </div>
                         <div className={classes.badgeRow}>
                             <Typography variant="body2" className={classes.validDate}>
-                                Valid: {goPassData.date_from} - {goPassData.date_to}
+                                Valid: {filteredPass.date_from} - {filteredPass.date_to}
                             </Typography>
                         </div>
                     </div>
@@ -172,12 +200,12 @@ const GoPass = () => {
             ) : (
                 <div className={classes.passBox}>
                     <Typography variant="body1" className={classes.spacing}>
-                        No GoPass found.
+                        No GoPass found for {selectedTerm}.
                     </Typography>
                     <Button
                         color="primary"
                         onClick={handleGetPass}
-                        disabled={requesting || !personId}
+                        disabled={requesting || !personId || !selectedTerm}
                     >
                         {requesting ? 'Requesting...' : 'Get GoPass'}
                     </Button>
