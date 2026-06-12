@@ -2,7 +2,7 @@ import { spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
 import { makeStyles, Typography, Button, Tooltip, DropdownTypeahead, DropdownTypeaheadItem } from '@ellucian/react-design-system/core';
 import { useCardControl, useCardInfo, useData } from '@ellucian/experience-extension-utils';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Bus, Copy, Check } from '@ellucian/ds-icons/lib';
+import { Copy, Check } from '@ellucian/ds-icons/lib';
 
 const useStyles = makeStyles()({
     card: {
@@ -175,12 +175,6 @@ const GoPass = () => {
             </div>
             {filteredPass ? (
                 <div className={classes.passBox}>
-                    <div className={classes.iconWrap}>
-                        <Bus large />
-                    </div>
-                    <Typography variant="body2" className={classes.codeLabel}>
-                        Your GoPass Code
-                    </Typography>
                     <div className={classes.codeCard}>
                         <div className={classes.codeRow}>
                             <div className={classes.codeText}>{filteredPass.code}</div>
