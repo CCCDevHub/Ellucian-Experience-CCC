@@ -1,8 +1,8 @@
 import { spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
-import { makeStyles, Typography, Button, Tooltip, DropdownTypeahead, DropdownTypeaheadItem } from '@ellucian/react-design-system/core';
+import { makeStyles, Typography, Button, Tooltip } from '@ellucian/react-design-system/core';
 import { useCardControl, useCardInfo, useData } from '@ellucian/experience-extension-utils';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Copy, Check } from '@ellucian/ds-icons/lib';
+import { Copy, Check, Info } from '@ellucian/ds-icons/lib';
 
 const useStyles = makeStyles()({
     card: {
@@ -67,6 +67,18 @@ const useStyles = makeStyles()({
         justifyContent: 'center',
         gap: '8px',
         marginTop: '8px'
+    },
+    infoIcon: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
+        color: '#1976d2',
+        marginLeft: '4px',
+        verticalAlign: 'middle'
+    },
+    activateBtn: {
+        marginTop: '16px'
     }
 });
 
@@ -80,45 +92,29 @@ const GoPass = () => {
     const [personId, setPersonId] = useState(null);
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
-    const [goPassData, setGoPassData] = useState([]);
+    const [goPassData, setGoPassData] = useState(null);
     const [requesting, setRequesting] = useState(false);
     const [copied, setCopied] = useState(false);
-    const [termData, setTermData] = useState([]);
     const [selectedTerm, setSelectedTerm] = useState('');
 
-    useEffect(() => {
-        if (termData.length > 0 && !selectedTerm) {
-            setSelectedTerm(termData[0]);
-        }
-    }, [termData, selectedTerm]);
 
-    const filteredPass = goPassData.find(pass => pass.term === selectedTerm) || null;
 
     const handleCopy = useCallback(() => {
-        navigator.clipboard.writeText(filteredPass?.code || '');
+        navigator.clipboard.writeText(goPassData?.code || '');
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
-    }, [filteredPass]);
+    }, [goPassData]);
 
     const fetchGoPass = useCallback(async (personId) => {
-        const termList = [];
         const gopassResponse = await authenticatedEthosFetch(`${getData}?cardId=${cardId}&studentId=${personId}`);
         const gopassResult = await gopassResponse.json();
 
-        const passes =
-            typeof gopassResult.results === "string"
-                ? JSON.parse(gopassResult.results)
-                : gopassResult.results || [];
-        passes.forEach(pass => { termList.push(pass.term); });
-
-        setGoPassData(passes);
+        setGoPassData(gopassResult);
 
         const termResponse = await authenticatedEthosFetch(`${getData}?cardId=${cardId}&studentId=${personId}&isNew=true`);
         const termResult = await termResponse.json();
-        if (termResult?.term && !termList.includes(termResult.term)) {
-            termList.push(termResult.term);
-        }
-        setTermData(termList);
+
+        setSelectedTerm(termResult.term);
 
     }, [authenticatedEthosFetch, getData, cardId]);
 
@@ -158,26 +154,11 @@ const GoPass = () => {
 
     return (
         <div className={classes.card}>
-            <div className={classes.spacing}>
-                <DropdownTypeahead
-                    id="gopass-term-dropdown"
-                    label="Term"
-                    value={selectedTerm}
-                    onChange={(newValue) => { if (newValue) setSelectedTerm(newValue); }}
-                    fullWidth
-                >
-                    {termData.map(term => (
-                        <DropdownTypeaheadItem key={term} value={term} label={term}>
-                            {term}
-                        </DropdownTypeaheadItem>
-                    ))}
-                </DropdownTypeahead>
-            </div>
-            {filteredPass ? (
+            {goPassData?.code ? (
                 <div className={classes.passBox}>
                     <div className={classes.codeCard}>
                         <div className={classes.codeRow}>
-                            <div className={classes.codeText}>{filteredPass.code}</div>
+                            <div className={classes.codeText}>{goPassData.code}</div>
                             <Tooltip title={copied ? 'Copied!' : 'Copy code'}>
                                 <button className={classes.copyBtn} onClick={handleCopy} aria-label="Copy code">
                                     {copied ? <Check small /> : <Copy small />}
@@ -186,9 +167,29 @@ const GoPass = () => {
                         </div>
                         <div className={classes.badgeRow}>
                             <Typography variant="body2" className={classes.validDate}>
-                                Valid: {filteredPass.date_from} - {filteredPass.date_to}
+                                Valid: {goPassData.date_from} - {goPassData.date_to}
                             </Typography>
+                            <Tooltip title="Learn more about U-Pass">
+                                <a
+                                    href="https://pasadena.edu/campus-life/student-life/u-pass.php"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={classes.infoIcon}
+                                    aria-label="U-Pass information"
+                                >
+                                    <Info small />
+                                </a>
+                            </Tooltip>
                         </div>
+                    </div>
+                    <div className={classes.activateBtn}>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => window.open('https://www.taptogo.net/gopass', '_blank')}
+                        >
+                            Activate
+                        </Button>
                     </div>
                 </div>
             ) : (
