@@ -96,7 +96,7 @@ const GoPass = () => {
     const [requesting, setRequesting] = useState(false);
     const [copied, setCopied] = useState(false);
     const [selectedTerm, setSelectedTerm] = useState('');
-
+    const [registration, setRegistration] = useState(null);
 
 
     const handleCopy = useCallback(() => {
@@ -108,13 +108,15 @@ const GoPass = () => {
     const fetchGoPass = useCallback(async (personId) => {
         const gopassResponse = await authenticatedEthosFetch(`${getData}?cardId=${cardId}&studentId=${personId}`);
         const gopassResult = await gopassResponse.json();
-
         setGoPassData(gopassResult);
 
         const termResponse = await authenticatedEthosFetch(`${getData}?cardId=${cardId}&studentId=${personId}&isNew=true`);
         const termResult = await termResponse.json();
-
         setSelectedTerm(termResult.term);
+
+        const registrationResponse = await authenticatedEthosFetch(`${getData}?cardId=${cardId}&studentId=${personId}&term=${termResult.term}&isRegistration=true`);
+        const registrationResult = await registrationResponse.json();
+        setRegistration(registrationResult);
 
     }, [authenticatedEthosFetch, getData, cardId]);
 
@@ -127,7 +129,7 @@ const GoPass = () => {
                 const personId = _personData[0]?.credentials?.find(cred => cred.type === 'bannerId')?.value;
                 const firstName = _personData[0]?.names?.[0]?.firstName;
                 const lastName = _personData[0]?.names?.[0]?.lastName;
-                // const personId = '111331';
+                // const personId = '10845875';
                 setPersonId(personId);
                 setFirstName(firstName);
                 setLastName(lastName);
@@ -197,13 +199,19 @@ const GoPass = () => {
                     <Typography variant="body1" className={classes.spacing}>
                         No GoPass found for {selectedTerm}.
                     </Typography>
-                    <Button
-                        color="primary"
-                        onClick={handleGetPass}
-                        disabled={requesting || !personId || !selectedTerm}
-                    >
-                        {requesting ? 'Requesting...' : 'Get GoPass'}
-                    </Button>
+                    {registration && (Array.isArray(registration) ? registration.length > 0 : Object.keys(registration).length > 0) ? (
+                        <Button
+                            color="primary"
+                            onClick={handleGetPass}
+                            disabled={requesting || !personId || !selectedTerm}
+                        >
+                            {requesting ? 'Requesting...' : 'Get GoPass'}
+                        </Button>
+                    ) : (
+                        <Typography variant="body2" color="textSecondary">
+                            You are not registered for {selectedTerm}.
+                        </Typography>
+                    )}
                 </div>
             )}
         </div>
