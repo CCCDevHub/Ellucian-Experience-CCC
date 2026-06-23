@@ -291,6 +291,12 @@ const HomePage = () => {
         }
     }
 
+    const getPreferredEmail = (emails) => {
+        if (!emails?.length) return '';
+        const preferred = emails.find(e => e.type?.emailType === 'school' || e.type?.emailType === 'hr');
+        return (preferred ?? emails[0])?.address ?? '';
+    };
+
     const handleAlertClose = () => {
         setAlertOpen(false);
     }
@@ -311,7 +317,7 @@ const HomePage = () => {
 
     const handleCopyAllEmails = () => {
         const emails = studentList
-            ?.map(item => item.registrant12?.emails[0]?.address)
+            ?.map(item => getPreferredEmail(item.registrant12?.emails))
             .filter(Boolean)
             .join('; ');
         navigator.clipboard.writeText(emails).then(() => {
@@ -329,7 +335,7 @@ const HomePage = () => {
 
     const handleWaitlistCopyAllEmails = () => {
         const emails = waitlistData
-            ?.map(item => item.person12?.emails[0]?.address)
+            ?.map(item => getPreferredEmail(item.person12?.emails))
             .filter(Boolean)
             .join('; ');
         navigator.clipboard.writeText(emails).then(() => {
@@ -402,7 +408,7 @@ const HomePage = () => {
                                     <td>${index + 1}</td>
                                     <td>${student.person12?.credentials[0]?.value}</td>
                                     <td>${student.person12?.names.at(-1)?.lastName}, ${student.person12?.names.at(-1)?.firstName}</td>
-                                    ${includeEmailInPrint ? `<td>${student.person12?.emails[0]?.address || ''}</td>` : ''}
+                                    ${includeEmailInPrint ? `<td>${getPreferredEmail(student.person12?.emails)}</td>` : ''}
                                     <td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td>
                                 </tr>
                             `).join('')}
@@ -576,7 +582,7 @@ const HomePage = () => {
                                     <td>${index + 1}</td>
                                     <td>${student.registrant12?.credentials[0]?.value}</td>
                                     <td>${student.registrant12?.names.at(-1)?.lastName}, ${student.registrant12?.names.at(-1)?.firstName}</td>
-                                    ${includeEmailInPrint ? `<td>${student.registrant12?.emails[0]?.address || ''}</td>` : ''}
+                                    ${includeEmailInPrint ? `<td>${getPreferredEmail(student.registrant12?.emails)}</td>` : ''}
                                     <td class="empty-cell"></td>
                                     <td class="empty-cell"></td>
                                     <td class="empty-cell"></td>
@@ -636,7 +642,7 @@ const HomePage = () => {
                 index + 1,
                 item.registrant12?.credentials[0]?.value || '',
                 `${item.registrant12?.names?.at(-1)?.lastName || ''}, ${item.registrant12?.names?.at(-1)?.firstName || ''}`,
-                item.registrant12?.emails[0]?.address || ''
+                getPreferredEmail(item.registrant12?.emails) || ''
             ]);
         });
 
@@ -650,7 +656,7 @@ const HomePage = () => {
                     index + 1,
                     item.person12?.credentials[0]?.value || '',
                     `${item.person12?.names?.at(-1)?.lastName || ''}, ${item.person12?.names?.at(-1)?.firstName || ''}`,
-                    item.person12?.emails[0]?.address || ''
+                    getPreferredEmail(item.person12?.emails) || ''
                 ]);
             });
         }
@@ -780,13 +786,13 @@ const HomePage = () => {
                                     <TableCell>{item.registrant12?.credentials[0]?.value}</TableCell>
                                     <TableCell>{item.registrant12?.names?.at(-1)?.lastName}, {item.registrant12?.names?.at(-1)?.firstName}</TableCell>
                                     <TableCell>
-                                        {item.registrant12?.emails[0]?.address}
-                                        {item.registrant12?.emails[0]?.address && (
+                                        {getPreferredEmail(item.registrant12?.emails)}
+                                        {getPreferredEmail(item.registrant12?.emails) && (
                                             <Tooltip title="Copy email">
                                                 <IconButton
                                                     size="small"
                                                     color="default"
-                                                    onClick={() => handleCopyEmail(item.registrant12?.emails[0]?.address)}
+                                                    onClick={() => handleCopyEmail(getPreferredEmail(item.registrant12?.emails))}
                                                     style={{ marginLeft: '4px', padding: '2px' }}
                                                 >
                                                     <Icon name="copy" style={{ fontSize: '14px', color: '#666' }} />
@@ -846,13 +852,13 @@ const HomePage = () => {
                                         <TableCell>{item.person12?.credentials[0]?.value}</TableCell>
                                         <TableCell>{item.person12?.names?.at(-1)?.lastName}, {item.person12?.names?.at(-1)?.firstName}</TableCell>
                                         <TableCell>
-                                            {item.person12?.emails[0]?.address}
-                                            {item.person12?.emails[0]?.address && (
+                                            {getPreferredEmail(item.person12?.emails)}
+                                            {getPreferredEmail(item.person12?.emails) && (
                                                 <Tooltip title="Copy email">
                                                     <IconButton
                                                         size="small"
                                                         color="default"
-                                                        onClick={() => handleCopyEmail(item.person12?.emails[0]?.address)}
+                                                        onClick={() => handleCopyEmail(getPreferredEmail(item.person12?.emails))}
                                                         style={{ marginLeft: '4px', padding: '2px' }}
                                                     >
                                                         <Icon name="copy" style={{ fontSize: '14px', color: '#666' }} />
