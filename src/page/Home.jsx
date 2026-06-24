@@ -1,69 +1,132 @@
-import { withStyles } from '@ellucian/react-design-system/core/styles';
-import { spacing20 } from '@ellucian/react-design-system/core/styles/tokens';
-import { Typography, TextLink } from '@ellucian/react-design-system/core';
-import PropTypes from 'prop-types';
-import React from 'react';
 import {
-    useCache,
-    useCardInfo,
-    useData,
-    useExperienceInfo,
-    useExtensionControl,
-    useExtensionInfo,
-    useThemeInfo,
-    useUserInfo,
-    useDashboardInfo,
-    useCardControl,
-    usePageControl,
-    usePageInfo
-} from '@ellucian/experience-extension-utils';
+    spacing40,
+    spacing16,
+    spacing8,
+} from '@ellucian/react-design-system/core/styles/tokens';
+import {
+    makeStyles,
+    Typography,
+    Card,
+    CardContent,
+} from '@ellucian/react-design-system/core';
+import { usePageControl } from '@ellucian/experience-extension-utils';
+import React, { useEffect, useState } from 'react';
 
-const styles = () => ({
-    card: {
-        margin: `0 ${spacing20}`
-    }
-});
+const useStyles = makeStyles()((theme) => ({
+    page: {
+        margin: `0 ${spacing40}`,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: spacing16,
+    },
 
-const HomePage = (props) => {
-    const { classes } = props;
+    resultCard: {
+        borderRadius: 12,
+        overflow: 'hidden',
+    },
+
+    banner: {
+        background: '#f5f9ff',
+        borderLeft: '6px solid #0066cc',
+        padding: spacing16,
+        marginBottom: spacing16,
+    },
+
+    scoreBadge: {
+        display: 'inline-block',
+        backgroundColor: '#e8f5e9',
+        color: '#2e7d32',
+        padding: '4px 12px',
+        borderRadius: 16,
+        fontWeight: 600,
+        fontSize: '0.875rem',
+    },
+
+    metaGrid: {
+        display: 'grid',
+        gridTemplateColumns: '160px 1fr',
+        rowGap: spacing8,
+        columnGap: spacing16,
+        marginTop: spacing16,
+    },
+
+    label: {
+        color: '#666',
+        fontWeight: 600,
+    },
+
+    description: {
+        '& a': {
+            color: '#0066cc',
+            fontWeight: 600,
+            textDecoration: 'none',
+        },
+
+        '& a:hover': {
+            textDecoration: 'underline',
+        },
+
+        '& b': {
+            fontWeight: 700,
+        },
+
+        lineHeight: 1.7,
+    },
+}));
+
+const HomePage = () => {
+    const { classes } = useStyles();
     const { setPageTitle } = usePageControl();
 
-    setPageTitle("Props and Hooks");
+    setPageTitle('Student Test Score');
+
+   const [result, setResult] = useState({
+        test_code: '',
+        test_desc: '',
+        last_updated_date: '',
+    });
+
+        useEffect(() => {
+        setPageTitle('Student Test Score');
+
+        //const testResult = localStorage.getItem('testResult');
+
+        const insightsResult = JSON.parse(
+            localStorage.getItem('testScore') || '{}'
+        );
+
+        setResult({
+            test_desc: insightsResult?.test_desc || '',
+            last_updated_date:
+                insightsResult?.last_updated_date || '',
+        });
+    }, [setPageTitle]);
 
     return (
-        <div className={classes.card}>
-            <Typography variant={'h2'}>
-                Properties
+        <div className={classes.page}>
+            <Typography variant="h2">
+                Placement Results
             </Typography>
-            <pre className={classes.card}>{JSON.stringify(props, undefined, 3)}</pre>
-            <Typography variant={'h2'}>
-                Hooks
-            </Typography>
-            <pre className={classes.card}> useCache {JSON.stringify(useCache(), undefined, 3)}</pre>
-            <pre className={classes.card}> useCardInfo {JSON.stringify(useCardInfo(), undefined, 3)}</pre>
-            <pre className={classes.card}> useData {JSON.stringify(useData(), undefined, 3)}</pre>
-            <pre className={classes.card}> useExperienceInfo {JSON.stringify(useExperienceInfo(), undefined, 3)}</pre>
-            <pre className={classes.card}> useExtensionControl {JSON.stringify(useExtensionControl(), undefined, 3)}</pre>
-            <pre className={classes.card}> useExtensionInfo {JSON.stringify(useExtensionInfo(), undefined, 3)}</pre>
-            <pre className={classes.card}> useThemeInfo {JSON.stringify(useThemeInfo(), undefined, 3)}</pre>
-            <pre className={classes.card}> useUserInfo {JSON.stringify(useUserInfo(), undefined, 3)}</pre>
-            <pre className={classes.card}> useDashboardInfo {JSON.stringify(useDashboardInfo(), undefined, 3)}</pre>
-            <pre className={classes.card}> useCardControl {JSON.stringify(useCardControl(), undefined, 3)}</pre>
-            <pre className={classes.card}> usePageControl {JSON.stringify(usePageControl(), undefined, 3)}</pre>
-            <pre className={classes.card}> usePageInfo {JSON.stringify(usePageInfo(), undefined, 3)}</pre>
-            <Typography>
-                For more information regarding hooks and props, visit the
-                <TextLink href="https://resources.elluciancloud.com/bundle/ellucian_experience_acn_use/page/c_props_hooks_sdk.html" target="_blank">
-                    Props and Hooks
-                </TextLink>
-                section of the Ellucian Experience SDK documentation.
-            </Typography>
+
+            <Card className={classes.resultCard}>
+                <CardContent>
+                    <div className={classes.banner}>
+                        <Typography variant="h4" gutterBottom>
+                            Placement Recommendation
+                        </Typography>
+
+                        <div
+                            className={classes.description}
+                            dangerouslySetInnerHTML={{
+                                __html: result.test_desc,
+                            }}
+                        />
+                    </div>
+
+                </CardContent>
+            </Card>
         </div>
     );
 };
 
-HomePage.propTypes = {
-    classes: PropTypes.object.isRequired
-};
-
-export default withStyles(styles)(HomePage);
+export default HomePage;
