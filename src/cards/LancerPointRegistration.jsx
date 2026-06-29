@@ -1,13 +1,11 @@
 import { withStyles } from '@ellucian/react-design-system/core/styles';
 import { spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
-import { Typography, TextLink, Dropdown, DropdownItem, Button, Popover } from '@ellucian/react-design-system/core';
-import { useCardControl, useCardInfo, useExtensionControl, useUserInfo, useData, useDashboardInfo } from '@ellucian/experience-extension-utils';
+import { Typography, TextLink, Dropdown, DropdownItem, Button, Popover, makeStyles } from '@ellucian/react-design-system/core';
+import { useCardControl, useCardInfo, useData } from '@ellucian/experience-extension-utils';
 import PropTypes from 'prop-types';
-import React, { useEffect, useMemo, useState } from 'react';
-import classnames from 'classnames';
-import { Icon } from '@ellucian/ds-icons/lib';
+import React, { useEffect, useState } from 'react';
 
-const styles = () => ({
+const useStyles = makeStyles()({
     card: {
         marginTop: 0,
         marginRight: spacing40,
@@ -35,7 +33,8 @@ const styles = () => ({
     }
 });
 
-function LancePointRegistration({ classes }) {
+const LancePointRegistration = () => {
+    const { classes } = useStyles();
     const customId = 'LancerPointRegistration';
     const { configuration:
         {
@@ -65,13 +64,15 @@ function LancePointRegistration({ classes }) {
                     queryId: 'getPerson'
                 });
                 const personData = (personResult?.data?.persons?.edges?.map(edge => edge.node));
-                setPersonId(() => personData[0]?.credentials[0]?.value);
+                setPersonId(
+                    personData[0]?.credentials?.find(data => data.type === 'bannerId')?.value
+                );
                 setLoadingStatus(false);
             } catch (error) {
                 console.log(error);
             }
         })();
-    }, []);
+    }, [getEthosQuery, setLoadingStatus]);
 
 
     const handleChangeTerm = (event) => {
@@ -82,6 +83,7 @@ function LancePointRegistration({ classes }) {
                 setLoadingStatus(true);
                 const response = await authenticatedEthosFetch(`${PCCVTEA}?cardId=${cardId}&termCode=${termCode}&studentId=${personId}`);
                 const result = await response.json();
+                console.log(result);
                 setPCCVTEA(result);
                 setLoadingStatus(false);
             } catch (error) {
@@ -183,8 +185,5 @@ function LancePointRegistration({ classes }) {
     );
 }
 
-LancePointRegistration.propTypes = {
-    classes: PropTypes.object.isRequired
-};
 
-export default withStyles(styles)(LancePointRegistration);
+export default LancePointRegistration;
