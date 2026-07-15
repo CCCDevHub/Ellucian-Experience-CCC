@@ -166,12 +166,7 @@ const OutstandingBalance = () => {
                 setGroupTransByTerm(() => groupByTermCode);
 
                 const studentInfoResponse = await authenticatedEthosFetch(`${pipelineAPIStudentInfo}?cardId=${cardId}&testPersonId=${personId}`);
-                // const studentInfoResult = await studentInfoResponse.json();
-                const studentInfoResult = [
-                    {
-                        "financialAid": "AID"
-                    }
-                ]
+                const studentInfoResult = await studentInfoResponse.json();
                 setStudentInfo(() => studentInfoResult[0])
 
                 setLoadingStatus(false);
