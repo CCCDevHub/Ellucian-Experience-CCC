@@ -1,15 +1,15 @@
-import { withStyles } from '@ellucian/react-design-system/core/styles';
 import { spacing20, spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
 import {
     Typography,
     Dropdown,
-    DropdownItem
+    DropdownItem,
+    makeStyles
 } from '@ellucian/react-design-system/core';
 import { useCardControl, useData } from '@ellucian/experience-extension-utils';
 import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
 
-const styles = () => ({
+const useStyles = makeStyles()({
     container: {
         padding: spacing40,
         display: 'flex',
@@ -35,8 +35,9 @@ const styles = () => ({
     }
 });
 
-function SLPA({ classes }) {
+const SLPA = () => {
     const customId = 'SPLA';
+    const { classes } = useStyles();
     const { setLoadingStatus, navigateToPage } = useCardControl();
     const { getEthosQuery } = useData();
     const [dropdownStateTerm, setDropdownStateTerm] = useState();
@@ -51,7 +52,7 @@ function SLPA({ classes }) {
                 });
                 const termData = (termResult?.data?.academicPeriods?.edges?.map(edge => edge.node));
                 setTermList(() => termData);
-                localStorage.setItem('termList', JSON.stringify(termData));
+                window.localStorage.setItem('termList', JSON.stringify(termData));
                 setLoadingStatus(false);
             } catch (error) {
                 console.log(error);
@@ -62,7 +63,7 @@ function SLPA({ classes }) {
 
     const handleChangeTerm = (event) => {
         setDropdownStateTerm(() => event.target.value);
-        localStorage.setItem('selectedTerm', event.target.value);
+        window.localStorage.setItem('selectedTerm', event.target.value);
         navigateToPage({
             route: `/SLPA`
         });
@@ -115,8 +116,5 @@ function SLPA({ classes }) {
 
 }
 
-SLPA.propTypes = {
-    classes: PropTypes.object.isRequired
-};
 
-export default withStyles(styles)(SLPA);
+export default SLPA;

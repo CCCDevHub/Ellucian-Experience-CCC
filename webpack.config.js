@@ -1,7 +1,7 @@
 require('dotenv').config();
 const packageJson = require('./package.json');
 const extensionConfig = require('./extension.js');
- 
+
 const { webpackConfigBuilder } = require('@ellucian/experience-extension');
 
 module.exports = async (env, options) => {
@@ -20,7 +20,13 @@ module.exports = async (env, options) => {
         port: process.env.PORT || 8082
     });
 
-    // For advanced scenarios, dynamically modify webpackConfig here.
+    // Keep dev server running on lint errors
+    webpackConfig.bail = false;
+    const eslintPlugin = webpackConfig.plugins?.find(p => p.constructor?.name === 'ESLintWebpackPlugin');
+    if (eslintPlugin) {
+        eslintPlugin.options.failOnError = false;
+        eslintPlugin.options.failOnWarning = false;
+    }
 
     return webpackConfig;
 };

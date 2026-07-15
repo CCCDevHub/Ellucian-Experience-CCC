@@ -1,4 +1,3 @@
-import { withStyles } from '@ellucian/react-design-system/core/styles';
 import { spacing20, spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import {
@@ -18,7 +17,8 @@ import {
     TableRow,
     TableCell,
     TableBody,
-    Checkbox
+    Checkbox,
+    makeStyles
 } from '@ellucian/react-design-system/core';
 import PropTypes from 'prop-types';
 import {
@@ -49,7 +49,7 @@ import {
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 
-const styles = () => ({
+const useStyles = makeStyles()({
     card: {
         height: '100vh',
         margin: 0,
@@ -86,8 +86,8 @@ const styles = () => ({
         fontSize: '14px'
     }
 });
-const HomePage = (props) => {
-    const { classes } = props;
+const HomePage = () => {
+    const { classes } = useStyles();
     const { setPageTitle, setLoadingStatus, setErrorMessage } = usePageControl();
     const customId = 'SPLA';
     const { cardConfiguration:
@@ -101,7 +101,7 @@ const HomePage = (props) => {
 
     const { authenticatedEthosFetch, getEthosQuery } = useData();
     const [manualStudentIds, setManualStudentIds] = useState([]);
-    const [dropdownStateTerm, setDropdownStateTerm] = useState(localStorage.getItem('selectedTerm'));
+    const [dropdownStateTerm, setDropdownStateTerm] = useState(window.localStorage.getItem('selectedTerm'));
     const [dropdownStateTermReview, setDropdownStateTermReview] = useState();
     const [dropdownStateTermRemove, setDropdownStateTermRemove] = useState();
     const [popoverState, setPopoverState] = useState(null);
@@ -118,7 +118,7 @@ const HomePage = (props) => {
     const [graphLabels, setGraphLabels] = useState([]);
     const [graphData, setGraphData] = useState({});
     const [popOverMsg, setPopOverMsg] = useState();
-    const termList = JSON.parse(localStorage.getItem('termList') || '[]');
+    const termList = JSON.parse(window.localStorage.getItem('termList') || '[]');
 
     useEffect(() => {
         setPageTitle("Student Registration Permit Override");
@@ -687,8 +687,5 @@ const HomePage = (props) => {
     }
 };
 
-HomePage.propTypes = {
-    classes: PropTypes.object.isRequired
-};
 
-export default withStyles(styles)(HomePage);
+export default HomePage;
