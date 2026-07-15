@@ -1,5 +1,3 @@
-import { withStyles } from '@ellucian/react-design-system/core/styles';
-import classnames from 'classnames';
 import { spacing40, spacing30, spacing20 } from '@ellucian/react-design-system/core/styles/tokens';
 import {
     Typography,
@@ -12,15 +10,15 @@ import {
     DropdownItem,
     Tab,
     Tabs,
-    Button
+    Button,
+    makeStyles
 } from '@ellucian/react-design-system/core';
-import { useCardControl, useCardInfo, useExtensionControl, useUserInfo, useData, useDashboardInfo } from '@ellucian/experience-extension-utils';
+import { useCardControl, useCardInfo, useUserInfo, useData } from '@ellucian/experience-extension-utils';
 import PropTypes from 'prop-types';
 import React, { useEffect, useMemo, useState, useRef } from 'react';
-import { Icon } from '@ellucian/ds-icons/lib';
 import mock from '../data/mock.json';
 
-const styles = () => ({
+const useStyles = makeStyles()({
     root: {
         height: '100%',
         overflowY: 'auto',
@@ -79,7 +77,8 @@ const styles = () => ({
     }
 });
 
-function OutstandingBalance({ classes }) {
+const OutstandingBalance = () => {
+    const { classes } = useStyles();
     const { authenticatedEthosFetch, getEthosQuery } = useData();
     const { setLoadingStatus, setErrorMessage } = useCardControl();
     const { configuration: {
@@ -167,7 +166,12 @@ function OutstandingBalance({ classes }) {
                 setGroupTransByTerm(() => groupByTermCode);
 
                 const studentInfoResponse = await authenticatedEthosFetch(`${pipelineAPIStudentInfo}?cardId=${cardId}&testPersonId=${personId}`);
-                const studentInfoResult = await studentInfoResponse.json();
+                // const studentInfoResult = await studentInfoResponse.json();
+                const studentInfoResult = [
+                    {
+                        "financialAid": "AID"
+                    }
+                ]
                 setStudentInfo(() => studentInfoResult[0])
 
                 setLoadingStatus(false);
@@ -215,6 +219,8 @@ function OutstandingBalance({ classes }) {
     if (summarize && payLink && studentInfo) {
         const [{ accountBalance, amountDue }] = summarize;
         const specialCase = ["vetStatus", "financialAid", "eops", "calwork", "dualEnrollment"].some(key => studentInfo[key]);
+        console.log(specialCase);
+        console.log(accountBalance);
         return (
             <div className={classes.root}>
                 <div className={classes.content}>
@@ -285,18 +291,20 @@ function OutstandingBalance({ classes }) {
                                     </div>
                                 )}
 
-                                {!(accountBalance > 100 && specialCase) && (
+                                {accountBalance > 100 && specialCase && (
                                     <div className={classes.balanceContainer}>
-                                        {deadlineDate <= todayDate ? (
-                                            <Typography variant={'body2'}>
-                                                To ensure you are not dropped from classes, pay your fees at the time of your registration or make sure you have a financial aid application on file.
-                                            </Typography>
-                                        ) : (
-                                            <Typography variant={'body2'}>
-                                                {/* To submit payment, go to the Billing & Payments Card. */}
-                                                Upcoming drop for non-payment on {deadlineDate.toLocaleDateString('en-US')}. Make sure all your fees are paid before this date to avoid being dropped from all classes.
-                                            </Typography>
-                                        )}
+
+                                        <Typography variant={'body2'}>
+
+                                            Upcoming Drop for non-payment check <TextLink
+                                                id={`${customId}_tuition_payment_deadlines`}
+                                                href='https://pasadena.edu/business-administrative-services/fiscal-services/tuition-payment-deadlines.php'
+                                            >
+                                                here
+                                            </TextLink> {' '}
+                                            for tuition payment deadlines to avoid being dropped from classes.
+                                        </Typography>
+
                                     </div>
                                 )}
 
@@ -533,4 +541,4 @@ OutstandingBalance.propTypes = {
     classes: PropTypes.object.isRequired
 };
 
-export default withStyles(styles)(OutstandingBalance);
+export default OutstandingBalance;
