@@ -17,6 +17,10 @@ const useStyles = makeStyles()({
     },
     section: {
         marginBottom: spacing40
+    },
+    // Optional: If body2 isn't small enough, you can force custom styling here
+    smallText: {
+        fontSize: '0.875rem' // Adjust this value down as needed (e.g., '12px' or '0.8rem')
     }
 });
 
@@ -25,7 +29,6 @@ const TestScoresCard2 = () => {
     const { setLoadingStatus, setErrorMessage, navigateToPage } = useCardControl();
     const { configuration: { getData, getTestScore }, cardId } = useCardInfo();
     const { authenticatedEthosFetch, getEthosQuery } = useData();
-
 
     useEffect(() => {
         (async () => {
@@ -37,22 +40,85 @@ const TestScoresCard2 = () => {
 
                 const personId = _personData[0]?.credentials?.find(cred => cred.type === 'bannerId')?.value;
 
-                //const personId = '10001000';
                 console.log(getTestScore);
                 const response = await authenticatedEthosFetch(`${getTestScore}?cardId=${cardId}&studentId=${personId}`);
                 const studentResult = await response.json();
-                const testResult = studentResult[0]?.DISTEST[0].disTest;
-                //const testResult = '0M38';
-                console.log(testResult);
+
+                console.log("studentResult:");
+                console.log(studentResult);
+
+                const testResultAll = studentResult[0]?.SORTEST?.map(test => ({
+                    tescCode: test.tescCode,
+                    testScore: test.testScore
+                })) || [];
+
+                console.log("testresultAll");
+                console.log(testResultAll);
+
+                const testResult = testResultAll
+                    .filter(item => item.testScore === 'VALID')
+                    .map(item => item.tescCode);
+
                 console.log("testresult");
-                const insightsResponse = await authenticatedEthosFetch(`${getData}?cardId=${cardId}&testCode=${testResult}`);
-                const insightsResult = await insightsResponse.json();
+                console.log(testResult);
+
+                const insightsResult = await Promise.all(
+                    testResult.map(async (code) => {
+                        const response = await authenticatedEthosFetch(
+                            `${getData}?cardId=${cardId}&testCode=${encodeURIComponent(code)}`
+                        );
+
+                        return response.json();
+                    })
+                );
+
+                console.log("insightsResult");
                 console.log(insightsResult);
 
-                //grabs insights result for full page
-                window.localStorage.setItem('testScore', JSON.stringify(insightsResult));
+                const validResults = insightsResult.filter(
+                    item => item.test_score === 'VALID'
+                );
 
+                console.log("validResults");
+                console.log(validResults); 
 
+                const instfinalplacement = Object.values(
+                    validResults.reduce((acc, item) => {
+                        const rawType = item.test_type;
+                        const type = (rawType === 'ENGL' || rawType === 'ESL') ? 'ENGL_ESL' : rawType;
+
+                        if (!acc[type]) {
+                            acc[type] = item;
+                            return acc;
+                        }
+
+                        if (type === 'MATH') {
+                            const currentRank = Number(acc[type].mrank || Infinity);
+                            const newRank = Number(item.mrank || Infinity);
+
+                            if (newRank < currentRank) {
+                                acc[type] = item;
+                            }
+                        } else if (type === 'ENGL_ESL') {
+                            const currentRank = Number(acc[type].erank || Infinity);
+                            const newRank = Number(item.erank || Infinity);
+
+                            if (newRank < currentRank) {
+                                acc[type] = item;
+                            }
+                        }
+
+                        return acc;
+                    }, {})
+                );
+
+                console.log("instfinalplacement:");
+                console.log(instfinalplacement);
+                                    
+                window.localStorage.setItem(
+                    'testScore', 
+                    JSON.stringify({ instfinalplacement: instfinalplacement })
+                );
 
             } catch (_error) {
                 setErrorMessage('Failed to fetch GoPass data');
@@ -62,7 +128,6 @@ const TestScoresCard2 = () => {
         })();
     }, [getEthosQuery, setLoadingStatus, setErrorMessage]);
 
-    //handles full page
     const handleClick = (event) => {
         navigateToPage({
             route: `/studentTestScore`
@@ -71,9 +136,10 @@ const TestScoresCard2 = () => {
 
     return (
         <div className={classes.card}>
+            {/* Changed variant from "body1" to "body2" for a smaller design system font size */}
             <Typography
                 className={classes.section}
-                variant="body1"
+                variant="body2"
             >
                 Your placement results will determine which Math and English
                 class you are eligible to register for.
@@ -82,13 +148,13 @@ const TestScoresCard2 = () => {
             <Button
                 color="primary"
                 onClick={handleClick}
-                fullWidth
                 className={classes.section}
             >
                 View Placement Results
             </Button>
 
-            <Typography variant="body1">
+            {/* Changed variant to "body2" and appended optional custom styling class */}
+            <Typography variant="body2" className={classes.smallText}>
                 <strong>Note:</strong> If you do not see your placements, you
                 may request placement with your high school transcripts using
                 our{' '}

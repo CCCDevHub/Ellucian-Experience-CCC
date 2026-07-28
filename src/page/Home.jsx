@@ -1,7 +1,7 @@
 import {
     spacing40,
     spacing16,
-    spacing8,
+    spacing24, // Added for larger internal box padding
 } from '@ellucian/react-design-system/core/styles/tokens';
 import {
     makeStyles,
@@ -20,42 +20,55 @@ const useStyles = makeStyles()((theme) => ({
         gap: spacing16,
     },
 
-    resultCard: {
-        borderRadius: 12,
-        overflow: 'hidden',
+    // Each box now features custom internal padding, shadow, and a light gray background
+    placementBox: {
+        borderRadius: 8,
+        background: '#e1e7eb', // Clean light gray background
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)', // Soft, modern elevation shadow
+        border: '1px solid rgba(0, 0, 0, 0.05)',
+        transition: 'all 0.3s ease',
+        '&:hover': {
+            boxShadow: '0 6px 16px rgba(0, 0, 0, 0.12)',
+            transform: 'translateY(-1px)',
+        },
     },
 
-    banner: {
-        background: '#f5f9ff',
-        borderLeft: '6px solid #0066cc',
-        padding: spacing16,
-        marginBottom: spacing16,
+    // Extra spacing applied inside the card container body
+    cardContentSpacing: {
+        padding: `${spacing24} !important`, // Overrides default design system card padding
     },
 
-    scoreBadge: {
+    headerRow: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center', 
+        flexWrap: 'wrap',
+        gap: spacing16,
+        width: '100%',
+    },
+
+    codeBadge: {
         display: 'inline-block',
-        backgroundColor: '#e8f5e9',
-        color: '#2e7d32',
-        padding: '4px 12px',
-        borderRadius: 16,
-        fontWeight: 600,
-        fontSize: '0.875rem',
-    },
-
-    metaGrid: {
-        display: 'grid',
-        gridTemplateColumns: '160px 1fr',
-        rowGap: spacing8,
-        columnGap: spacing16,
-        marginTop: spacing16,
-    },
-
-    label: {
-        color: '#666',
-        fontWeight: 600,
+        backgroundColor: '#e3f2fd',
+        color: '#0d47a1',
+        padding: '6px 12px',
+        borderRadius: 4,
+        fontWeight: 700,
+        fontSize: '0.8rem',
+        textTransform: 'uppercase',
+        letterSpacing: '0.5px',
     },
 
     description: {
+        ...theme.typography.h4,
+        flex: '1 1 300px',
+        lineHeight: 1.6,
+        
+        // Switched from checkmark layout to bullet points
+        display: 'list-item',               
+        listStyleType: '"*""', // Standard circular bullet point             
+        listStylePosition: 'inside',        
+
         '& a': {
             color: '#0066cc',
             fontWeight: 600,
@@ -69,37 +82,24 @@ const useStyles = makeStyles()((theme) => ({
         '& b': {
             fontWeight: 700,
         },
-
-        lineHeight: 1.7,
     },
 }));
 
 const HomePage = () => {
-    const { classes } = useStyles();
+    const { classes } = useStyles(); 
     const { setPageTitle } = usePageControl();
 
-    setPageTitle('Student Test Score');
+    const [placements, setPlacements] = useState([]);
 
-   const [result, setResult] = useState({
-        test_code: '',
-        test_desc: '',
-        last_updated_date: '',
-    });
-
-        useEffect(() => {
+    useEffect(() => {
         setPageTitle('Student Test Score');
 
-        //const testResult = localStorage.getItem('testResult');
-
-        const insightsResult = JSON.parse(
+        const storedScore = JSON.parse(
             localStorage.getItem('testScore') || '{}'
         );
 
-        setResult({
-            test_desc: insightsResult?.test_desc || '',
-            last_updated_date:
-                insightsResult?.last_updated_date || '',
-        });
+        const instfinalplacement = storedScore?.instfinalplacement || [];
+        setPlacements(instfinalplacement);
     }, [setPageTitle]);
 
     return (
@@ -108,23 +108,43 @@ const HomePage = () => {
                 Placement Results
             </Typography>
 
-            <Card className={classes.resultCard}>
-                <CardContent>
-                    <div className={classes.banner}>
-                        <Typography variant="h4" gutterBottom>
-                            Placement Recommendation
+            {placements.length > 0 ? (
+                placements.map((placement, index) => {
+                    return (
+                        <Card 
+                            key={placement.test_code || index} 
+                            className={classes.placementBox}
+                        >
+                            <CardContent className={classes.cardContentSpacing}>
+                                <div className={classes.headerRow}>
+                                    {/* Description rendering with disc bullet */}
+                                    <div
+                                        className={classes.description}
+                                        dangerouslySetInnerHTML={{
+                                            __html: placement.test_desc || 'No Description Provided',
+                                        }}
+                                    />
+                                    
+                                    {/* Code Badge Display */}
+                                    {placement.test_code && (
+                                        <span className={classes.codeBadge}>
+                                            Code: {placement.test_code}
+                                        </span>
+                                    )}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    );
+                })
+            ) : (
+                <Card className={classes.placementBox}>
+                    <CardContent className={classes.cardContentSpacing}>
+                        <Typography variant="body1">
+                            No placement results found.
                         </Typography>
-
-                        <div
-                            className={classes.description}
-                            dangerouslySetInnerHTML={{
-                                __html: result.test_desc,
-                            }}
-                        />
-                    </div>
-
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
+            )}
         </div>
     );
 };
