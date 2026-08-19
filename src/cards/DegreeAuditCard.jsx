@@ -21,7 +21,7 @@ const DegreeAuditCard = () => {
     const { classes } = useStyles();
     const { setErrorMessage, navigateToPage } = useCardControl();
     const { configuration: {
-        catalogYear, majorCodes, majorDisp, tokenUrl, whatIfUrl, username, password
+        catalogYear, majorCodes, majorDisp, whatIfPipeline, whatIfUrl, username, password
     } } = useCardInfo();
 
     const [studentId, setStudentId] = useState('');
@@ -47,7 +47,8 @@ const DegreeAuditCard = () => {
                 whatIfUrl,
                 catalogYear,
                 majorCodes,
-                majorDisp
+                majorDisp,
+                whatIfPipeline
             }));
 
             navigateToPage({ route: `/degree-audit/${studentId}` });

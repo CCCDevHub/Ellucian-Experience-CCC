@@ -50,7 +50,12 @@ module.exports = {
                     key: "token",
                     label: "degreeworks token",
                     type: "password"
-                }
+                },
+                {
+                    key: "whatIfPipeline",
+                    label: "What-If Pipeline",
+                    type: "text"
+                },
             ],
             server: [
                 {
