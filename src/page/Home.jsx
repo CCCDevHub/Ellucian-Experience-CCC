@@ -1,21 +1,26 @@
 import { spacing20, spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
 import {
-    makeStyles, Typography, Tab, Tabs, Table, TableRow, TableCell, TableBody, TableHead, TextField, Button, Dropdown, DropdownItem, Checkbox, Alert, IconButton, Tooltip, Switch
+    makeStyles,
+    Typography,
+    Tab,
+    Tabs,
+    Dropdown,
+    DropdownItem,
+    Alert
 } from '@ellucian/react-design-system/core';
-import { Icon } from '@ellucian/ds-icons/lib';
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
     useData,
     usePageControl,
+    useCardInfo
 } from '@ellucian/experience-extension-utils';
-import Attendance from '../cards/Attendance';
-import mock from '../data/mock.json';
-import students from '../data/students.json';
-import waitlist from '../data/waitlist.json';
-import dates from '../data/dates.json';
 
 import { saveAttendanceData, loadAttendanceData } from '../utils/indexedDB';
-import * as XLSX from 'xlsx';
+import { fetchDedupedSections, extractCourseInfo } from '../utils/sections';
+import { copyToClipboard } from '../utils/clipboard';
+import { printBlankSheet } from '../utils/rosterPrint';
+import { exportRosterToExcel } from '../utils/rosterExport';
+import RosterContent from './RosterContent';
 
 
 const useStyles = makeStyles()({
@@ -43,13 +48,18 @@ const useStyles = makeStyles()({
 const HomePage = () => {
     const { classes } = useStyles();
     const { setPageTitle, setLoadingStatus } = usePageControl();
+    const { cardConfiguration:
+        {
+            pipelineAPI,
+            sectionPipelineAPI,
+            termPipelineAPI
+        }, cardId
+    } = useCardInfo();
     const { authenticatedEthosFetch } = useData();
-    const {
-        pipelineAPI, waitlistPipelineAPI, sectionPipelineAPI, termPipelineAPI, criticalDatesPipelineAPI, cardId
-    } = JSON.parse(window.localStorage.getItem('cardConfig') || '{}');
     const customId = 'Roster-Sheet';
 
     const selected = window.localStorage.getItem('selectedSection');
+    const instructorId = window.localStorage.getItem('instructorId');
     const [initialCrn, initialTermCode] = selected ? selected.split('.') : ['', ''];
     const [crn, setCrn] = useState(initialCrn);
     const [termCode, setTermCode] = useState(initialTermCode);
@@ -57,7 +67,6 @@ const HomePage = () => {
     const [studentList, setStudentList] = useState([]);
     const [waitlistData, setWaitlistData] = useState([]);
     const [criticalDatesData, setCriticalDatesData] = useState([]);
-    const [inputValues, setInputValues] = useState({});
     const [tabChange, setTabChange] = useState(0);
 
     const [courseName, setCourseName] = useState('');
@@ -81,15 +90,28 @@ const HomePage = () => {
     const [includeEmailInPrint, setIncludeEmailInPrint] = useState(false);
     const [showRoster, setShowRoster] = useState(true);
     const [showWaitlist, setShowWaitlist] = useState(true);
-    const allowedRsts = new Set(['RC', 'RE', 'RS', 'RW', 'AU']);
 
     const todayDate = new Date().toLocaleDateString()
 
-    const formatDate = (dateStr) => {
-        if (!dateStr) { return 'N/A' }
-        const d = new Date(dateStr)
-        if (isNaN(d.getTime())) { return dateStr }
-        return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'America/Los_Angeles' });
+    const showAlert = (type, message, durationMs = 3000) => {
+        setAlertType(type);
+        setAlertMessage(message);
+        setAlertOpen(true);
+        setTimeout(() => setAlertOpen(false), durationMs);
+    };
+
+    const applyCourseInfo = (selectedSection) => {
+        const info = extractCourseInfo(selectedSection);
+        setCourseName(info.courseName);
+        setCourseTitle(info.courseTitle);
+        setCourseSubject(info.courseSubject);
+        setCourseCredits(info.courseCredits);
+        setCourseInstructor(info.courseInstructor);
+        setCourseType(info.courseType);
+        setCourseMeetingDays(info.courseMeetingDays);
+        setCourseMeetingTimes(info.courseMeetingTimes);
+        setCourseBuilding(info.courseBuilding);
+        setCourseRoom(info.courseRoom);
     };
 
     useEffect(() => {
@@ -100,20 +122,8 @@ const HomePage = () => {
                 const termResult = await response.json();
                 const termData = termResult.filter(term => term.termDisplayControl == 'Y');
                 setTerms(termData);
-                const sectionResponse = await authenticatedEthosFetch(`${sectionPipelineAPI}?cardId=${cardId}&termCode=${termCode}`);
-                const sectionResult = await sectionResponse.json();
-                // console.log(sectionResult)
-                // const sectionResult = await mock;
-                const sectionDataResult = (sectionResult?.data?.sectionInstructors10?.edges?.map(edge => edge.node));
-                const seen = new Set();
-                // console.log(sectionDataResult);
 
-                const dedupedSections = sectionDataResult.filter(sec => {
-                    const key = sec?.section16?.alternateIds?.[0]?.value;
-                    if (!key || seen.has(key)) { return false }
-                    seen.add(key);
-                    return true;
-                });
+                const dedupedSections = await fetchDedupedSections(authenticatedEthosFetch, sectionPipelineAPI, cardId, termCode);
                 setSectionData(dedupedSections);
                 window.localStorage.setItem('sectionData', JSON.stringify(dedupedSections));
 
@@ -123,67 +133,26 @@ const HomePage = () => {
                 setLoadingStatus(false);
             }
         })();
-    }, []);
-
-    // useEffect(() => {
-    //     if (!sectionData || sectionData.length === 0) {
-    //         (async () => {
-    //             setLoadingStatus(true);
-    //             try {
-    //                 const response = await authenticatedEthosFetch(`${sectionPipelineAPI}?cardId=${cardId}`);
-    //                 const sectionResult = await response.json();
-    //                 // const sectionResult = await mock;
-    //                 const sectionDataResult = (sectionResult?.data?.sectionInstructors10?.edges?.map(edge => edge.node));
-    //                 const seen = new Set();
-    //                 const dedupedSections = sectionDataResult.filter(sec => {
-    //                     const key = sec?.section16?.alternateIds?.[0]?.value;
-    //                     if (!key || seen.has(key)) { return false }
-    //                     seen.add(key);
-    //                     return true;
-    //                 });
-    //                 setSectionData(dedupedSections);
-    //                 localStorage.setItem('sectionData', JSON.stringify(dedupedSections));
-
-    //                 setLoadingStatus(false);
-    //             } catch (error) {
-    //                 console.log(error);
-    //                 setLoadingStatus(false);
-    //             }
-    //         })();
-    //     }
-    // }, []);
+    }, [authenticatedEthosFetch, cardId, sectionPipelineAPI, setLoadingStatus, termCode, termPipelineAPI]);
 
     const fetchAuthorizationData = useCallback(async (crn, termCode) => {
         setLoadingStatus(true);
         try {
-            const response = await authenticatedEthosFetch(`${pipelineAPI}?cardId=${cardId}&crn=${crn}&termCode=${termCode}`);
+            const response = await authenticatedEthosFetch(`${pipelineAPI}?cardId=${cardId}&crn=${crn}&termCode=${termCode}&instructorId=${instructorId}`);
             const rawResult = await response.json();
-            // const rawResult = await students;
-            const studentDataResult = rawResult?.data?.sectionRegistrations16?.edges?.map(edge => edge.node);
-            setStudentList(studentDataResult);
-
-            const waitlistResponse = await authenticatedEthosFetch(`${waitlistPipelineAPI}?cardId=${cardId}&crn=${crn}&termCode=${termCode}`);
-            const rawWaitlistResult = await waitlistResponse.json();
-            // const rawWaitlistResult = await waitlist;
-            const waitlistDataResult = rawWaitlistResult?.data?.studentSectionWaitlists10?.edges?.map(edge => edge.node);
-            setWaitlistData(waitlistDataResult);
+            setStudentList(rawResult.attendanceList.filter(student => student.sfrstcr_rsts_code !== 'WL'));
+            setWaitlistData(rawResult.attendanceList.filter(student => student.sfrstcr_rsts_code === 'WL'));
 
             const criticalDatesResponse = await fetch(`https://prod-apiweb.pasadena.edu/api/classSchedule/${termCode}`);
             const rawCriticalDatesResult = await criticalDatesResponse.json();
             rawCriticalDatesResult.filter(crnItem => crnItem.crn === crn).forEach(item => { setCriticalDatesData(item) });
-            // const rawCriticalDatesResult = await dates;
-            // setCriticalDatesData(rawCriticalDatesResult[0]);
+
         } catch (error) {
             console.error(error);
         } finally {
             setLoadingStatus(false);
         }
-    }, [pipelineAPI, waitlistPipelineAPI, cardId, authenticatedEthosFetch, setLoadingStatus]);
-
-    useEffect(() => {
-        setPageTitle("Roster Sheet");
-        loadAttendanceDataFromDB();
-    }, [setPageTitle]);
+    }, [pipelineAPI, cardId, instructorId, authenticatedEthosFetch, setLoadingStatus]);
 
     const loadAttendanceDataFromDB = async () => {
         try {
@@ -195,6 +164,11 @@ const HomePage = () => {
     };
 
     useEffect(() => {
+        setPageTitle("Roster Sheet");
+        loadAttendanceDataFromDB();
+    }, [setPageTitle]);
+
+    useEffect(() => {
         if (crn && termCode) {
             fetchAuthorizationData(crn, termCode);
         }
@@ -204,20 +178,7 @@ const HomePage = () => {
         if (sectionData.length === 0 || !dropdownStateSection) { return; }
         const selectedSection = sectionData.find(sec => sec?.section16?.alternateIds?.[0]?.value === dropdownStateSection);
         if (selectedSection) {
-            const course = selectedSection.section16?.course16;
-            setCourseName(`${course?.subject6?.abbreviation} ${course?.number}`);
-            setCourseTitle(selectedSection.section16?.titles?.[0]?.value || '');
-            setCourseSubject(course?.subject6?.abbreviation || '');
-            setCourseCredits(course?.credits[0]?.minimum || '');
-            const instructor = selectedSection.instructor12;
-            setCourseInstructor(instructor ? instructor.names[0]?.fullName : '');
-            setCourseType(selectedSection?.instructionalMethod6?.title || '');
-            setCourseMeetingDays(selectedSection?.instructionalEvents11?.[0]?.recurrence?.repeatRule?.daysOfWeek?.join(', ') || '');
-            const startTime = selectedSection?.instructionalEvents11?.[0]?.recurrence?.timePeriod?.startOn || '';
-            const endTime = selectedSection?.instructionalEvents11?.[0]?.recurrence?.timePeriod?.endOn || '';
-            setCourseMeetingTimes(startTime && endTime ? `${formatTime(startTime)} - ${formatTime(endTime)}` : '');
-            setCourseBuilding(selectedSection?.instructionalEvents11?.[0]?.locations?.[0]?.location?.room10?.building6?.title || '');
-            setCourseRoom(selectedSection?.instructionalEvents11?.[0]?.locations?.[0]?.location?.room10?.number || '');
+            applyCourseInfo(selectedSection);
         }
     }, [sectionData, dropdownStateSection]);
 
@@ -239,29 +200,31 @@ const HomePage = () => {
         setLoadingStatus(true);
 
         (async () => {
-            setLoadingStatus(true);
             try {
-                const response = await authenticatedEthosFetch(`${sectionPipelineAPI}?cardId=${cardId}&termCode=${value}`);
-                const sectionResult = await response.json();
-                // const sectionResult = await mock;
-                const sectionDataResult = (sectionResult?.data?.sectionInstructors10?.edges?.map(edge => edge.node));
-                const seen = new Set();
-                const dedupedSections = sectionDataResult.filter(sec => {
-                    const key = sec?.section16?.alternateIds?.[0]?.value;
-                    if (!key || seen.has(key)) { return false }
-                    seen.add(key);
-                    return true;
-                });
+                const dedupedSections = await fetchDedupedSections(authenticatedEthosFetch, sectionPipelineAPI, cardId, value);
                 setSectionData(dedupedSections);
                 window.localStorage.setItem('sectionData', JSON.stringify(dedupedSections));
-
                 setLoadingStatus(false);
             } catch (error) {
-                console.log(error);
+                console.error(error);
                 setLoadingStatus(false);
             }
         })();
     };
+
+    const handleChangeSection = useCallback((event) => {
+        const { value } = event.target;
+        setDropdownStateSection(value);
+        window.localStorage.setItem('selectedSection', value);
+        const [newCrn, newTermCode] = value.split('.');
+        setCrn(newCrn);
+        setTermCode(newTermCode);
+
+        const selectedSection = sectionData.find(sec => sec?.section16?.alternateIds?.[0]?.value === value);
+        if (selectedSection) {
+            applyCourseInfo(selectedSection);
+        }
+    }, [sectionData]);
 
     const checkboxChange = (studentId, isChecked) => {
         const key = `${crn}-${termCode}-${todayDate}`;
@@ -278,670 +241,76 @@ const HomePage = () => {
     const saveAttendanceDataToDB = async () => {
         try {
             await saveAttendanceData(attendanceData);
-            setAlertType('success');
-            setAlertMessage('Attendance data saved successfully!');
-            setAlertOpen(true);
-            setTimeout(() => setAlertOpen(false), 3000);
+            showAlert('success', 'Attendance data saved successfully!');
         } catch (error) {
             console.error('Failed to save attendance data:', error);
-            setAlertType('error');
-            setAlertMessage('Failed to save attendance data. Please try again.');
-            setAlertOpen(true);
-            setTimeout(() => setAlertOpen(false), 3000);
+            showAlert('error', 'Failed to save attendance data. Please try again.');
         }
     }
-
-    const getPreferredEmail = (emails) => {
-        if (!emails?.length) return '';
-        const preferred = emails.find(e => e.type?.emailType === 'school' || e.type?.emailType === 'hr');
-        return (preferred ?? emails[0])?.address ?? '';
-    };
 
     const handleAlertClose = () => {
         setAlertOpen(false);
     }
 
-    const handleCopyEmail = (email) => {
-        navigator.clipboard.writeText(email).then(() => {
-            setAlertType('success');
-            setAlertMessage('Email copied to clipboard!');
-            setAlertOpen(true);
-            setTimeout(() => setAlertOpen(false), 2000);
-        }).catch(() => {
-            setAlertType('error');
-            setAlertMessage('Failed to copy email.');
-            setAlertOpen(true);
-            setTimeout(() => setAlertOpen(false), 2000);
-        });
-    }
-
     const handleCopyAllEmails = () => {
         const emails = studentList
-            ?.map(item => getPreferredEmail(item.registrant12?.emails))
+            ?.map(item => item.student_email)
             .filter(Boolean)
             .join('; ');
-        navigator.clipboard.writeText(emails).then(() => {
-            setAlertType('success');
-            setAlertMessage(`${studentList.length} emails copied to clipboard!`);
-            setAlertOpen(true);
-            setTimeout(() => setAlertOpen(false), 2000);
-        }).catch(() => {
-            setAlertType('error');
-            setAlertMessage('Failed to copy emails.');
-            setAlertOpen(true);
-            setTimeout(() => setAlertOpen(false), 2000);
-        });
+        copyToClipboard(emails)
+            .then(() => showAlert('success', `${studentList.length} emails copied to clipboard!`, 2000))
+            .catch(() => showAlert('error', 'Failed to copy emails.', 2000));
     }
 
     const handleWaitlistCopyAllEmails = () => {
         const emails = waitlistData
-            ?.map(item => getPreferredEmail(item.person12?.emails))
+            ?.map(item => item.student_email)
             .filter(Boolean)
             .join('; ');
-        navigator.clipboard.writeText(emails).then(() => {
-            setAlertType('success');
-            setAlertMessage(`${waitlistData.length} emails copied to clipboard!`);
-            setAlertOpen(true);
-            setTimeout(() => setAlertOpen(false), 2000);
-        }).catch(() => {
-            setAlertType('error');
-            setAlertMessage('Failed to copy emails.');
-            setAlertOpen(true);
-            setTimeout(() => setAlertOpen(false), 2000);
-        });
-    }
-    // const printAttendanceHistory = () => {
-    //     const printContent = document.getElementById('attendance-history-table');
-
-    //     const printWindow = window.open('', '_blank');
-    //     printWindow.document.write(`
-    //         <html>
-    //             <head>
-    //                 <title>Attendance History</title>
-    //                 <style>
-    //                     body { font-family: Arial, sans-serif; margin: 20px; }
-    //                     h1 { color: #333; margin-bottom: 20px; }
-    //                     table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-    //                     th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-    //                     th { background-color: #f2f2f2; font-weight: bold; }
-    //                     .present { color: green; font-weight: bold; }
-    //                     .absent { color: red; font-weight: bold; }
-    //                     @media print {
-    //                         body { margin: 0; }
-    //                         table { page-break-inside: auto; }
-    //                         tr { page-break-inside: avoid; page-break-after: auto; }
-    //                     }
-    //                 </style>
-    //             </head>
-    //             <body>
-    //                 <h1>Attendance History Report</h1>
-    //                 <p><strong>Section:</strong> ${courseName}</p>
-    //                 <p><strong>Generated:</strong> ${new Date().toLocaleString()}</p>
-    //                 ${printContent.outerHTML}
-    //             </body>
-    //         </html>
-    //     `);
-    //     printWindow.document.close();
-    //     printWindow.focus();
-    //     printWindow.print();
-    // }
-    const printBlankSheet = () => {
-        const waitlistPrintHtml = (() => {
-            if (!showWaitlist) { return ''; }
-            if (!waitlistData?.length) { return '<p style="margin-top: 32px; border-top: 2px solid #dee2e6; padding-top: 16px; color: #6c757d; font-style: italic;">No students on the waitlist.</p>'; }
-            return `<h3 style="margin-top: 32px; border-top: 2px solid #dee2e6; padding-top: 16px;">
-                        Waitlist <span style="font-size: 0.85em; background: #e9ecef; border-radius: 12px; padding: 2px 10px; margin-left: 8px;">${waitlistData.length}</span>
-                    </h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Student ID</th>
-                                <th>Student Name</th>
-                                ${includeEmailInPrint ? '<th>Email</th>' : ''}
-                                <th></th><th></th><th></th><th></th><th></th><th></th><th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${waitlistData?.map((student, index) => `
-                                <tr>
-                                    <td>${index + 1}</td>
-                                    <td>${student.person12?.credentials[0]?.value}</td>
-                                    <td>${student.person12?.names.at(-1)?.lastName}, ${student.person12?.names.at(-1)?.firstName}</td>
-                                    ${includeEmailInPrint ? `<td>${getPreferredEmail(student.person12?.emails)}</td>` : ''}
-                                    <td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>`;
-        })();
-
-        const printWindow = window.open('', '_blank');
-        printWindow.document.write(`
-            <html>
-                <head>
-                    <title>Blank Roster Sheet</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
-                        h1 { color: #333; margin-bottom: 10px; border-bottom: 3px solid #0066cc; padding-bottom: 10px; }
-                        .course-info {
-                            background: #f8f9fa;
-                            border: 2px solid #dee2e6;
-                            border-radius: 8px;
-                            padding: 20px;
-                            margin: 20px 0;
-                        }
-                        .info-grid {
-                            display: grid;
-                            grid-template-columns: repeat(2, 1fr);
-                            gap: 12px 24px;
-                            margin-bottom: 12px;
-                        }
-                        .info-item {
-                            display: flex;
-                            align-items: baseline;
-                            padding: 4px 0;
-                        }
-                        .info-label {
-                            font-weight: bold;
-                            color: #495057;
-                            min-width: 120px;
-                            margin-right: 8px;
-                        }
-                        .info-value {
-                            color: #212529;
-                        }
-                        .section-header {
-                            grid-column: 1 / -1;
-                            font-size: 1.1em;
-                            font-weight: bold;
-                            color: #0066cc;
-                            margin-top: 8px;
-                            padding-bottom: 4px;
-                            border-bottom: 1px solid #dee2e6;
-                        }
-                        .date-field {
-                            margin-top: 15px;
-                            padding: 12px;
-                            background: white;
-                            border: 1px solid #dee2e6;
-                            border-radius: 4px;
-                        }
-                        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-                        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; min-height: 40px; }
-                        th { background-color: #0066cc; color: white; font-weight: bold; }
-                        .empty-cell { height: 40px; }
-                        @media print {
-                            body { margin: 0; }
-                            table { page-break-inside: auto; }
-                            tr { page-break-inside: avoid; page-break-after: auto; }
-                            .course-info { page-break-inside: avoid; }
-                        }
-                    </style>
-                </head>
-                <body>
-                    <h1>Roster Sheet</h1>
-                    <div class="course-info">
-                        <div class="info-grid">
-                            <div class="section-header">Course Information</div>
-                            <div class="info-item">
-                                <span class="info-label">Section:</span>
-                                <span class="info-value">${courseName}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">CRN:</span>
-                                <span class="info-value">${crn}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Title:</span>
-                                <span class="info-value">${courseTitle}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Subject:</span>
-                                <span class="info-value">${courseSubject}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Credits:</span>
-                                <span class="info-value">${courseCredits}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Instructor:</span>
-                                <span class="info-value">${courseInstructor}</span>
-                            </div>
-                            <div class="section-header">Schedule & Location</div>
-                            <div class="info-item">
-                                <span class="info-label">Class Type:</span>
-                                <span class="info-value">${courseType}</span>
-                            </div>
-                            ${!courseType.includes('Online') ? `
-                            <div class="info-item">
-                                <span class="info-label">Meeting Days:</span>
-                                <span class="info-value">${courseMeetingDays}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Meeting Times:</span>
-                                <span class="info-value">${courseMeetingTimes}</span>
-                            </div>` : ''}
-                            <div class="info-item">
-                                <span class="info-label">Location:</span>
-                                <span class="info-value">${courseBuilding} ${courseRoom}</span>
-                            </div>
-                            <div class="section-header">Critical Dates</div>
-                            <div class="info-item">
-                                <span class="info-label">Date to Enroll:</span>
-                                <span class="info-value">${formatDate(criticalDatesData?.lastDateToEnroll)}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Last day to add:</span>
-                                <span class="info-value">${formatDate(criticalDatesData?.lastDateToEnroll)}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Drop with refund:</span>
-                                <span class="info-value">${formatDate(criticalDatesData?.refundDate)}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Census Date:</span>
-                                <span class="info-value">${formatDate(criticalDatesData?.censusDate)}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Drop w/o a "W":</span>
-                                <span class="info-value">${formatDate(criticalDatesData?.dropNoWDate)}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Declare grade mode:</span>
-                                <span class="info-value">${formatDate(criticalDatesData?.grademodeDate)}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Drop with a "W":</span>
-                                <span class="info-value">${formatDate(criticalDatesData?.dropWDate)}</span>
-                            </div>
-                        </div>
-                        <div class="date-field">
-                            <span class="info-label">Date:</span> _______________
-                        </div>
-                    </div>
-                    ${showRoster ? `<table>
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Student ID</th>
-                                <th>Student Name</th>
-                                ${includeEmailInPrint ? '<th>Email</th>' : ''}
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${studentList?.map((student, index) => `
-                                <tr>
-                                    <td>${index + 1}</td>
-                                    <td>${student.registrant12?.credentials[0]?.value}</td>
-                                    <td>${student.registrant12?.names.at(-1)?.lastName}, ${student.registrant12?.names.at(-1)?.firstName}</td>
-                                    ${includeEmailInPrint ? `<td>${getPreferredEmail(student.registrant12?.emails)}</td>` : ''}
-                                    <td class="empty-cell"></td>
-                                    <td class="empty-cell"></td>
-                                    <td class="empty-cell"></td>
-                                    <td class="empty-cell"></td>
-                                    <td class="empty-cell"></td>
-                                    <td class="empty-cell"></td>
-                                    <td class="empty-cell"></td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>` : ''}
-
-                    ${waitlistPrintHtml}
-                </body>
-            </html>
-        `);
-        printWindow.document.close();
-        printWindow.focus();
-        printWindow.print();
+        copyToClipboard(emails)
+            .then(() => showAlert('success', `${waitlistData.length} emails copied to clipboard!`, 2000))
+            .catch(() => showAlert('error', 'Failed to copy emails.', 2000));
     }
 
-    const exportToExcel = () => {
-        const wb = XLSX.utils.book_new();
-
-        // --- Roster sheet ---
-        const rosterRows = [];
-
-        // Course info header block
-        rosterRows.push(['Course Information']);
-        rosterRows.push(['Section', courseName, 'CRN', crn]);
-        rosterRows.push(['Title', courseTitle, 'Subject', courseSubject]);
-        rosterRows.push(['Credits', courseCredits, 'Instructor', courseInstructor]);
-        rosterRows.push(['Class Type', courseType]);
-        if (!courseType.includes('Online')) {
-            rosterRows.push(['Meeting Days', courseMeetingDays, 'Meeting Times', courseMeetingTimes]);
-        }
-        rosterRows.push(['Location', `${courseBuilding} ${courseRoom}`.trim()]);
-        rosterRows.push([]);
-
-        // Critical dates
-        rosterRows.push(['Critical Dates']);
-        rosterRows.push(['Date to Enroll', formatDate(criticalDatesData?.enrlCutOffDate)]);
-        rosterRows.push(['Last day to add class', formatDate(criticalDatesData?.enrlCutOffDate)]);
-        rosterRows.push(['Last day to drop with a refund', formatDate(criticalDatesData?.rfndCutOffDate)]);
-        rosterRows.push(['Census Date', formatDate(criticalDatesData?.censusEnrlDate)]);
-        rosterRows.push(['Last day to drop without a "W"', formatDate(criticalDatesData?.acadCutOffDate)]);
-        rosterRows.push(['Last day to declare grade mode', formatDate(criticalDatesData?.ptrmEndDate)]);
-        rosterRows.push(['Last day to drop with a "W"', formatDate(criticalDatesData?.dropCutOffDate)]);
-        rosterRows.push([]);
-
-        // Roster table header
-        rosterRows.push(['#', 'Student ID', 'Student Name', 'Email']);
-
-        // Roster data
-        studentList?.forEach((item, index) => {
-            rosterRows.push([
-                index + 1,
-                item.registrant12?.credentials[0]?.value || '',
-                `${item.registrant12?.names?.at(-1)?.lastName || ''}, ${item.registrant12?.names?.at(-1)?.firstName || ''}`,
-                getPreferredEmail(item.registrant12?.emails) || ''
-            ]);
+    const handlePrintBlankSheet = () => {
+        printBlankSheet({
+            courseName,
+            crn,
+            courseTitle,
+            courseSubject,
+            courseCredits,
+            courseInstructor,
+            courseType,
+            courseMeetingDays,
+            courseMeetingTimes,
+            courseBuilding,
+            courseRoom,
+            criticalDatesData,
+            studentList,
+            waitlistData,
+            includeEmailInPrint,
+            showRoster,
+            showWaitlist
         });
+    }
 
-        // Waitlist section
-        if (waitlistData?.length > 0) {
-            rosterRows.push([]);
-            rosterRows.push(['Waitlist']);
-            rosterRows.push(['#', 'Student ID', 'Student Name', 'Email']);
-            waitlistData.forEach((item, index) => {
-                rosterRows.push([
-                    index + 1,
-                    item.person12?.credentials[0]?.value || '',
-                    `${item.person12?.names?.at(-1)?.lastName || ''}, ${item.person12?.names?.at(-1)?.firstName || ''}`,
-                    getPreferredEmail(item.person12?.emails) || ''
-                ]);
-            });
-        }
-
-        const ws = XLSX.utils.aoa_to_sheet(rosterRows);
-
-        // Widen columns for readability
-        ws['!cols'] = [{ wch: 16 }, { wch: 20 }, { wch: 30 }, { wch: 35 }];
-
-        XLSX.utils.book_append_sheet(wb, ws, 'Roster');
-
-        const fileName = `Roster_${courseName || crn}_${new Date().toLocaleDateString('en-CA')}.xlsx`;
-        XLSX.writeFile(wb, fileName);
-    };
-
-    const handleChangeSection = useCallback((event) => {
-        const { value } = event.target;
-        setDropdownStateSection(value);
-        window.localStorage.setItem('selectedSection', value);
-        const [newCrn, newTermCode] = value.split('.');
-        setCrn(newCrn);
-        setTermCode(newTermCode);
-
-        // Set course name for the selected section
-        const selectedSection = sectionData.find(sec => sec?.section16?.alternateIds?.[0]?.value === value);
-        if (selectedSection) {
-            console.log(selectedSection);
-            const course = selectedSection.section16?.course16;
-            setCourseName(`${course?.subject6?.abbreviation} ${course?.number}`);
-            setCourseTitle(selectedSection.section16?.titles?.[0]?.value || '');
-            setCourseSubject(course?.subject6?.abbreviation || '');
-            setCourseCredits(course?.credits[0]?.minimum || '');
-            const instructor = selectedSection.instructor12;
-            setCourseInstructor(instructor ? instructor.names[0]?.fullName : '');
-            setCourseType(selectedSection?.instructionalMethod6?.title || '');
-            setCourseMeetingDays(selectedSection?.instructionalEvents11?.[0]?.recurrence?.repeatRule?.daysOfWeek?.join(', ') || '');
-            const startTime = selectedSection?.instructionalEvents11?.[0]?.recurrence?.timePeriod?.startOn || '';
-            const endTime = selectedSection?.instructionalEvents11?.[0]?.recurrence?.timePeriod?.endOn || '';
-            const meetingTimes = startTime && endTime ? `${formatTime(startTime)} - ${formatTime(endTime)}` : '';
-            const building = selectedSection?.instructionalEvents11?.[0]?.locations?.[0]?.location?.room10?.building6?.title || '';
-            const room = selectedSection?.instructionalEvents11?.[0]?.locations?.[0]?.location?.room10?.number || '';
-            setCourseMeetingTimes(meetingTimes);
-            setCourseBuilding(building);
-            setCourseRoom(room);
-
-        }
-    }, [sectionData]);
-
-
-    const formatTime = (isoString) => {
-        if (!isoString) { return '' }
-        const date = new Date(isoString);
-        return date.toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true
+    const handleExportToExcel = () => {
+        exportRosterToExcel({
+            courseName,
+            crn,
+            courseTitle,
+            courseSubject,
+            courseCredits,
+            courseInstructor,
+            courseType,
+            courseMeetingDays,
+            courseMeetingTimes,
+            courseBuilding,
+            courseRoom,
+            criticalDatesData,
+            studentList,
+            waitlistData
         });
-    };
-
-    const renderContent = () => {
-        if (tabChange === 0) {
-            return (
-                <div style={{ marginTop: spacing40, marginBottom: spacing40 }}>
-                    <div style={{ marginTop: spacing40, marginBottom: spacing40, display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-                        <Button onClick={printBlankSheet} variant="contained" color="primary">
-                            Print Weekly Roster
-                        </Button>
-                        <Button onClick={exportToExcel} variant="contained" color="primary">
-                            Export to Excel
-                        </Button>
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                            <Switch
-                                checked={includeEmailInPrint}
-                                onChange={(e) => setIncludeEmailInPrint(e.target.checked)}
-                            />
-                            <Typography>Include Email</Typography>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                            <Switch
-                                checked={showRoster}
-                                onChange={(e) => setShowRoster(e.target.checked)}
-                            />
-                            <Typography>Show Roster</Typography>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                            <Switch
-                                checked={showWaitlist}
-                                onChange={(e) => setShowWaitlist(e.target.checked)}
-                            />
-                            <Typography>Show Waitlist</Typography>
-                        </div>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: spacing20 }}>
-                        <Typography variant="h5" style={{ display: 'inline' }}>Student Roster</Typography>
-                        {studentList?.length > 0 && (
-                            <Typography variant="body2" style={{ background: '#e0e0e0', borderRadius: '12px', padding: '2px 10px', fontWeight: 600 }}>
-                                {studentList.length}
-                            </Typography>
-                        )}
-                    </div>
-                    {showRoster && <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell><Typography variant="h6">#</Typography></TableCell>
-                                <TableCell><Typography variant="h6">Student ID</Typography></TableCell>
-                                <TableCell><Typography variant="h6">Student Name</Typography></TableCell>
-                                <TableCell>
-                                    <Typography variant="h6" style={{ display: 'inline' }}>Email</Typography>
-                                    <Tooltip title="Copy all emails">
-                                        <IconButton
-                                            size="small"
-                                            color="default"
-                                            onClick={handleCopyAllEmails}
-                                            style={{ marginLeft: '4px', padding: '2px' }}
-                                        >
-                                            <Icon name="copy" style={{ fontSize: '14px', color: '#666' }} />
-                                        </IconButton>
-                                    </Tooltip>
-                                </TableCell>
-                                {/* <TableCell><Typography variant="h6">{todayDate}</Typography></TableCell> */}
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {studentList?.map((item, index) => (
-                                <TableRow key={index}>
-                                    <TableCell>{index + 1}</TableCell>
-                                    <TableCell>{item.registrant12?.credentials[0]?.value}</TableCell>
-                                    <TableCell>{item.registrant12?.names?.at(-1)?.lastName}, {item.registrant12?.names?.at(-1)?.firstName}</TableCell>
-                                    <TableCell>
-                                        {getPreferredEmail(item.registrant12?.emails)}
-                                        {getPreferredEmail(item.registrant12?.emails) && (
-                                            <Tooltip title="Copy email">
-                                                <IconButton
-                                                    size="small"
-                                                    color="default"
-                                                    onClick={() => handleCopyEmail(getPreferredEmail(item.registrant12?.emails))}
-                                                    style={{ marginLeft: '4px', padding: '2px' }}
-                                                >
-                                                    <Icon name="copy" style={{ fontSize: '14px', color: '#666' }} />
-                                                </IconButton>
-                                            </Tooltip>
-                                        )}
-                                    </TableCell>
-                                    {/* <TableCell>
-                                        <Checkbox
-                                            checked={attendanceData[`${crn}-${termCode}-${todayDate}`]?.[item.spridenId] || false}
-                                            onChange={(event) => checkboxChange(item.spridenId, event.target.checked)}
-                                        />
-                                    </TableCell> */}
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>}
-
-                    <div style={{ marginTop: spacing40, borderTop: '1px solid #e0e0e0', paddingTop: spacing40, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Typography variant="h5" style={{ display: 'inline' }}>Waitlist</Typography>
-                        {waitlistData?.length > 0 && (
-                            <Typography variant="body2" style={{ background: '#e0e0e0', borderRadius: '12px', padding: '2px 10px', fontWeight: 600 }}>
-                                {waitlistData.length}
-                            </Typography>
-                        )}
-                    </div>
-                    {showWaitlist && (!waitlistData || waitlistData.length === 0 ? (
-                        <Typography style={{ marginTop: spacing20, color: '#757575', fontStyle: 'italic' }}>
-                            No students on the waitlist.
-                        </Typography>
-                    ) : (
-                        <Table>
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell><Typography variant="h6">#</Typography></TableCell>
-                                    <TableCell><Typography variant="h6">Student ID</Typography></TableCell>
-                                    <TableCell><Typography variant="h6">Student Name</Typography></TableCell>
-                                    <TableCell>
-                                        <Typography variant="h6" style={{ display: 'inline' }}>Email</Typography>
-                                        <Tooltip title="Copy all emails">
-                                            <IconButton
-                                                size="small"
-                                                color="default"
-                                                onClick={handleWaitlistCopyAllEmails}
-                                                style={{ marginLeft: '4px', padding: '2px' }}
-                                            >
-                                                <Icon name="copy" style={{ fontSize: '14px', color: '#666' }} />
-                                            </IconButton>
-                                        </Tooltip>
-                                    </TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {waitlistData?.map((item, index) => (
-                                    <TableRow key={index}>
-                                        <TableCell>{index + 1}</TableCell>
-                                        <TableCell>{item.person12?.credentials[0]?.value}</TableCell>
-                                        <TableCell>{item.person12?.names?.at(-1)?.lastName}, {item.person12?.names?.at(-1)?.firstName}</TableCell>
-                                        <TableCell>
-                                            {getPreferredEmail(item.person12?.emails)}
-                                            {getPreferredEmail(item.person12?.emails) && (
-                                                <Tooltip title="Copy email">
-                                                    <IconButton
-                                                        size="small"
-                                                        color="default"
-                                                        onClick={() => handleCopyEmail(getPreferredEmail(item.person12?.emails))}
-                                                        style={{ marginLeft: '4px', padding: '2px' }}
-                                                    >
-                                                        <Icon name="copy" style={{ fontSize: '14px', color: '#666' }} />
-                                                    </IconButton>
-                                                </Tooltip>
-                                            )}
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    ))}
-                    {/* <div style={{ marginTop: spacing40 }}>
-                        <Button onClick={saveAttendanceDataToDB} variant="contained" color="primary">
-                            Save Attendance
-                        </Button>
-                    </div> */}
-                </div>
-            );
-        }
-        // if (tabChange === 1) {
-        //     const attendanceDates = Object.keys(attendanceData)
-        //         .filter(key => key.startsWith(`${crn}-${termCode}-`))
-        //         .map(key => key.split('-').slice(2).join('-'))
-        //         .sort();
-
-        //     return (
-        //         <div style={{ marginTop: spacing40, marginBottom: spacing40 }}>
-        //             <Typography variant="h5">Attendance History</Typography>
-        //             {attendanceDates.length === 0 ? (
-        //                 <div style={{ marginBottom: spacing20, display: 'flex', flexDirection: 'column', gap: spacing20, alignItems: 'flex-start' }}>
-        //                     <Typography>No attendance records found.</Typography>
-        //                     <Button onClick={printBlankSheet} variant="contained" color="primary">
-        //                         Print Blank Sheet
-        //                     </Button>
-        //                 </div>
-        //             ) : (
-        //                 <div>
-        //                     <div style={{ marginBottom: spacing20, display: 'flex', gap: '16px' }}>
-        //                         <Button onClick={printAttendanceHistory} variant="contained" color="primary">
-        //                             Print/Save as PDF
-        //                         </Button>
-        //                         <Button onClick={printBlankSheet} variant="contained" color="primary">
-        //                             Print Blank Sheet
-        //                         </Button>
-        //                     </div>
-        //                     <Table id="attendance-history-table">
-        //                         <TableHead>
-        //                             <TableRow>
-        //                                 <TableCell><Typography variant="h6">Student ID</Typography></TableCell>
-        //                                 <TableCell><Typography variant="h6">Student Name</Typography></TableCell>
-        //                                 {attendanceDates.map(date => (
-        //                                     <TableCell key={date}>
-        //                                         <Typography variant="h6">{date}</Typography>
-        //                                     </TableCell>
-        //                                 ))}
-        //                             </TableRow>
-        //                         </TableHead>
-        //                         <TableBody>
-        //                             {studentList.map((item, index) => (
-        //                                 <TableRow key={index}>
-        //                                     <TableCell>{item.spridenId}</TableCell>
-        //                                     <TableCell>{item.spridenCurrName}</TableCell>
-        //                                     {attendanceDates.map(date => {
-        //                                         const key = `${crn}-${termCode}-${date}`;
-        //                                         const isPresent = attendanceData[key]?.[item.spridenId];
-        //                                         return (
-        //                                             <TableCell key={date}>
-        //                                                 <Typography className={isPresent ? 'present' : 'absent'}>
-        //                                                     {isPresent ? '✓' : '✗'}
-        //                                                 </Typography>
-        //                                             </TableCell>
-        //                                         );
-        //                                     })}
-        //                                 </TableRow>
-        //                             ))}
-        //                         </TableBody>
-        //                     </Table>
-        //                 </div>
-        //             )}
-        //         </div>
-        //     );
-        // }
     }
 
     return (
@@ -1008,13 +377,25 @@ const HomePage = () => {
             )}
             <Tabs value={tabChange} onChange={handleTabChange} aria-label="Roster Sheet Tabs">
                 <Tab label="Student Roster" />
-                {/* <Tab label="Attendance History" /> */}
             </Tabs>
-            {renderContent()}
+            {tabChange === 0 && (
+                <RosterContent
+                    studentList={studentList}
+                    waitlistData={waitlistData}
+                    includeEmailInPrint={includeEmailInPrint}
+                    setIncludeEmailInPrint={setIncludeEmailInPrint}
+                    showRoster={showRoster}
+                    setShowRoster={setShowRoster}
+                    showWaitlist={showWaitlist}
+                    setShowWaitlist={setShowWaitlist}
+                    onPrintBlankSheet={handlePrintBlankSheet}
+                    onExportToExcel={handleExportToExcel}
+                    onCopyAllEmails={handleCopyAllEmails}
+                    onCopyWaitlistEmails={handleWaitlistCopyAllEmails}
+                />
+            )}
         </div>
     );
-
-
 }
 
 export default HomePage;

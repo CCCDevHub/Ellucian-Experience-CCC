@@ -40,7 +40,7 @@ const Attendance = () => {
     const [dropdownStateSection, setDropdownStateSection] = useState();
     const [terms, setTerms] = useState([]);
     const [dropdownStateTerm, setDropdownStateTerm] = useState();
-
+    const [instructorId, setInstructorId] = useState('');
 
     useEffect(() => {
         (async () => {
@@ -58,7 +58,7 @@ const Attendance = () => {
                 setLoadingStatus(false);
             }
         })();
-    }, []);
+    }, [authenticatedEthosFetch, cardId, setErrorMessage, setLoadingStatus, termPipelineAPI]);
 
     const handleChangeSection = (event) => {
         const { value } = event.target;
@@ -67,7 +67,7 @@ const Attendance = () => {
 
         window.localStorage.setItem('selectedSection', value);
         navigateToPage({
-            route: `/class-roster`
+            route: `/class-roster/${value}`
         });
         setLoadingStatus(false);
 
@@ -87,6 +87,11 @@ const Attendance = () => {
                 // const sectionResult = await mock;
                 const sectionData = (sectionResult?.data?.sectionInstructors?.edges?.map(edge => edge.node));
                 setSections(sectionData);
+                window.localStorage.setItem('instructorId', sectionData[0]?.instructor12?.credentials.find(
+                    crd => crd.type === 'bannerId')
+                    ?.value);
+
+
                 setLoadingStatus(false);
             } catch (error) {
                 console.error('Failed to load sections:', error);

@@ -110,6 +110,10 @@ module.exports = {
                                                 names {
                                                     fullName
                                                 }
+                                                credentials {
+                                                    value
+                                                    type
+                                                }
                                             }
                                         }
                                     }
