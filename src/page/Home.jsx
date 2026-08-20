@@ -120,7 +120,7 @@ const saveCache = (prefix, studentId, results) => {
 const HomePage = () => {
     const { classes } = useStyles();
     const { setPageTitle, setLoadingStatus, setErrorMessage } = usePageControl();
-    const { authenticatedEthosFetch, getEthosQuery } = useData();
+    const { authenticatedEthosFetch } = useData();
     const { cardConfiguration: {
         catalogYear, majorCodes, majorDisp, whatIfPipeline, whatIfUrl, username, password
     }, cardId } = useCardInfo();
@@ -258,29 +258,29 @@ const HomePage = () => {
                 <div className={classes.transcriptSection}>
                     <Typography variant="h3">Transcript</Typography>
                     <div className={classes.transcriptGrid}>
-                    {Object.entries(transcriptByTerm).map(([term, courses]) => (
-                        <div key={term} className={classes.termGroup}>
-                            <Typography variant="h4">{term}</Typography>
-                            <table className={classes.transcriptTable}>
-                                <thead>
-                                    <tr>
-                                        <th className={classes.transcriptHeaderCell} style={{ width: '50%' }}>Course</th>
-                                        <th className={classes.transcriptHeaderCell} style={{ width: '25%' }}>Grade</th>
-                                        <th className={classes.transcriptHeaderCell} style={{ width: '25%' }}>Units</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {courses.map((course, i) => (
-                                        <tr key={i}>
-                                            <td className={classes.transcriptCell}>{course.course}</td>
-                                            <td className={classes.transcriptCell}>{course.grade}</td>
-                                            <td className={classes.transcriptCell}>{course.units}</td>
+                        {Object.entries(transcriptByTerm).map(([term, courses]) => (
+                            <div key={term} className={classes.termGroup}>
+                                <Typography variant="h4">{term}</Typography>
+                                <table className={classes.transcriptTable}>
+                                    <thead>
+                                        <tr>
+                                            <th className={classes.transcriptHeaderCell} style={{ width: '50%' }}>Course</th>
+                                            <th className={classes.transcriptHeaderCell} style={{ width: '25%' }}>Grade</th>
+                                            <th className={classes.transcriptHeaderCell} style={{ width: '25%' }}>Units</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    ))}
+                                    </thead>
+                                    <tbody>
+                                        {courses.map((course, i) => (
+                                            <tr key={i}>
+                                                <td className={classes.transcriptCell}>{course.course}</td>
+                                                <td className={classes.transcriptCell}>{course.grade}</td>
+                                                <td className={classes.transcriptCell}>{course.units}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ))}
                     </div>
                 </div>
             )}
