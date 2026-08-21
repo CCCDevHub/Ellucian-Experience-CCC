@@ -7,6 +7,7 @@ import { useParams } from 'react-router-dom';
 const SETTINGS_KEY = 'degreeAuditSettings';
 const CACHE_PREFIX = 'degreeAuditResults_';
 const CACHE_PREFIX_TRANSCRIPT = 'transcriptResults_';
+const CACHE_PREFIX_GPA = 'gpaResults_';
 const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 const useStyles = makeStyles()({
@@ -94,7 +95,145 @@ const useStyles = makeStyles()({
         padding: '2px 4px',
         borderBottom: '1px solid #f0f0f0',
     },
+    gpaSection: {
+        marginTop: spacing16,
+    },
+    gpaHeroGrid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+        gap: spacing16,
+    },
+    gpaHero: {
+        backgroundColor: '#f8f9fa',
+        border: '1px solid #e8eaed',
+        borderRadius: '10px',
+        padding: spacing16,
+    },
+    gpaStatRow: {
+        display: 'flex',
+        alignItems: 'stretch',
+    },
+    gpaStat: {
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '2px',
+        padding: `0 ${spacing16}`,
+    },
+    gpaStatFirst: {
+        paddingLeft: 0,
+    },
+    gpaStatDivider: {
+        width: '1px',
+        backgroundColor: '#e0e0e0',
+        margin: `2px 0`,
+    },
+    gpaStatLabel: {
+        fontSize: '0.6875rem',
+        color: '#888',
+        textTransform: 'uppercase',
+        letterSpacing: '0.05em',
+        fontWeight: 600,
+    },
+    gpaStatValue: {
+        fontSize: '2rem',
+        fontWeight: 700,
+        color: '#0066cc',
+        lineHeight: 1.1,
+    },
+    gpaStatSub: {
+        fontSize: '0.75rem',
+        color: '#666',
+    },
+    gpaMetaGrid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+        gap: spacing16,
+        marginTop: spacing16,
+    },
+    gpaMetaBlock: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: spacing8,
+    },
+    chipRow: {
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: spacing8,
+    },
+    chip: {
+        fontSize: '0.75rem',
+        color: '#333',
+        backgroundColor: '#eef1f4',
+        border: '1px solid #dde1e6',
+        borderRadius: '999px',
+        padding: '3px 12px',
+    },
+    chipGE: {
+        color: '#0b5b3f',
+        backgroundColor: '#e5f4ee',
+        borderColor: '#c7e7d9',
+    },
+    degreesGrid: {
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: spacing8,
+        marginTop: spacing16,
+    },
+    degreeItem: {
+        backgroundColor: '#f8f9fa',
+        borderRadius: '6px',
+        padding: `${spacing8} ${spacing16}`,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '4px',
+        minWidth: '160px',
+    },
+    degreeTopRow: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        gap: spacing8,
+    },
+    degreeName: {
+        fontSize: '0.8125rem',
+        fontWeight: '600',
+        color: '#333',
+    },
+    degreeStatus: {
+        fontSize: '0.625rem',
+        fontWeight: 700,
+        textTransform: 'uppercase',
+        letterSpacing: '0.03em',
+        padding: '2px 8px',
+        borderRadius: '999px',
+        color: '#0b5b3f',
+        backgroundColor: '#e5f4ee',
+    },
+    degreeTerm: {
+        fontSize: '0.6875rem',
+        color: '#888',
+    },
 });
+
+const DEGREE_STATUS_LABELS = {
+    GR: 'Granted',
+    PN: 'Pending',
+    PD: 'Pending',
+    IP: 'In Progress',
+};
+
+const parseDegreeEntry = (entry) => {
+    const raw = entry.trim();
+    const match = raw.match(/^([A-Z]+)=([A-Z-]+)\s+([A-Z]+)\s+(\d+)$/);
+    if (!match) return { label: raw, status: null, term: null };
+    const [, statusCode, degreeType, major, term] = match;
+    return {
+        label: `${degreeType} – ${major}`,
+        status: DEGREE_STATUS_LABELS[statusCode] ?? statusCode,
+        term,
+    };
+};
 
 const getCacheKey = (prefix, studentId) => `${prefix}${studentId}`;
 
@@ -122,7 +261,7 @@ const HomePage = () => {
     const { setPageTitle, setLoadingStatus, setErrorMessage } = usePageControl();
     const { authenticatedEthosFetch } = useData();
     const { cardConfiguration: {
-        catalogYear, majorCodes, majorDisp, whatIfPipeline, whatIfUrl, username, password
+        catalogYear, majorCodes, majorDisp, whatIfPipeline, whatIfUrl, username, password, gpaPipeline
     }, cardId } = useCardInfo();
 
     const { studentId } = useParams();
@@ -130,6 +269,7 @@ const HomePage = () => {
     const [auditData, setAuditData] = useState(null);
     const [cachedAt, setCachedAt] = useState(null);
     const [transcriptData, setTranscriptData] = useState(null);
+    const [gpaData, setGPAData] = useState(null);
 
     setPageTitle(`Major Audit for ${studentId ?? ''}`);
 
@@ -139,9 +279,11 @@ const HomePage = () => {
         if (!force) {
             const cachedAudit = loadCache(CACHE_PREFIX, studentId);
             const cachedTranscript = loadCache(CACHE_PREFIX_TRANSCRIPT, studentId);
+            const cachedGPA = loadCache(CACHE_PREFIX_GPA, studentId);
             if (cachedAudit && cachedTranscript) {
                 setAuditData(cachedAudit.results);
                 setTranscriptData(cachedTranscript.results);
+                setGPAData(cachedGPA.results);
                 setCachedAt(new Date(cachedAudit.timestamp));
                 setLoadingStatus(false);
                 return;
@@ -203,13 +345,20 @@ const HomePage = () => {
             saveCache(CACHE_PREFIX_TRANSCRIPT, studentId, transcriptRecords);
             setTranscriptData(transcriptRecords);
 
+            const gpaResponse = await authenticatedEthosFetch(`${gpaPipeline}?cardId=${cardId}&studentId=${studentId}`);
+            if (!gpaResponse.ok) throw new Error(`Transcript error: ${gpaResponse.statusText}`);
+            const gpaResult = await gpaResponse.json();
+            const gpaRecords = Array.isArray(gpaResult) ? gpaResult : (gpaResult?.gpa ?? []);
+            saveCache(CACHE_PREFIX_GPA, studentId, gpaRecords);
+            setGPAData(gpaRecords);
+
         } catch (error) {
             console.error('Audit failed:', error);
             setErrorMessage('Failed to fetch degree audit data. Please check your configuration and try again.');
         } finally {
             setLoadingStatus(false);
         }
-    }, [studentId, setLoadingStatus, setErrorMessage, cardId, catalogYear, majorCodes, majorDisp, whatIfPipeline, whatIfUrl, authenticatedEthosFetch]);
+    }, [studentId, setLoadingStatus, setErrorMessage, cardId, catalogYear, majorCodes, majorDisp, whatIfPipeline, whatIfUrl, authenticatedEthosFetch, gpaPipeline]);
 
     useEffect(() => {
         runAudit();
@@ -232,23 +381,97 @@ const HomePage = () => {
             <div className={classes.header}>
                 <Typography variant="h2">Major Audit Results</Typography>
             </div>
-            {sortedResults && (
-                <div className={classes.results}>
-                    {sortedResults.map((item, i) => {
-                        const label = Object.keys(item)[0];
-                        const pct = parseFloat(Object.values(item)[0]);
-                        return (
-                            <div key={i} className={classes.resultRow}>
-                                <span className={classes.resultLabel}>{label}</span>
-                                <div className={classes.progressTrack}>
-                                    <div className={classes.progressFill} style={{ width: `${pct}%` }} />
+            {gpaData && gpaData.length > 0 && (
+                <div className={classes.gpaSection}>
+                    <Typography variant="h3">GPA Summary</Typography>
+                    <div className={classes.gpaHeroGrid}>
+                        {gpaData.map((row, i) => (
+                            <div key={i} className={classes.gpaHero}>
+                                <div className={classes.gpaStatRow}>
+                                    <div className={`${classes.gpaStat} ${classes.gpaStatFirst}`}>
+                                        <span className={classes.gpaStatLabel}>GPA (1–99)</span>
+                                        <span className={classes.gpaStatValue}>{row.gpa_1to99}</span>
+                                        <span className={classes.gpaStatSub}>{row.units_1to99} units</span>
+                                    </div>
+                                    <div className={classes.gpaStatDivider} />
+                                    <div className={classes.gpaStat}>
+                                        <span className={classes.gpaStatLabel}>GPA (1–399)</span>
+                                        <span className={classes.gpaStatValue}>{row.gpa_1to399}</span>
+                                        <span className={classes.gpaStatSub}>{row.units_1to399} units</span>
+                                    </div>
                                 </div>
-                                <span className={classes.resultPct}>{Math.round(pct)}%</span>
+                                {(row.prior_colleges || row.ge_posting) && (
+                                    <div className={classes.gpaMetaGrid}>
+                                        {row.prior_colleges && (
+                                            <div className={classes.gpaMetaBlock}>
+                                                <span className={classes.gpaStatLabel}>Prior Colleges</span>
+                                                <div className={classes.chipRow}>
+                                                    {[...new Set(row.prior_colleges.split(',').map(c => c.trim()).filter(Boolean))]
+                                                        .map((college, ci) => (
+                                                            <span key={ci} className={classes.chip}>{college}</span>
+                                                        ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                        {row.ge_posting && (
+                                            <div className={classes.gpaMetaBlock}>
+                                                <span className={classes.gpaStatLabel}>GE Certifications</span>
+                                                <div className={classes.chipRow}>
+                                                    {[...new Set(row.ge_posting.split(',').map(g => g.trim()).filter(Boolean))]
+                                                        .map((ge, gi) => (
+                                                            <span key={gi} className={`${classes.chip} ${classes.chipGE}`}>{ge}</span>
+                                                        ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
-                        );
-                    })}
+                        ))}
+                    </div>
+                    {gpaData.some(r => r.degrees_earned_or_pending) && (
+                        <>
+                            <Typography variant="h4" style={{ marginTop: spacing16, marginBottom: spacing8 }}>Degrees Earned</Typography>
+                            <div className={classes.degreesGrid}>
+                                {gpaData.flatMap(r => r.degrees_earned_or_pending.split(',').map(d => parseDegreeEntry(d)))
+                                    .map((item, i) => (
+                                        <div key={i} className={classes.degreeItem}>
+                                            <div className={classes.degreeTopRow}>
+                                                <span className={classes.degreeName}>{item.label}</span>
+                                                {item.status && <span className={classes.degreeStatus}>{item.status}</span>}
+                                            </div>
+                                            {item.term && <span className={classes.degreeTerm}>Term {item.term}</span>}
+                                        </div>
+                                    ))}
+                            </div>
+                        </>
+                    )}
                 </div>
             )}
+
+            {sortedResults && (
+                <>
+                    <div className={classes.header}>
+                        <Typography variant="h3">Major Audit</Typography>
+                    </div>
+                    <div className={classes.results}>
+                        {sortedResults.map((item, i) => {
+                            const label = Object.keys(item)[0];
+                            const pct = parseFloat(Object.values(item)[0]);
+                            return (
+                                <div key={i} className={classes.resultRow}>
+                                    <span className={classes.resultLabel}>{label}</span>
+                                    <div className={classes.progressTrack}>
+                                        <div className={classes.progressFill} style={{ width: `${pct}%` }} />
+                                    </div>
+                                    <span className={classes.resultPct}>{Math.round(pct)}%</span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </>
+            )}
+
             {cachedAt && (
                 <Typography className={classes.meta}>
                     Last updated {cachedAt.toLocaleString()}

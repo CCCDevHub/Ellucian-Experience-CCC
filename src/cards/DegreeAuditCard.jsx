@@ -21,7 +21,7 @@ const DegreeAuditCard = () => {
     const { classes } = useStyles();
     const { setErrorMessage, navigateToPage } = useCardControl();
     const { configuration: {
-        catalogYear, majorCodes, majorDisp, whatIfPipeline, whatIfUrl, username, password
+        catalogYear, majorCodes, majorDisp, whatIfPipeline, whatIfUrl, username, password, gpaPipeline, studentPipeline
     } } = useCardInfo();
 
     const [studentId, setStudentId] = useState('');

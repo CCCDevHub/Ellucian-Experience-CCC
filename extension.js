@@ -56,6 +56,16 @@ module.exports = {
                     label: "What-If Pipeline",
                     type: "text"
                 },
+                {
+                    key: "studentPipeline",
+                    label: "Student Pipeline",
+                    type: "text"
+                },
+                {
+                    key: "gpaPipeline",
+                    label: "GPA Pipeline",
+                    type: "text"
+                },
             ],
             server: [
                 {
