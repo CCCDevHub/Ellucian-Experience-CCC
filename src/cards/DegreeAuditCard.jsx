@@ -1,9 +1,10 @@
 import { spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
 import { makeStyles, TextField, Button, Switch, FormControlLabel } from '@ellucian/react-design-system/core';
-import { useCardControl, useCardInfo } from '@ellucian/experience-extension-utils';
+import { useCardControl, useCardInfo, useData } from '@ellucian/experience-extension-utils';
 import React, { useState } from 'react';
 
 const SETTINGS_KEY = 'degreeAuditSettings';
+const STUDENT_NAME_PREFIX = 'degreeAuditStudentName_';
 
 const useStyles = makeStyles()({
     card: {
@@ -20,9 +21,10 @@ const useStyles = makeStyles()({
 const DegreeAuditCard = () => {
     const { classes } = useStyles();
     const { setErrorMessage, navigateToPage } = useCardControl();
+    const { authenticatedEthosFetch } = useData();
     const { configuration: {
         catalogYear, majorCodes, majorDisp, whatIfPipeline, whatIfUrl, username, password, gpaPipeline, studentPipeline
-    } } = useCardInfo();
+    }, cardId } = useCardInfo();
 
     const [studentId, setStudentId] = useState('');
     const [inProgress, setInProgress] = useState(false);
@@ -50,6 +52,16 @@ const DegreeAuditCard = () => {
                 majorDisp,
                 whatIfPipeline
             }));
+
+            const personResponse = await authenticatedEthosFetch(`${studentPipeline}?cardId=${cardId}&personId=${studentId}`);
+
+            if (!personResponse.ok) throw new Error(`Person error: ${personResponse.statusText}`);
+            const personResult = await personResponse.json();
+
+            const fullName = personResult?.data?.persons12?.edges?.[0]?.node?.names?.[0]?.fullName;
+            if (fullName) {
+                window.localStorage.setItem(`${STUDENT_NAME_PREFIX}${studentId}`, fullName);
+            }
 
             navigateToPage({ route: `/degree-audit/${studentId}` });
         } catch (error) {

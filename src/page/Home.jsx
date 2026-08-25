@@ -5,6 +5,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 const SETTINGS_KEY = 'degreeAuditSettings';
+const STUDENT_NAME_PREFIX = 'degreeAuditStudentName_';
 const CACHE_PREFIX = 'degreeAuditResults_';
 const CACHE_PREFIX_TRANSCRIPT = 'transcriptResults_';
 const CACHE_PREFIX_GPA = 'gpaResults_';
@@ -270,7 +271,8 @@ const HomePage = () => {
     const [transcriptData, setTranscriptData] = useState(null);
     const [gpaData, setGPAData] = useState(null);
 
-    setPageTitle(`Major Audit for ${studentId ?? ''}`);
+    const studentName = studentId ? window.localStorage.getItem(`${STUDENT_NAME_PREFIX}${studentId}`) : null;
+    setPageTitle(`Major Audit for ${studentName ? `${studentName} - ${studentId}` : (studentId ?? '')}`);
 
     const runAudit = useCallback(async (force = false) => {
         if (!studentId) return;

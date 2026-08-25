@@ -79,7 +79,13 @@ module.exports = {
                     label: "degreeworks password",
                     type: "password",
                     required: true
-                }
+                },
+                {
+                    key: "ethosApiKey",
+                    label: "ethos api key",
+                    type: "password",
+                    required: true
+                },
             ]
         }
 
