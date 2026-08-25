@@ -32,11 +32,8 @@ const useStyles = makeStyles()({
         borderTop: '1px solid #d0d0d0',
     },
     transcriptGrid: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+        columnWidth: '260px',
         columnGap: spacing40,
-        rowGap: spacing40,
-        alignItems: 'start',
         marginTop: spacing16,
     },
     results: {
@@ -74,9 +71,11 @@ const useStyles = makeStyles()({
         fontWeight: 'bold',
     },
     termGroup: {
+        breakInside: 'avoid',
         display: 'flex',
         flexDirection: 'column',
         gap: '2px',
+        marginBottom: spacing40,
     },
     transcriptTable: {
         width: '100%',
