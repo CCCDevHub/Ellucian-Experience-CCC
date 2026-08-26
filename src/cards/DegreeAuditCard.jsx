@@ -36,7 +36,7 @@ const DegreeAuditCard = () => {
             const tokenRes = await fetch('https://dwadmin-prod.ec.pasadena.edu/transit/api/stateless-token', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password: 'whatifapi' })
+                body: JSON.stringify({ username, password: 'WHATIFAPI' })
             });
             if (!tokenRes.ok) throw new Error(`Token error: ${tokenRes.statusText}`);
             const { token } = await tokenRes.json();

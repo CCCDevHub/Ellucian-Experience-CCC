@@ -1,8 +1,8 @@
-import { spacing40, spacing16, spacing8 } from '@ellucian/react-design-system/core/styles/tokens';
-import { makeStyles, Typography, Button } from '@ellucian/react-design-system/core';
+import { spacing40, spacing16, spacing8, spacing50 } from '@ellucian/react-design-system/core/styles/tokens';
+import { makeStyles, Typography, Button, TextField } from '@ellucian/react-design-system/core';
 import { usePageControl, useData, useCardInfo } from '@ellucian/experience-extension-utils';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 
 const SETTINGS_KEY = 'degreeAuditSettings';
 const STUDENT_NAME_PREFIX = 'degreeAuditStudentName_';
@@ -22,6 +22,17 @@ const useStyles = makeStyles()({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
+    },
+    studentUpdateRow: {
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: spacing50,
+    },
+    studentIdField: {
+        maxWidth: '280px',
+    },
+    studentUpdateButton: {
+        flexShrink: 0,
     },
     meta: {
         fontSize: '0.75rem',
@@ -261,30 +272,39 @@ const HomePage = () => {
     const { setPageTitle, setLoadingStatus, setErrorMessage } = usePageControl();
     const { authenticatedEthosFetch } = useData();
     const { cardConfiguration: {
-        catalogYear, majorCodes, majorDisp, whatIfPipeline, whatIfUrl, username, password, gpaPipeline
+        catalogYear, majorCodes, majorDisp, whatIfPipeline, whatIfUrl, username, password, gpaPipeline, studentPipeline
     }, cardId } = useCardInfo();
 
     const { studentId } = useParams();
+    const history = useHistory();
 
     const [auditData, setAuditData] = useState(null);
     const [cachedAt, setCachedAt] = useState(null);
     const [transcriptData, setTranscriptData] = useState(null);
     const [gpaData, setGPAData] = useState(null);
+    const [studentName, setStudentName] = useState(null);
+    const [activeStudentId, setActiveStudentId] = useState(studentId ?? '');
+    const [newStudentId, setNewStudentId] = useState(studentId ?? '');
+    const [updatingStudent, setUpdatingStudent] = useState(false);
 
-    const studentName = studentId ? window.localStorage.getItem(`${STUDENT_NAME_PREFIX}${studentId}`) : null;
-    setPageTitle(`Major Audit for ${studentName ? `${studentName} - ${studentId}` : (studentId ?? '')}`);
+    useEffect(() => {
+        setActiveStudentId(studentId ?? '');
+        setStudentName(studentId ? window.localStorage.getItem(`${STUDENT_NAME_PREFIX}${studentId}`) : null);
+    }, [studentId]);
+
+    setPageTitle(`Major Audit for ${studentName ? `${studentName} - ${activeStudentId}` : (activeStudentId || '')}`);
 
     const runAudit = useCallback(async (force = false) => {
-        if (!studentId) return;
+        if (!activeStudentId) return;
 
         if (!force) {
-            const cachedAudit = loadCache(CACHE_PREFIX, studentId);
-            const cachedTranscript = loadCache(CACHE_PREFIX_TRANSCRIPT, studentId);
-            const cachedGPA = loadCache(CACHE_PREFIX_GPA, studentId);
+            const cachedAudit = loadCache(CACHE_PREFIX, activeStudentId);
+            const cachedTranscript = loadCache(CACHE_PREFIX_TRANSCRIPT, activeStudentId);
+            const cachedGPA = loadCache(CACHE_PREFIX_GPA, activeStudentId);
             if (cachedAudit && cachedTranscript) {
                 setAuditData(cachedAudit.results);
                 setTranscriptData(cachedTranscript.results);
-                setGPAData(cachedGPA.results);
+                setGPAData(cachedGPA ? cachedGPA.results : null);
                 setCachedAt(new Date(cachedAudit.timestamp));
                 setLoadingStatus(false);
                 return;
@@ -293,6 +313,9 @@ const HomePage = () => {
 
         setLoadingStatus(true);
         setAuditData(null);
+        setTranscriptData(null);
+        setGPAData(null);
+        setCachedAt(null);
 
 
         const { includeInProgress = false, token } = JSON.parse(window.localStorage.getItem(SETTINGS_KEY) || '{}');
@@ -314,7 +337,7 @@ const HomePage = () => {
                         'Authorization': token
                     },
                     body: JSON.stringify({
-                        studentId,
+                        studentId: activeStudentId,
                         school: 'CR',
                         degree,
                         catalogYear,
@@ -335,22 +358,22 @@ const HomePage = () => {
                     .forEach(rule => results.push({ [opt.label]: rule.percentComplete }));
             }
 
-            saveCache(CACHE_PREFIX, studentId, results);
+            saveCache(CACHE_PREFIX, activeStudentId, results);
             setAuditData(results);
             setCachedAt(new Date());
 
-            const transcriptResponse = await authenticatedEthosFetch(`${whatIfPipeline}?cardId=${cardId}&studentId=${studentId}`);
+            const transcriptResponse = await authenticatedEthosFetch(`${whatIfPipeline}?cardId=${cardId}&studentId=${activeStudentId}`);
             if (!transcriptResponse.ok) throw new Error(`Transcript error: ${transcriptResponse.statusText}`);
             const transcriptResult = await transcriptResponse.json();
             const transcriptRecords = Array.isArray(transcriptResult) ? transcriptResult : (transcriptResult?.transcript ?? []);
-            saveCache(CACHE_PREFIX_TRANSCRIPT, studentId, transcriptRecords);
+            saveCache(CACHE_PREFIX_TRANSCRIPT, activeStudentId, transcriptRecords);
             setTranscriptData(transcriptRecords);
 
-            const gpaResponse = await authenticatedEthosFetch(`${gpaPipeline}?cardId=${cardId}&studentId=${studentId}`);
+            const gpaResponse = await authenticatedEthosFetch(`${gpaPipeline}?cardId=${cardId}&studentId=${activeStudentId}`);
             if (!gpaResponse.ok) throw new Error(`Transcript error: ${gpaResponse.statusText}`);
             const gpaResult = await gpaResponse.json();
             const gpaRecords = Array.isArray(gpaResult) ? gpaResult : (gpaResult?.gpa ?? []);
-            saveCache(CACHE_PREFIX_GPA, studentId, gpaRecords);
+            saveCache(CACHE_PREFIX_GPA, activeStudentId, gpaRecords);
             setGPAData(gpaRecords);
 
         } catch (error) {
@@ -359,11 +382,38 @@ const HomePage = () => {
         } finally {
             setLoadingStatus(false);
         }
-    }, [studentId, setLoadingStatus, setErrorMessage, cardId, catalogYear, majorCodes, majorDisp, whatIfPipeline, whatIfUrl, authenticatedEthosFetch, gpaPipeline]);
+    }, [activeStudentId, setLoadingStatus, setErrorMessage, cardId, catalogYear, majorCodes, majorDisp, whatIfPipeline, whatIfUrl, authenticatedEthosFetch, gpaPipeline]);
 
     useEffect(() => {
         runAudit();
     }, [runAudit]);
+
+    const handleUpdateStudent = async () => {
+        const id = newStudentId.trim();
+        if (updatingStudent || !studentPipeline || !/^\d{8}$/.test(id)) return;
+
+        setUpdatingStudent(true);
+        try {
+            const personResponse = await authenticatedEthosFetch(`${studentPipeline}?cardId=${cardId}&personId=${id}`);
+            if (!personResponse.ok) throw new Error(`Person error: ${personResponse.statusText}`);
+            const personResult = await personResponse.json();
+
+            const fullName = personResult?.data?.persons12?.edges?.[0]?.node?.names?.[0]?.fullName;
+            if (fullName) {
+                window.localStorage.setItem(`${STUDENT_NAME_PREFIX}${id}`, fullName);
+                setStudentName(fullName);
+            }
+            if (id !== activeStudentId) {
+                setActiveStudentId(id);
+                history.replace(`/degree-audit/${id}`);
+            }
+        } catch (error) {
+            console.error('Student lookup failed:', error);
+            setErrorMessage('Failed to fetch student info. Please check your configuration and try again.');
+        } finally {
+            setUpdatingStudent(false);
+        }
+    };
 
     const sortedResults = auditData
         ? [...auditData].sort((a, b) => parseFloat(Object.values(b)[0]) - parseFloat(Object.values(a)[0]))
@@ -381,6 +431,29 @@ const HomePage = () => {
         <div className={classes.page}>
             <div className={classes.header}>
                 <Typography variant="h2">Major Audit Results</Typography>
+            </div>
+            <div className={classes.studentUpdateRow}>
+                <TextField
+                    label="Student ID"
+                    placeholder="Enter student ID"
+                    size="small"
+                    value={newStudentId}
+                    onChange={(e) => setNewStudentId(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleUpdateStudent();
+                    }}
+                    className={classes.studentIdField}
+                />
+                <Button
+                    color="primary"
+                    size="small"
+                    variant="contained"
+                    className={classes.studentUpdateButton}
+                    disabled={updatingStudent || !studentPipeline || !/^\d{8}$/.test(newStudentId.trim())}
+                    onClick={handleUpdateStudent}
+                >
+                    {updatingStudent ? 'Loading…' : 'Load Student'}
+                </Button>
             </div>
             {gpaData && gpaData.length > 0 && (
                 <div className={classes.gpaSection}>
