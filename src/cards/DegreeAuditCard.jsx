@@ -32,9 +32,8 @@ const DegreeAuditCard = () => {
 
     const handleClick = async () => {
         setInProgress(true);
-
         try {
-            const tokenRes = await fetch(tokenUrl, {
+            const tokenRes = await fetch('https://dwadmin-prod.ec.pasadena.edu/transit/api/stateless-token', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password: 'whatifapi' })
