@@ -23,7 +23,7 @@ const DegreeAuditCard = () => {
     const { setErrorMessage, navigateToPage } = useCardControl();
     const { authenticatedEthosFetch } = useData();
     const { configuration: {
-        catalogYear, majorCodes, majorDisp, whatIfPipeline, whatIfUrl, username, password, gpaPipeline, studentPipeline
+        catalogYear, majorCodes, majorDisp, whatIfPipeline, tokenUrl, whatIfUrl, username, password, gpaPipeline, studentPipeline
     }, cardId } = useCardInfo();
 
     const [studentId, setStudentId] = useState('');
@@ -34,7 +34,7 @@ const DegreeAuditCard = () => {
         setInProgress(true);
 
         try {
-            const tokenRes = await fetch('https://dwadmin-dev.ec.pasadena.edu/dwtest/transit/api/stateless-token', {
+            const tokenRes = await fetch(tokenUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password: 'whatifapi' })
