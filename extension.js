@@ -66,6 +66,11 @@ module.exports = {
                     label: "GPA Pipeline",
                     type: "text"
                 },
+                {
+                    key: "currentClassesPipeline",
+                    label: "Current Classes Pipeline",
+                    type: "text"
+                },
             ],
             server: [
                 {

@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 
 const SETTINGS_KEY = 'degreeAuditSettings';
 const STUDENT_NAME_PREFIX = 'degreeAuditStudentName_';
+const STUDENT_EMAIL_PREFIX = 'degreeAuditStudentEmail_';
 
 const useStyles = makeStyles()({
     card: {
@@ -23,7 +24,7 @@ const DegreeAuditCard = () => {
     const { setErrorMessage, navigateToPage } = useCardControl();
     const { authenticatedEthosFetch } = useData();
     const { configuration: {
-        catalogYear, majorCodes, majorDisp, whatIfPipeline, tokenUrl, whatIfUrl, username, password, gpaPipeline, studentPipeline
+        catalogYear, majorCodes, majorDisp, whatIfPipeline, whatIfUrl, username, password, gpaPipeline, studentPipeline, currentClassesPipeline
     }, cardId } = useCardInfo();
 
     const [studentId, setStudentId] = useState('');
@@ -42,14 +43,19 @@ const DegreeAuditCard = () => {
             const { token } = await tokenRes.json();
 
             // token is now a plain string from the API — safe to store
+            // Cache everything the page needs so it still works on refresh / direct navigation.
             window.localStorage.setItem(SETTINGS_KEY, JSON.stringify({
+                cardId,
                 includeInProgress,
                 token,
                 whatIfUrl,
                 catalogYear,
                 majorCodes,
                 majorDisp,
-                whatIfPipeline
+                whatIfPipeline,
+                gpaPipeline,
+                studentPipeline,
+                currentClassesPipeline
             }));
 
             const personResponse = await authenticatedEthosFetch(`${studentPipeline}?cardId=${cardId}&personId=${studentId}`);
@@ -57,9 +63,15 @@ const DegreeAuditCard = () => {
             if (!personResponse.ok) throw new Error(`Person error: ${personResponse.statusText}`);
             const personResult = await personResponse.json();
 
-            const fullName = personResult?.data?.persons12?.edges?.[0]?.node?.names?.[0]?.fullName;
+            const fullName = `${personResult?.data?.persons12?.edges?.[0]?.node?.names?.[0]?.lastName}, ${personResult?.data?.persons12?.edges?.[0]?.node?.names?.[0]?.firstName}`;
             if (fullName) {
                 window.localStorage.setItem(`${STUDENT_NAME_PREFIX}${studentId}`, fullName);
+            }
+
+            const email = personResult?.data?.persons12?.edges?.[0]?.node?.emails?.find(e => e.type.emailType === 'school')?.address;
+
+            if (email) {
+                window.localStorage.setItem(`${STUDENT_EMAIL_PREFIX}${studentId}`, email);
             }
 
             navigateToPage({ route: `/degree-audit/${studentId}` });
