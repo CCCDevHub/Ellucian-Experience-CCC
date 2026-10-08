@@ -71,6 +71,11 @@ module.exports = {
                     label: "Current Classes Pipeline",
                     type: "text"
                 },
+                {
+                    key: "pagePath",
+                    label: "Page Path (optional - makes the first click open a new tab, ex: /page/1234)",
+                    type: "text"
+                },
             ],
             server: [
                 {

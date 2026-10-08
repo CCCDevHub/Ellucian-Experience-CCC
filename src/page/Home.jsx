@@ -1,5 +1,5 @@
 import { spacing10, spacing20, spacing30, spacing40, spacing50, spacing60, borderRadiusMedium, borderRadiusSmall, colorCtaBlueBase, colorCtaBlueTint, colorCtaGreenBase, colorCtaGreenTint, colorFillAlertError, colorFillAlertWarning, colorTextNeutral200, colorTextNeutral250, colorTextNeutral500 } from '@ellucian/react-design-system/core/styles/tokens';
-import { makeStyles, Typography, Button, TextField } from '@ellucian/react-design-system/core';
+import { makeStyles, Typography, Button, TextField, Checkbox, FormControlLabel } from '@ellucian/react-design-system/core';
 import { usePageControl, useData } from '@ellucian/experience-extension-utils';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
@@ -12,6 +12,8 @@ const CACHE_PREFIX = 'degreeAuditResults_';
 const CACHE_PREFIX_TRANSCRIPT = 'transcriptResults_';
 const CACHE_PREFIX_GPA = 'gpaResults_';
 const CACHE_PREFIX_CUR_CLASSES = 'curClassesResults_';
+// Where this page is mounted, shared with the card so it can open the page in a new tab.
+const PAGE_BASE_KEY = 'degreeAuditPageBasePath';
 const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 const useStyles = makeStyles()({
@@ -41,6 +43,31 @@ const useStyles = makeStyles()({
         gap: spacing30,
         marginBottom: spacing40,
     },
+    /* ---------- code legends (top right of a section) ---------- */
+    legend: {
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        gap: spacing20,
+        maxWidth: '480px',
+        fontSize: '0.75rem',
+        color: colorTextNeutral500,
+    },
+    legendItem: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '5px',
+        padding: '3px 10px',
+        borderRadius: borderRadiusSmall,
+        backgroundColor: colorTextNeutral200,
+        whiteSpace: 'nowrap',
+    },
+    legendCode: {
+        fontWeight: 700,
+        color: '#33363b',
+    },
+
     sectionSubtitle: {
         fontSize: '0.8125rem',
         color: colorTextNeutral500,
@@ -199,6 +226,12 @@ const useStyles = makeStyles()({
         borderColor: '#c9e6da',
         color: colorCtaGreenBase,
     },
+    // Red = requirement not met yet. Neutral pill with a plain circle = not applicable for this student.
+    flagMissing: {
+        backgroundColor: '#fdf1f1',
+        borderColor: '#f3d3d3',
+        color: '#a11f1f',
+    },
     flagIcon: {
         fontSize: '0.875rem',
     },
@@ -259,26 +292,41 @@ const useStyles = makeStyles()({
     },
 
     /* ---------- standing ---------- */
+    // Blue marks "this is the most recent one"; the left stripe and pills carry the good/caution/alert colour.
     standingBanner: {
         display: 'flex',
         flexWrap: 'wrap',
         alignItems: 'center',
         gap: spacing50,
         padding: `${spacing30}px ${spacing40}px`,
-        border: '1px solid #ececee',
+        border: '1px solid #cfe0f5',
         borderLeft: `4px solid ${colorCtaGreenBase}`,
         borderRadius: borderRadiusMedium,
-        backgroundColor: colorTextNeutral200,
+        backgroundColor: colorCtaBlueTint,
     },
     standingHeadline: {
         display: 'flex',
         flexDirection: 'column',
         gap: spacing10,
     },
+    standingHeadlineTerm: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: spacing20,
+    },
     standingHeadlineValue: {
         fontSize: '1.375rem',
         fontWeight: 700,
         lineHeight: 1.2,
+        color: colorCtaBlueBase,
+    },
+    chipLatest: {
+        color: colorCtaBlueBase,
+        backgroundColor: '#fff',
+        borderColor: '#bcd4ef',
+        fontSize: '0.6875rem',
+        letterSpacing: '0.06em',
+        textTransform: 'uppercase',
     },
     standingFlags: {
         display: 'flex',
@@ -290,6 +338,33 @@ const useStyles = makeStyles()({
         display: 'flex',
         flexDirection: 'column',
         gap: spacing10,
+    },
+
+    /* ---------- audit controls ---------- */
+    auditActions: {
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        gap: spacing30,
+    },
+    auditPending: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: spacing20,
+        paddingTop: spacing30,
+        color: colorTextNeutral500,
+    },
+    auditNote: {
+        margin: `${spacing20}px 0 0`,
+        padding: `${spacing20}px ${spacing30}px`,
+        backgroundColor: colorFillAlertWarning,
+        borderRadius: borderRadiusSmall,
+        color: '#7a4d00',
+        fontSize: '0.8125rem',
+    },
+    auditHint: {
+        fontSize: '0.75rem',
+        color: colorTextNeutral500,
     },
 
     /* ---------- degrees ---------- */
@@ -428,7 +503,8 @@ const useStyles = makeStyles()({
         color: colorFillAlertError,
     },
     transcriptGrid: {
-        columnWidth: '300px',
+        // Wide enough for Course/Grade/Units/Code to sit side by side without wrapping.
+        columnWidth: '380px',
         columnGap: spacing50,
     },
     termGroup: {
@@ -452,7 +528,8 @@ const useStyles = makeStyles()({
 });
 
 const DEGREE_STATUS_LABELS = {
-    GR: 'Granted',
+    GR: 'Graduated',
+    CA: 'Certificate of Achievement',
     PN: 'Pending',
     PD: 'Pending',
     IP: 'In Progress',
@@ -532,24 +609,53 @@ const standingTone = (value) => {
 
 const STANDING_ACCENT = { positive: colorCtaGreenBase, caution: '#d9822b', alert: '#c32b2b' };
 
-const standingPillClass = (classes, value) => {
-    const tone = standingTone(value);
+// Shared tone -> pill styling.
+const toneClass = (classes, tone) => {
     if (tone === 'positive') return classes.chipPositive;
     if (tone === 'caution') return classes.chipCaution;
     if (tone === 'alert') return classes.chipAlert;
     return '';
 };
 
+const standingPillClass = (classes, value) => toneClass(classes, standingTone(value));
+
+// Schedule rows are listed in this order, and the same table drives the pill colour.
+// Real Banner statuses carry codes after the label ("Wait Listed-0.500000", "Drop 08 2026",
+// "Withdrawal 08 2026"), so match on the leading words only — that also keeps "Not Enrolled"
+// out of the Enrolled group.
+const CLASS_STATUSES = [
+    { prefix: 'enrolled', tone: 'positive' },
+    { prefix: 'reinstated', tone: 'positive' },
+    { prefix: 'wait list', tone: 'caution' },
+    { prefix: 'waitlisted', tone: 'caution' },
+    { prefix: 'drop', tone: 'alert' },
+    { prefix: 'withdraw', tone: 'alert' },
+    { prefix: 'deleted', tone: 'alert' },
+    { prefix: 'nonattendance', tone: 'alert' },
+    { prefix: 'non attendance', tone: 'alert' },
+];
+
+const matchClassStatus = (status) => {
+    const text = (status ?? '').toLowerCase().trim();
+    return CLASS_STATUSES.findIndex(({ prefix }) => text.includes(prefix));
+};
+
+const statusRank = (status) => {
+    const index = matchClassStatus(status);
+    return index === -1 ? CLASS_STATUSES.length : index;
+};
+
 const statusTone = (status) => {
-    const s = (status ?? '').toLowerCase();
-    if (/(enroll|regist|complet)/.test(s)) return 'positive';
-    if (/(drop|delete|withdraw|nonattendance|non attendance)/.test(s)) return 'alert';
-    return '';
+    const index = matchClassStatus(status);
+    return index === -1 ? '' : CLASS_STATUSES[index].tone;
 };
 
 const gradeTone = (grade) => {
-    const g = (grade ?? '').toUpperCase();
-    if (/^(F|U|W|NP|X)$/.test(g)) return 'fail';
+    const g = (grade ?? '').trim().toUpperCase();
+    if (!g) return 'neutral';
+    // D technically earns credit, but it's a weak grade and a repeatability/redemption flag for
+    // counselors, so it gets flagged with the failing marks instead of blending into the A-C pass band.
+    if (/^(F|D|U|W|NP|X|FA|NW)/.test(g)) return 'fail';
     if (/^(A|B|C|P|S)/.test(g)) return 'pass';
     return 'neutral';
 };
@@ -593,6 +699,18 @@ const Section = ({ classes, title, subtitle, action, children }) => (
     </section>
 );
 
+// Explains SIS codes in the corner of the section they belong to, instead of a page-wide glossary.
+const Legend = ({ classes, items }) => (
+    <div className={classes.legend}>
+        {items.map(([code, meaning]) => (
+            <span key={code} className={classes.legendItem}>
+                <span className={classes.legendCode}>{code}</span>
+                <span>= {meaning}</span>
+            </span>
+        ))}
+    </div>
+);
+
 const Pill = ({ classes, className, children, icon }) => (
     <span className={`${classes.chip} ${className ?? ''}`}>
         {icon && <Icon name={icon} className={classes.flagIcon} />}
@@ -600,7 +718,7 @@ const Pill = ({ classes, className, children, icon }) => (
     </span>
 );
 
-const HomePage = () => {
+const HomePage = (props = {}) => {
     const { classes } = useStyles();
     const { setPageTitle, setLoadingStatus, setErrorMessage } = usePageControl();
     const { authenticatedEthosFetch } = useData();
@@ -623,14 +741,47 @@ const HomePage = () => {
     const [newStudentId, setNewStudentId] = useState(studentId ?? '');
     const [updatingStudent, setUpdatingStudent] = useState(false);
 
+    // The audit is opt-in: it's the slow SIS-backed call, so it never runs just because a student loaded.
+    const [auditLoading, setAuditLoading] = useState(false);
+    const [auditAt, setAuditAt] = useState(null);
+    const [auditError, setAuditError] = useState('');
+    // Which in-progress setting produced the audit results currently on screen.
+    const [auditVariant, setAuditVariant] = useState(null);
+    const [includeInProgress, setIncludeInProgress] = useState(() => {
+        try {
+            return JSON.parse(window.localStorage.getItem(SETTINGS_KEY) || '{}').includeInProgress ?? false;
+        } catch {
+            return false;
+        }
+    });
+
     useEffect(() => {
         setPageTitle(`Counselor's Audit`);
     }, [setPageTitle]);
+
+    // The host only exposes pageInfo to pages, so the page publishes its own URL prefix; the card
+    // reads it to build a full link and open the student in a new tab.
+    useEffect(() => {
+        const auditIndex = window.location.pathname.indexOf('/degree-audit/');
+        const basePath = props.pageInfo?.basePath
+            || (auditIndex > 0 ? window.location.pathname.slice(0, auditIndex) : '');
+        if (!basePath) return;
+        try {
+            window.localStorage.setItem(PAGE_BASE_KEY, basePath);
+        } catch {
+            // Storage unavailable — the card just keeps navigating in the same tab.
+        }
+    }, [props.pageInfo?.basePath]);
 
     useEffect(() => {
         setActiveStudentId(studentId ?? '');
         setStudentName(studentId ? window.localStorage.getItem(`${STUDENT_NAME_PREFIX}${studentId}`) : null);
         setStudentEmail(studentId ? window.localStorage.getItem(`${STUDENT_EMAIL_PREFIX}${studentId}`) : null);
+        // Never leave one student's audit on screen while another student loads.
+        setAuditData(null);
+        setAuditAt(null);
+        setAuditVariant(null);
+        setAuditError('');
     }, [studentId]);
 
     // Everything comes from the settings block the card saved when the audit was launched, so the
@@ -657,47 +808,36 @@ const HomePage = () => {
         };
     }, []);
 
-    const runAudit = useCallback(async (force = false) => {
+    // Records load on their own for every student: transcript, GPA/standing, current schedule.
+    const loadStudentRecords = useCallback(async (force = false) => {
         if (!activeStudentId) return;
 
         if (!force) {
-            const cachedAudit = loadCache(CACHE_PREFIX, activeStudentId);
             const cachedTranscript = loadCache(CACHE_PREFIX_TRANSCRIPT, activeStudentId);
             const cachedGPA = loadCache(CACHE_PREFIX_GPA, activeStudentId);
             const cachedCurClasses = loadCache(CACHE_PREFIX_CUR_CLASSES, activeStudentId);
-            if (cachedAudit && cachedTranscript) {
-                setAuditData(cachedAudit.results);
+            if (cachedTranscript) {
                 setTranscriptData(cachedTranscript.results);
                 setGPAData(cachedGPA ? cachedGPA.results : null);
                 setCurClassesData(cachedCurClasses ? cachedCurClasses.results : null);
-                setCachedAt(new Date(cachedAudit.timestamp));
+                setCachedAt(new Date(cachedTranscript.timestamp));
                 setLoadingStatus(false);
                 return;
             }
         }
 
         setLoadingStatus(true);
-        setAuditData(null);
         setTranscriptData(null);
         setGPAData(null);
+        setCurClassesData(null);
         setCachedAt(null);
 
-
         const config = resolveConfig();
-        const { includeInProgress = false, token, cardId } = config;
-        const cardParam = cardId ? `cardId=${cardId}&` : '';
+        const cardParam = config.cardId ? `cardId=${config.cardId}&` : '';
 
-        const majorOptions = config.majorCodes
-            .split(',')
-            .filter(code => code.trim())
-            .map((code, i) => ({
-                value: code.trim(),
-                label: config.majorDisp.split(',')[i]?.trim() || code.trim()
-            }));
-
-        if (!config.whatIfUrl && !config.whatIfPipeline) {
+        if (!config.whatIfPipeline && !config.gpaPipeline && !config.currentClassesPipeline) {
             setLoadingStatus(false);
-            setErrorMessage('No card configuration found for this page. Open the Degree Audit card, fill in the Catalog Year, majors and pipeline URLs, then run the audit from the card.');
+            setErrorMessage('No pipeline configuration found for this page. Open the Degree Audit card, fill in the pipeline URLs, then load a student.');
             return;
         }
 
@@ -715,51 +855,6 @@ const HomePage = () => {
 
         // Each source is fetched independently so one bad pipeline doesn't blank out the whole page.
         const failures = [];
-
-        try {
-            const results = [];
-            if (!config.whatIfUrl || majorOptions.length === 0) {
-                failures.push('major audit (What-If URL or majors are not configured)');
-            }
-            if (config.whatIfUrl) {
-                for (const opt of majorOptions) {
-                    const [degree, major] = opt.value.split(' ');
-                    const res = await fetch(config.whatIfUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'Authorization': token
-                        },
-                        body: JSON.stringify({
-                            studentId: activeStudentId,
-                            school: 'CR',
-                            degree,
-                            catalogYear: config.catalogYear,
-                            keepCurriculum: false,
-                            includeInprogress: includeInProgress,
-                            includePreregistered: false,
-                            includeInternalNotes: false,
-                            refreshStudentData: false,
-                            goals: [{ code: 'MAJOR', value: major, catalogYear: config.catalogYear }],
-                            classes: [],
-                            saveAudit: { saveAudit: false, freeze: false }
-                        })
-                    });
-                    if (!res.ok) throw new Error(`Audit error: ${res.statusText}`);
-                    const data = await res.json();
-                    data?.blockArray?.[0]?.ruleArray
-                        ?.filter(rule => rule?.requirement?.type === 'MAJOR')
-                        .forEach(rule => results.push({ [opt.label]: rule.percentComplete }));
-                }
-            }
-
-            saveCache(CACHE_PREFIX, activeStudentId, results);
-            setAuditData(results);
-        } catch (error) {
-            console.error('Major audit failed:', error);
-            failures.push(`major audit (${error.message})`);
-        }
 
         try {
             const transcriptRecords = await fetchRecords(config.whatIfPipeline, CACHE_PREFIX_TRANSCRIPT, 'transcript', 'Transcript');
@@ -794,9 +889,110 @@ const HomePage = () => {
         setLoadingStatus(false);
     }, [activeStudentId, setLoadingStatus, setErrorMessage, authenticatedEthosFetch, resolveConfig]);
 
+    // In-progress and final audits answer different questions, so they can't share one cache slot.
+    const buildAuditCacheId = (studentIdArg, inProgress) => `${studentIdArg}:${inProgress ? 'inprog' : 'final'}`;
+
+    // Show a previously cached audit if we have one for the current in-progress setting; never fetch one.
+    const hydrateCachedAudit = useCallback(() => {
+        if (!activeStudentId) return;
+        try {
+            // Earlier builds cached one audit per student with no in-progress variant — it can't be
+            // trusted for either setting, so clear it instead of showing the wrong numbers.
+            window.localStorage.removeItem(`${CACHE_PREFIX}${activeStudentId}`);
+        } catch {
+            // Ignore storage errors; the page just keeps whatever is in memory.
+        }
+        const cached = loadCache(CACHE_PREFIX, buildAuditCacheId(activeStudentId, includeInProgress));
+        if (!cached) return;
+        setAuditData(cached.results);
+        setAuditAt(new Date(cached.timestamp));
+        setAuditVariant(includeInProgress);
+        setAuditError('');
+    }, [activeStudentId, includeInProgress]);
+
+    // Runs the What-If audit on demand — one POST per configured major.
+    const runMajorAudit = useCallback(async () => {
+        if (!activeStudentId || auditLoading) return;
+
+        const config = resolveConfig();
+        const majorOptions = (config.majorCodes || '')
+            .split(',')
+            .filter(code => code.trim())
+            .map((code, i) => ({
+                value: code.trim(),
+                label: (config.majorDisp || '').split(',')[i]?.trim() || code.trim()
+            }));
+
+        if (!config.whatIfUrl || !config.token || !config.catalogYear || majorOptions.length === 0) {
+            setAuditError('Major audits need a What-If URL, an access token, a catalog year and at least one major — set those on the Degree Audit card first.');
+            return;
+        }
+
+        setAuditLoading(true);
+        setAuditError('');
+        try {
+            const results = [];
+            for (const opt of majorOptions) {
+                const [degree, major] = opt.value.split(' ');
+                const res = await fetch(config.whatIfUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': config.token
+                    },
+                    body: JSON.stringify({
+                        studentId: activeStudentId,
+                        school: 'CR',
+                        degree,
+                        catalogYear: config.catalogYear,
+                        keepCurriculum: false,
+                        includeInprogress: includeInProgress,
+                        includePreregistered: false,
+                        includeInternalNotes: false,
+                        refreshStudentData: false,
+                        goals: [{ code: 'MAJOR', value: major, catalogYear: config.catalogYear }],
+                        classes: [],
+                        saveAudit: { saveAudit: false, freeze: false }
+                    })
+                });
+                if (!res.ok) throw new Error(`Audit error: ${res.statusText}`);
+                const data = await res.json();
+                data?.blockArray?.[0]?.ruleArray
+                    ?.filter(rule => rule?.requirement?.type === 'MAJOR')
+                    .forEach(rule => results.push({ [opt.label]: rule.percentComplete }));
+            }
+
+            saveCache(CACHE_PREFIX, buildAuditCacheId(activeStudentId, includeInProgress), results);
+            setAuditData(results);
+            setAuditAt(new Date());
+            setAuditVariant(includeInProgress);
+        } catch (error) {
+            console.error('Major audit failed:', error);
+            setAuditError(`Major audit failed: ${error.message}`);
+        } finally {
+            setAuditLoading(false);
+        }
+    }, [activeStudentId, auditLoading, includeInProgress, resolveConfig]);
+
+    const handleToggleInProgress = useCallback((checked) => {
+        setIncludeInProgress(checked);
+        // Keep the card's toggle and the page in sync so a counselor only ever has one place to remember.
+        try {
+            const settings = JSON.parse(window.localStorage.getItem(SETTINGS_KEY) || '{}');
+            window.localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...settings, includeInProgress: checked }));
+        } catch {
+            // Ignore storage failures; the in-memory value still applies to this session.
+        }
+    }, []);
+
     useEffect(() => {
-        runAudit();
-    }, [runAudit]);
+        loadStudentRecords();
+    }, [loadStudentRecords]);
+
+    useEffect(() => {
+        hydrateCachedAudit();
+    }, [hydrateCachedAudit]);
 
     const handleUpdateStudent = async () => {
         const id = newStudentId.trim();
@@ -842,11 +1038,14 @@ const HomePage = () => {
 
     const flags = useMemo(() => {
         const rows = gpaData ?? [];
+        const hasASEP = rows.some(r => r.types_ed_plan === 'Abbreviated');
+        const hasCSEP = rows.some(r => r.types_ed_plan === 'Comprehensive');
         return [
             { label: 'Orientation', met: rows.some(r => r.orientation) },
             { label: 'Placement Testing', met: rows.some(r => r.testing) },
-            { label: 'ASEP', met: rows.some(r => r.types_ed_plan === 'Abbreviated') },
-            { label: 'CSEP', met: rows.some(r => r.types_ed_plan === 'Comprehensive') },
+            // A CSEP takes the place of an ASEP, so a missing ASEP isn't a gap once CSEP is on file.
+            { label: 'ASEP', met: hasASEP, na: hasCSEP && !hasASEP },
+            { label: 'CSEP', met: hasCSEP },
         ];
     }, [gpaData]);
 
@@ -903,12 +1102,20 @@ const HomePage = () => {
             };
         })
         .filter(row => row.course || row.crn || row.term || row.status || row.session)
-        .sort((a, b) => String(b.term).localeCompare(String(a.term)) || a.course.localeCompare(b.course)), [curClasses]);
+        // Enrolled first, then reinstated / wait listed / dropped / withdrawn, newest term first inside each group.
+        .sort((a, b) => statusRank(a.status) - statusRank(b.status)
+            || String(b.term).localeCompare(String(a.term))
+            || a.course.localeCompare(b.course)), [curClasses]);
 
     const newStudentIdValid = /^\d{8}$/.test(newStudentId.trim());
     const { studentPipeline: lookupPipeline } = resolveConfig();
 
-    console.log(gpaData);
+    // Whether this environment can run a What-If audit at all — drives the Run audit button state.
+    const auditSettings = resolveConfig();
+    const auditReady = Boolean(auditSettings.whatIfUrl && auditSettings.token && auditSettings.catalogYear && auditSettings.majorCodes.trim());
+    const majorsLabel = unique((auditSettings.majorDisp || auditSettings.majorCodes || '').split(',').map(item => item.trim()).filter(Boolean)).join(', ');
+    // "An audit has been run for this student" — independent of whether it returned any rows.
+    const auditRan = auditVariant !== null;
 
     return (
         <div className={classes.page}>
@@ -942,9 +1149,9 @@ const HomePage = () => {
                             size="small"
                             variant="text"
                             disabled={updatingStudent}
-                            onClick={() => runAudit(true)}
+                            onClick={() => loadStudentRecords(true)}
                         >
-                            Refresh data
+                            Refresh records
                         </Button>
                     )}
                 </div>
@@ -953,7 +1160,7 @@ const HomePage = () => {
                         ? 'Student lookup is not configured — add the Student Pipeline URL to the Degree Audit card.'
                         : newStudentId && !newStudentIdValid
                             ? 'Student ID must be 8 digits.'
-                            : 'Enter an 8-digit student ID to pull their audit, GPA and transcript.'}
+                            : 'Enter an 8-digit student ID to pull their standing, GPA, schedule and transcript.'}
                 </p>
             </div>
 
@@ -979,333 +1186,451 @@ const HomePage = () => {
                         {cachedAt && (
                             <span className={classes.meta}>Updated {cachedAt.toLocaleString()}</span>
                         )}
-                        {gpaData?.length > 0 && (
-                            <div className={classes.flagRow}>
-                                {flags.map(flag => (
-                                    <span
-                                        key={flag.label}
-                                        className={`${classes.flag} ${flag.met ? classes.flagMet : ''}`}
-                                    >
-                                        <Icon name={flag.met ? 'check-circle' : 'times-circle-solid'} className={classes.flagIcon} />
-                                        {flag.label}
-                                    </span>
-                                ))}
-                            </div>
-                        )}
+                        {gpaData?.length > 0 && (() => {
+                            return (
+                                <>
+                                    <div className={classes.flagRow}>
+                                        {flags.map(flag => {
+                                            const isNa = !flag.met && Boolean(flag.na);
+                                            return (
+                                                <span
+                                                    key={flag.label}
+                                                    className={`${classes.flag} ${flag.met ? classes.flagMet : ''} ${!flag.met && !isNa ? classes.flagMissing : ''}`}
+                                                >
+                                                    <Icon
+                                                        name={flag.met ? 'check-circle' : isNa ? 'circle' : 'times-circle-solid'}
+                                                        className={classes.flagIcon}
+                                                    />
+                                                    {flag.label}
+                                                </span>
+                                            );
+                                        })}
+                                    </div >
+                                </>
+                            );
+                        })()}
                     </div>
                 </div>
-            )}
+            )
+            }
 
             {/* ---------- at a glance ---------- */}
-            {gpaRow && (
-                <Section
-                    classes={classes}
-                    title="At a Glance"
-                    subtitle="Advisor notes and program status"
-                >
-                    <div className={classes.factGrid}>
-                        <div className={classes.fact}>
-                            <span className={classes.label}>Declared Major</span>
-                            <span className={classes.factValue}>{gpaRow.declared_major || 'Undeclared'}</span>
-                        </div>
-                        <div className={classes.fact}>
-                            <span className={classes.label}>General Education</span>
-                            <span className={classes.factValue}>{gpaRow.ge || 'Not posted'}</span>
-                        </div>
-                        <div className={classes.fact}>
-                            <span className={classes.label}>Holds</span>
-                            {holds.length
-                                ? (
-                                    <div className={classes.chipRow}>
-                                        {holds.map(hold => <Pill key={hold} classes={classes} className={classes.chipAlert}>{hold}</Pill>)}
-                                    </div>
-                                )
-                                : <span className={classes.factValue}>None</span>}
-                        </div>
-                        <div className={classes.fact}>
-                            <span className={classes.label}>GE Certifications</span>
-                            {geCertifications.length
-                                ? (
-                                    <div className={classes.chipRow}>
-                                        {geCertifications.map(ge => <Pill key={ge} classes={classes} className={classes.chipPositive}>{ge}</Pill>)}
-                                    </div>
-                                )
-                                : <span className={classes.factValue}>None posted</span>}
-                        </div>
-                        <div className={classes.fact}>
-                            <span className={classes.label}>Prior Colleges</span>
-                            {priorColleges.length
-                                ? (
-                                    <div className={classes.chipRow}>
-                                        {priorColleges.map(college => <Pill key={college} classes={classes}>{college}</Pill>)}
-                                    </div>
-                                )
-                                : <span className={classes.factValue}>None</span>}
-                        </div>
-                    </div>
-                </Section>
-            )}
-
-            {/* ---------- standing ---------- */}
-            {standings.length > 0 && (() => {
-                const [latest, ...history] = standings;
-                const flags = [
-                    ['Academic', latest.academic],
-                    ['Progress', latest.progress],
-                    ...(latest.combined && latest.combined !== latest.academic ? [['Combined', latest.combined]] : [])
-                ].filter(([, value]) => value);
-                return (
+            {
+                gpaRow && (
                     <Section
                         classes={classes}
-                        title="Student Standing"
-                        subtitle={latest.term ? `Most recent term ${formatTerm(latest.term)}` : 'Academic and progress standing'}
+                        title="At a Glance"
+                        subtitle="Advisor notes and program status"
                     >
-                        <div
-                            className={classes.standingBanner}
-                            style={{ borderLeftColor: STANDING_ACCENT[standingTone(latest.combined)] || colorTextNeutral250 }}
-                        >
-                            <div className={classes.standingHeadline}>
-                                <span className={classes.label}>{latest.term ? formatTerm(latest.term) : 'Overall'}</span>
-                                <span className={classes.standingHeadlineValue}>{latest.combined || latest.academic || '—'}</span>
+                        <div className={classes.factGrid}>
+                            <div className={classes.fact}>
+                                <span className={classes.label}>Declared Major</span>
+                                <span className={classes.factValue}>{gpaRow.declared_major || 'Undeclared'}</span>
                             </div>
-                            <div className={classes.standingFlags}>
-                                {flags.map(([label, value]) => (
-                                    <div key={label} className={classes.standingFlag}>
-                                        <span className={classes.label}>{label}</span>
-                                        <Pill classes={classes} className={standingPillClass(classes, value)}>{value}</Pill>
-                                    </div>
-                                ))}
+                            <div className={classes.fact}>
+                                <span className={classes.label}>Declared General Education</span>
+                                <span className={classes.factValue}>{gpaRow.ge || 'Not posted'}</span>
+                            </div>
+                            <div className={classes.fact}>
+                                <span className={classes.label}>Holds</span>
+                                {holds.length
+                                    ? (
+                                        <div className={classes.chipRow}>
+                                            {holds.map(hold => <Pill key={hold} classes={classes} className={classes.chipAlert}>{hold}</Pill>)}
+                                        </div>
+                                    )
+                                    : <span className={classes.factValue}>None</span>}
+                            </div>
+                            <div className={classes.fact}>
+                                <span className={classes.label}>GE Certifications</span>
+                                {geCertifications.length
+                                    ? (
+                                        <div className={classes.chipRow}>
+                                            {geCertifications.map(ge => <Pill key={ge} classes={classes} className={classes.chipPositive}>{ge}</Pill>)}
+                                        </div>
+                                    )
+                                    : <span className={classes.factValue}>None posted</span>}
+                            </div>
+                            <div className={classes.fact}>
+                                <span className={classes.label}>Prior Colleges</span>
+                                {priorColleges.length
+                                    ? (
+                                        <div className={classes.chipRow}>
+                                            {priorColleges.map(college => <Pill key={college} classes={classes}>{college}</Pill>)}
+                                        </div>
+                                    )
+                                    : <span className={classes.factValue}>None</span>}
                             </div>
                         </div>
-                        {history.length > 0 && (
-                            <table className={classes.table} style={{ marginTop: spacing40 }}>
-                                <thead>
-                                    <tr>
-                                        <th className={classes.headerCell} style={{ width: '25%' }}>Term</th>
-                                        <th className={classes.headerCell}>Academic</th>
-                                        <th className={classes.headerCell}>Progress</th>
-                                        <th className={classes.headerCell}>Combined</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {history.map((standing, i) => (
-                                        <tr key={standing.term || i}>
-                                            <td className={classes.cell}>
-                                                {formatTerm(standing.term) || '—'}
-                                                {standing.term && <span className={classes.cellSub}>{standing.term}</span>}
-                                            </td>
-                                            <td className={classes.cell}>
-                                                <Pill classes={classes} className={standingPillClass(classes, standing.academic)}>{standing.academic || '—'}</Pill>
-                                            </td>
-                                            <td className={classes.cell}>
-                                                <Pill classes={classes} className={standingPillClass(classes, standing.progress)}>{standing.progress || '—'}</Pill>
-                                            </td>
-                                            <td className={classes.cell}>
-                                                <Pill classes={classes} className={standingPillClass(classes, standing.combined)}>{standing.combined || '—'}</Pill>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        )}
                     </Section>
-                );
-            })()}
+                )
+            }
+
+            {/* ---------- standing ---------- */}
+            {
+                standings.length > 0 && (() => {
+                    // Pick the newest term by term code for the headline, but leave the table in pipeline order.
+                    const latest = standings.reduce((acc, s) => (Number(s.term) > Number(acc.term) ? s : acc), standings[0]);
+                    const history = standings.filter((_, i) => i !== standings.indexOf(latest));
+                    // Show all three even when Combined repeats Academic — counselors read Combined as the
+                    // official answer, so hiding it when it matches makes it look like data is missing.
+                    const latestFlags = [
+                        ['Academic', latest.academic],
+                        ['Progress', latest.progress],
+                        ['Combined', latest.combined]
+                    ].filter(([, value]) => value);
+                    return (
+                        <Section
+                            classes={classes}
+                            title="Student Standing"
+                            subtitle={latest.term ? `Most recent term ${formatTerm(latest.term)}` : 'Academic and progress standing'}
+                        >
+                            <div
+                                className={classes.standingBanner}
+                                style={{ borderLeftColor: STANDING_ACCENT[standingTone(latest.combined)] || colorTextNeutral250 }}
+                            >
+                                <div className={classes.standingHeadline}>
+                                    <div className={classes.standingHeadlineTerm}>
+                                        <span className={classes.label}>{latest.term ? formatTerm(latest.term) : 'Overall'}</span>
+                                        <Pill classes={classes} className={classes.chipLatest}>Latest</Pill>
+                                    </div>
+                                    <span className={classes.standingHeadlineValue}>{latest.combined || latest.academic || '—'}</span>
+                                </div>
+                                <div className={classes.standingFlags}>
+                                    {latestFlags.map(([label, value]) => (
+                                        <div key={label} className={classes.standingFlag}>
+                                            <span className={classes.label}>{label}</span>
+                                            <Pill classes={classes} className={standingPillClass(classes, value)}>{value}</Pill>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            {history.length > 0 && (
+                                <table className={classes.table} style={{ marginTop: spacing40 }}>
+                                    <thead>
+                                        <tr>
+                                            <th className={classes.headerCell} style={{ width: '25%' }}>Term</th>
+                                            <th className={classes.headerCell}>Academic</th>
+                                            <th className={classes.headerCell}>Progress</th>
+                                            <th className={classes.headerCell}>Combined</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {history.map((standing, i) => (
+                                            <tr key={standing.term || i}>
+                                                <td className={classes.cell}>
+                                                    {formatTerm(standing.term) || '—'}
+                                                    {standing.term && <span className={classes.cellSub}>{standing.term}</span>}
+                                                </td>
+                                                <td className={classes.cell}>
+                                                    <Pill classes={classes} className={standingPillClass(classes, standing.academic)}>{standing.academic || '—'}</Pill>
+                                                </td>
+                                                <td className={classes.cell}>
+                                                    <Pill classes={classes} className={standingPillClass(classes, standing.progress)}>{standing.progress || '—'}</Pill>
+                                                </td>
+                                                <td className={classes.cell}>
+                                                    <Pill classes={classes} className={standingPillClass(classes, standing.combined)}>{standing.combined || '—'}</Pill>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                        </Section>
+                    );
+                })()
+            }
 
             {/* ---------- gpa summary ---------- */}
-            {gpaData && gpaData.length > 0 && (
-                <Section
-                    classes={classes}
-                    title="GPA Summary"
-                    subtitle="Cumulative GPA by unit range"
-                >
-                    <div className={classes.gpaGrid}>
-                        {gpaData.map((row, i) => (
-                            <div key={i} className={`${classes.surface} ${classes.gpaCard}`}>
-                                <div className={classes.gpaStatRow}>
-                                    <div className={classes.gpaStat}>
-                                        <span className={classes.label}>GPA (1–99)</span>
-                                        <span className={classes.gpaStatValue}>{row.gpa_1to99}</span>
-                                        <span className={classes.gpaStatSub}>{row.units_1to99} units</span>
-                                    </div>
-                                    <div className={classes.gpaStat}>
-                                        <span className={classes.label}>GPA (1–399)</span>
-                                        <span className={classes.gpaStatValue}>{row.gpa_1to399}</span>
-                                        <span className={classes.gpaStatSub}>{row.units_1to399} units</span>
-                                    </div>
-                                    <div className={classes.gpaStat}>
-                                        <span className={classes.label}>Attempted</span>
-                                        <span className={`${classes.gpaStatValue} ${classes.gpaStatValueMuted}`}>{row.units_1to399attm}</span>
-                                        <span className={classes.gpaStatSub}>units attempted</span>
+            {
+                gpaData && gpaData.length > 0 && (
+                    <Section
+                        classes={classes}
+                        title="GPA Summary"
+                        subtitle="Cumulative GPA by unit range"
+                    >
+                        <div className={classes.gpaGrid}>
+                            {gpaData.map((row, i) => (
+                                <div key={i} className={`${classes.surface} ${classes.gpaCard}`}>
+                                    <div className={classes.gpaStatRow}>
+                                        <div className={classes.gpaStat}>
+                                            <span className={classes.label}>GPA (1–99)</span>
+                                            <span className={classes.gpaStatValue}>{row.gpa_1to99}</span>
+                                            <span className={classes.gpaStatSub}>{row.units_1to99} units earned</span>
+                                        </div>
+                                        <div className={classes.gpaStat}>
+                                            <span className={classes.label}>GPA (1–399)</span>
+                                            <span className={classes.gpaStatValue}>{row.gpa_1to399}</span>
+                                            <span className={classes.gpaStatSub}>{row.units_1to399} units earned</span>
+                                        </div>
+                                        <div className={classes.gpaStat}>
+                                            <span className={classes.label}>Cumulative GPA</span>
+                                            <span className={classes.gpaStatValue}>{row.cumgpa}</span>
+                                            <span className={classes.gpaStatSub}>{row.allunits} units earned</span>
+                                        </div>
+                                        <div className={classes.gpaStat}>
+                                            <span className={classes.label}>Attempted</span>
+                                            <span className={`${classes.gpaStatValue} ${classes.gpaStatValueMuted}`}>{row.units_1to399attm}</span>
+                                            <span className={classes.gpaStatSub}>units attempted</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                </Section>
-            )}
+                            ))}
+                        </div>
+                    </Section>
+                )
+            }
 
             {/* ---------- degrees ---------- */}
-            {degrees.length > 0 && (
-                <Section
-                    classes={classes}
-                    title="Degrees Earned & Pending"
-                    subtitle={`${degrees.length} ${degrees.length === 1 ? 'record' : 'records'} posted`}
-                >
-                    <div className={classes.degreeGrid}>
-                        {degrees.map((item, i) => (
-                            <div key={i} className={classes.degreeItem}>
-                                <div className={classes.degreeTopRow}>
-                                    <span className={classes.degreeName}>{item.label}</span>
-                                    {item.status && <span className={classes.degreeStatus}>{item.status}</span>}
-                                </div>
-                                {item.term && <span className={classes.degreeTerm}>Term {item.term}</span>}
-                            </div>
-                        ))}
-                    </div>
-                </Section>
-            )}
-
-            {/* ---------- major audit ---------- */}
-            {auditRows.length > 0 && (
-                <Section
-                    classes={classes}
-                    title="Major Audit"
-                    subtitle="Percent complete by major requirement"
-                >
-                    <div className={classes.results}>
-                        {auditRows.map(({ label, pct }) => {
-                            const fill = pct >= 100 ? colorCtaGreenBase : pct >= 50 ? colorCtaBlueBase : colorFillAlertWarning;
-                            return (
-                                <div key={label} className={classes.resultRow}>
-                                    <span className={classes.resultLabel}>
-                                        {label}
-                                        {pct >= 100 && <span className={classes.resultSub}>Requirement complete</span>}
-                                    </span>
-                                    <div className={classes.progressTrack}>
-                                        <div className={classes.progressFill} style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: fill }} />
+            {
+                degrees.length > 0 && (
+                    <Section
+                        classes={classes}
+                        title="Degrees Earned & Pending"
+                        subtitle={`${degrees.length} ${degrees.length === 1 ? 'record' : 'records'} posted`}
+                        action={
+                            <Legend
+                                classes={classes}
+                                items={[
+                                    ['GR', 'Graduated'],
+                                    ['CA', 'Certificate of Achievement'],
+                                    ['PN', 'Pending'],
+                                ]}
+                            />
+                        }
+                    >
+                        <div className={classes.degreeGrid}>
+                            {degrees.map((item, i) => (
+                                <div key={i} className={classes.degreeItem}>
+                                    <div className={classes.degreeTopRow}>
+                                        <span className={classes.degreeName}>{item.label}</span>
+                                        {item.status && <span className={classes.degreeStatus}>{item.status}</span>}
                                     </div>
-                                    <span className={classes.resultPct}>{Math.round(pct)}%</span>
+                                    {item.term && <span className={classes.degreeTerm}>Term {item.term}</span>}
                                 </div>
-                            );
-                        })}
-                    </div>
-                </Section>
-            )}
+                            ))}
+                        </div>
+                    </Section>
+                )
+            }
+
+            {/* ---------- major audit (opt-in: it's the slow SIS-backed call) ---------- */}
+            {
+                activeStudentId && (
+                    <Section
+                        classes={classes}
+                        title="Major Audit"
+                        subtitle={auditRan
+                            ? `${auditVariant ? 'Includes' : 'Excludes'} in-progress coursework${auditAt ? ` · updated ${auditAt.toLocaleDateString()}` : ''}`
+                            : 'Percent complete by major requirement'}
+                        action={
+                            <div className={classes.auditActions}>
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={includeInProgress}
+                                            onChange={(e) => handleToggleInProgress(e.target.checked)}
+                                            disabled={auditLoading || !auditReady}
+                                        />
+                                    }
+                                    label="Include in-progress"
+                                />
+                                <Button
+                                    color="primary"
+                                    size="small"
+                                    variant="contained"
+                                    disabled={auditLoading || !auditReady}
+                                    onClick={runMajorAudit}
+                                >
+                                    {auditLoading ? 'Running…' : auditRan ? 'Re-run audit' : 'Run audit'}
+                                </Button>
+                            </div>
+                        }
+                    >
+                        {auditLoading && (
+                            <div className={classes.auditPending}>
+                                Running the What-If audit{majorsLabel ? ` for ${majorsLabel}` : ''}…
+                            </div>
+                        )}
+
+                        {!auditLoading && auditRan && (
+                            <>
+                                {auditVariant !== includeInProgress && (
+                                    <p className={classes.auditNote}>
+                                        These numbers were audited {auditVariant ? 'with' : 'without'} in-progress coursework.
+                                        Re-run the audit to refresh them for the current setting.
+                                    </p>
+                                )}
+                                {auditRows.length === 0 && (
+                                    <div className={classes.auditPending}>
+                                        The audit completed, but returned no major requirement results for this student.
+                                    </div>
+                                )}
+                                <div className={classes.results}>
+                                    {auditRows.map(({ label, pct }) => {
+                                        const fill = pct >= 100 ? colorCtaGreenBase : pct >= 50 ? colorCtaBlueBase : colorFillAlertWarning;
+                                        return (
+                                            <div key={label} className={classes.resultRow}>
+                                                <span className={classes.resultLabel}>
+                                                    {label}
+                                                    {pct >= 100 && <span className={classes.resultSub}>Requirement complete</span>}
+                                                </span>
+                                                <div className={classes.progressTrack}>
+                                                    <div className={classes.progressFill} style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: fill }} />
+                                                </div>
+                                                <span className={classes.resultPct}>{Math.round(pct)}%</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </>
+                        )}
+
+                        {!auditLoading && !auditRan && (
+                            <div className={classes.auditPending}>
+                                <span>
+                                    {auditError
+                                        || `No audit run for this student yet. Click Run audit to calculate percent complete${majorsLabel ? ` for ${majorsLabel}` : ''}.`}
+                                </span>
+                                {!auditReady && (
+                                    <span className={classes.auditHint}>
+                                        Major audits need the What-If URL, access token, catalog year and majors from the Degree Audit card.
+                                    </span>
+                                )}
+                            </div>
+                        )}
+                    </Section>
+                )
+            }
 
             {/* ---------- current classes ---------- */}
-            {currentClassRows.length > 0 && (
-                <Section
-                    classes={classes}
-                    title="Currently Enrolled"
-                    subtitle={`${currentClassRows.length} ${currentClassRows.length === 1 ? 'class' : 'classes'} · refund deadline shown per class`}
-                >
-                    <table className={classes.table}>
-                        <thead>
-                            <tr>
-                                <th className={classes.headerCell} style={{ width: '30%' }}>Course</th>
-                                <th className={classes.headerCell} style={{ width: '18%' }}>Status</th>
-                                <th className={classes.headerCell} style={{ width: '32%' }}>Session</th>
-                                <th className={classes.headerCell}>Added Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {currentClassRows.map((row, i) => {
-                                const tone = statusTone(row.status);
-                                return (
-                                    <tr key={row.crn || i}>
-                                        <td className={classes.cell}>
-                                            <span className={classes.cellStrong}>{row.course}</span>
-                                            {row.crn && <span className={classes.cellSub}>CRN {row.crn}</span>}
-                                        </td>
-                                        <td className={classes.cell}>
-                                            {row.status && (
-                                                <Pill
-                                                    classes={classes}
-                                                    className={tone === 'positive' ? classes.chipPositive : tone === 'alert' ? classes.chipAlert : ''}
-                                                >
-                                                    {row.status}
-                                                </Pill>
-                                            )}
-                                        </td>
-                                        <td className={classes.cell}>
-                                            {row.session || '—'}
-                                            {row.refundDate && <span className={classes.cellSub}>Refund deadline {row.refundDate}</span>}
-                                            {row.dropDate && <span className={classes.cellSub}>Drop deadline {row.dropDate}</span>}
-                                        </td>
-                                        <td className={classes.cell}>
-                                            {row.addedDate && <span className={classes.cellSub}>{row.addedDate}</span>}
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </Section>
-            )}
+            {
+                currentClassRows.length > 0 && (
+                    <Section
+                        classes={classes}
+                        title="Currently Enrolled"
+                        subtitle={`${currentClassRows.length} ${currentClassRows.length === 1 ? 'class' : 'classes'} · refund deadline shown per class`}
+                    >
+                        <table className={classes.table}>
+                            <thead>
+                                <tr>
+                                    <th className={classes.headerCell} style={{ width: '30%' }}>Course</th>
+                                    <th className={classes.headerCell} style={{ width: '18%' }}>Status</th>
+                                    <th className={classes.headerCell} style={{ width: '32%' }}>Session</th>
+                                    <th className={classes.headerCell}>Added Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {currentClassRows.map((row, i) => {
+                                    const tone = statusTone(row.status);
+                                    return (
+                                        <tr key={row.crn || i}>
+                                            <td className={classes.cell}>
+                                                <span className={classes.cellStrong}>{row.course}</span>
+                                                {row.crn && <span className={classes.cellSub}>CRN {row.crn}</span>}
+                                            </td>
+                                            <td className={classes.cell}>
+                                                {row.status && (
+                                                    <Pill
+                                                        classes={classes}
+                                                        className={toneClass(classes, tone)}
+                                                    >
+                                                        {row.status}
+                                                    </Pill>
+                                                )}
+                                            </td>
+                                            <td className={classes.cell}>
+                                                {row.session || '—'}
+                                                {row.refundDate && <span className={classes.cellSub}>Refund deadline {row.refundDate}</span>}
+                                                {row.dropDate && <span className={classes.cellSub}>Drop deadline {row.dropDate}</span>}
+                                            </td>
+                                            <td className={classes.cell}>
+                                                {row.addedDate && <span className={classes.cellSub}>{row.addedDate}</span>}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </Section>
+                )
+            }
 
             {/* ---------- transcript ---------- */}
-            {transcriptByTerm?.length > 0 && (
-                <Section
-                    classes={classes}
-                    title="Transcript"
-                    subtitle="Completed coursework by term"
-                >
-                    <div className={classes.transcriptGrid}>
-                        {transcriptByTerm.map(({ term, courses }) => {
-                            const termUnits = courses.reduce((sum, c) => sum + (parseFloat(c.units) || 0), 0);
-                            return (
-                                <div key={term} className={classes.termGroup}>
-                                    <div className={classes.termHeader}>
-                                        <Typography variant="h4">{formatTerm(term)}</Typography>
-                                        <span className={classes.termUnits}>{termUnits} units · {courses.length} courses · {term}</span>
+            {
+                transcriptByTerm?.length > 0 && (
+                    <Section
+                        classes={classes}
+                        title="Transcript"
+                        subtitle="Completed coursework by term"
+                        action={
+                            <Legend
+                                classes={classes}
+                                items={[
+                                    ['E', 'Exclude'],
+                                    ['I', 'Include'],
+                                    ['A / 06 / 06A', 'Excluded from earned units & included in GPA'],
+                                ]}
+                            />
+                        }
+                    >
+                        <div className={classes.transcriptGrid}>
+                            {transcriptByTerm.map(({ term, courses }) => {
+                                const termUnits = courses.reduce((sum, c) => sum + (parseFloat(c.units) || 0), 0);
+                                return (
+                                    <div key={term} className={classes.termGroup}>
+                                        <div className={classes.termHeader}>
+                                            <Typography variant="h4">{formatTerm(term)}</Typography>
+                                            <span className={classes.termUnits}>{termUnits} units · {courses.length} courses · {term}</span>
+                                        </div>
+                                        <table className={classes.table}>
+                                            <thead>
+                                                <tr>
+                                                    <th className={classes.headerCell} style={{ width: '44%' }}>Course</th>
+                                                    <th className={classes.headerCell} style={{ width: '18%' }}>Grade</th>
+                                                    <th className={classes.headerCell} style={{ width: '18%' }}>Units</th>
+                                                    <th className={classes.headerCell} style={{ width: '20%' }}>Code</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {courses.map((course, i) => {
+                                                    const tone = gradeTone(course.grade);
+                                                    return (
+                                                        <tr key={i}>
+                                                            <td className={classes.cell}>
+                                                                {course.course}
+                                                            </td>
+                                                            <td className={classes.cell}>
+                                                                <span
+                                                                    className={`${classes.gradeBadge} ${tone === 'pass' ? classes.gradePass : ''} ${tone === 'fail' ? classes.gradeFail : ''}`}
+                                                                >
+                                                                    {course.grade}
+                                                                </span>
+                                                            </td>
+                                                            <td className={`${classes.cell} ${classes.cellNumeric}`}>{course.units}</td>
+                                                            <td className={`${classes.cell} ${classes.cellNumeric}`}>{course.code}</td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
                                     </div>
-                                    <table className={classes.table}>
-                                        <thead>
-                                            <tr>
-                                                <th className={classes.headerCell} style={{ width: '50%' }}>Course</th>
-                                                <th className={classes.headerCell} style={{ width: '22%' }}>Grade</th>
-                                                <th className={classes.headerCell} style={{ width: '28%' }}>Units</th>
-                                                <th className={classes.headerCell} style={{ width: '22%' }}>Code</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {courses.map((course, i) => {
-                                                const tone = gradeTone(course.grade);
-                                                return (
-                                                    <tr key={i}>
-                                                        <td className={classes.cell}>
-                                                            {course.course}
-                                                            {course.code && <span className={classes.cellSub}>{course.code}</span>}
-                                                        </td>
-                                                        <td className={classes.cell}>
-                                                            <span
-                                                                className={`${classes.gradeBadge} ${tone === 'pass' ? classes.gradePass : ''} ${tone === 'fail' ? classes.gradeFail : ''}`}
-                                                            >
-                                                                {course.grade}
-                                                            </span>
-                                                        </td>
-                                                        <td className={`${classes.cell} ${classes.cellNumeric}`}>{course.units}</td>
-                                                        <td className={`${classes.cell} ${classes.cellNumeric}`}>{course.code}</td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </Section>
-            )}
+                                );
+                            })}
+                        </div>
+                    </Section>
+                )
+            }
 
-            {!activeStudentId && (
-                <div className={classes.emptyState}>
-                    <Icon name="search" />
-                    No student selected. Enter a student ID above to view their degree audit.
-                </div>
-            )}
-        </div>
+            {
+                !activeStudentId && (
+                    <div className={classes.emptyState}>
+                        <Icon name="search" />
+                        No student selected. Enter a student ID above to view their degree audit.
+                    </div>
+                )
+            }
+        </div >
     );
 };
 
