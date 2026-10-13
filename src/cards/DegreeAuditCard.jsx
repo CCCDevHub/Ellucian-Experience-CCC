@@ -163,15 +163,7 @@ const DegreeAuditCard = () => {
                 fullWidth
                 onChange={(e) => setStudentId(e.target.value)}
             />
-            <FormControlLabel
-                label="Include in-progress classes (audit default)"
-                control={
-                    <Switch
-                        checked={includeInProgress}
-                        onChange={(e) => setIncludeInProgress(e.target.checked)}
-                    />
-                }
-            />
+
             <Button
                 color="primary"
                 size="default"

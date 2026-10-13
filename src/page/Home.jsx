@@ -1,4 +1,4 @@
-import { spacing10, spacing20, spacing30, spacing40, spacing50, spacing60, borderRadiusMedium, borderRadiusSmall, colorCtaBlueBase, colorCtaBlueTint, colorCtaGreenBase, colorCtaGreenTint, colorFillAlertError, colorFillAlertWarning, colorTextNeutral200, colorTextNeutral250, colorTextNeutral500 } from '@ellucian/react-design-system/core/styles/tokens';
+import { spacing10, spacing20, spacing30, spacing40, spacing50, spacing60, borderRadiusMedium, borderRadiusSmall, colorCtaBlueBase, colorCtaBlueTint, colorCtaGreenBase, colorCtaGreenTint, colorFillAlertError, colorFillAlertWarning, colorTextNeutral200, colorTextNeutral250, colorTextNeutral500, colorTextNeutral450 } from '@ellucian/react-design-system/core/styles/tokens';
 import { makeStyles, Typography, Button, TextField, Checkbox, FormControlLabel } from '@ellucian/react-design-system/core';
 import { usePageControl, useData } from '@ellucian/experience-extension-utils';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -263,6 +263,7 @@ const useStyles = makeStyles()({
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
         gap: spacing40,
+        textAlign: 'center',
     },
     gpaCard: {
         padding: spacing50,
@@ -289,6 +290,11 @@ const useStyles = makeStyles()({
     gpaStatSub: {
         fontSize: '0.75rem',
         color: colorTextNeutral500,
+
+    },
+    gpaStatGradePoint: {
+        fontSize: '0.55rem',
+        color: colorTextNeutral450,
     },
 
     /* ---------- standing ---------- */
@@ -550,7 +556,8 @@ const parseDegreeEntry = (entry) => {
 const splitList = (value) => (value ? String(value).split(',').map(v => v.trim()).filter(Boolean) : []);
 const unique = (values) => [...new Set(values)];
 
-const TERM_SESSIONS = { 10: 'Spring', 40: 'Summer', 70: 'Fall' };
+// Session codes for this catalog: 10 Winter, 30 Spring, 50 Summer, 70 Fall.
+const TERM_SESSIONS = { 10: 'Winter', 30: 'Spring', 50: 'Summer', 70: 'Fall' };
 
 // "202670" -> "Fall 2026"; unknown session codes fall back to the raw code.
 const formatTerm = (code) => {
@@ -567,6 +574,10 @@ const formatDate = (value) => {
     return Number.isNaN(date.getTime())
         ? value
         : date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+};
+const formatValue = (value) => {
+    const num = Number(value);
+    return Number.isFinite(num) ? num.toFixed(2) : '';
 };
 
 // Standing arrives as one packed string per term, e.g.
@@ -1117,6 +1128,8 @@ const HomePage = (props = {}) => {
     // "An audit has been run for this student" — independent of whether it returned any rows.
     const auditRan = auditVariant !== null;
 
+
+    console.log(gpaData);
     return (
         <div className={classes.page}>
 
@@ -1283,7 +1296,7 @@ const HomePage = (props = {}) => {
                         <Section
                             classes={classes}
                             title="Student Standing"
-                            subtitle={latest.term ? `Most recent term ${formatTerm(latest.term)}` : 'Academic and progress standing'}
+                            subtitle={latest.term ? `Most recent term: ${formatTerm(latest.term)}` : 'Academic and progress standing'}
                         >
                             <div
                                 className={classes.standingBanner}
@@ -1357,21 +1370,38 @@ const HomePage = (props = {}) => {
                                             <span className={classes.label}>GPA (1–99)</span>
                                             <span className={classes.gpaStatValue}>{row.gpa_1to99}</span>
                                             <span className={classes.gpaStatSub}>{row.units_1to99} units earned</span>
+                                            <span className={classes.gpaStatGradePoint}>{formatValue(row.gradept_1to99)} grade points</span>
+                                            <span className={classes.gpaStatGradePoint}>{formatValue(row.gradehr_1to99)} grade hours</span>
+
+
                                         </div>
                                         <div className={classes.gpaStat}>
                                             <span className={classes.label}>GPA (1–399)</span>
                                             <span className={classes.gpaStatValue}>{row.gpa_1to399}</span>
                                             <span className={classes.gpaStatSub}>{row.units_1to399} units earned</span>
+                                            <span className={classes.gpaStatGradePoint}>{formatValue(row.gradept_1to399)} grade points</span>
+                                            <span className={classes.gpaStatGradePoint}>{formatValue(row.gradehr_1to399)} grade hours</span>
+
                                         </div>
                                         <div className={classes.gpaStat}>
                                             <span className={classes.label}>Cumulative GPA</span>
-                                            <span className={classes.gpaStatValue}>{row.cumgpa}</span>
+                                            <span className={classes.gpaStatValue}>{row.cumpga}</span>
                                             <span className={classes.gpaStatSub}>{row.allunits} units earned</span>
+                                            <span className={classes.gpaStatGradePoint}>{formatValue(row.gradeptallunits)} grade points</span>
+                                            <span className={classes.gpaStatGradePoint}>{formatValue(row.gradehrallunits)} grade hours</span>
+
                                         </div>
                                         <div className={classes.gpaStat}>
                                             <span className={classes.label}>Attempted</span>
-                                            <span className={`${classes.gpaStatValue} ${classes.gpaStatValueMuted}`}>{row.units_1to399attm}</span>
-                                            <span className={classes.gpaStatSub}>units attempted</span>
+                                            <span className={`${classes.gpaStatValue} ${classes.gpaStatValueMuted}`}>{row.units_all_attm}</span>
+                                            <span className={classes.gpaStatSub}>units</span>
+                                            <span className={classes.gpaStatGradePoint}>A, B, C, D, F, I, P, NP, W</span>
+
+                                        </div>
+                                        <div className={classes.gpaStat}>
+                                            <span className={classes.label}>External</span>
+                                            <span className={`${classes.gpaStatValue} ${classes.gpaStatValueMuted}`}>{row.externalunits ? row.externalunits : 0} units</span>
+                                            <span className={classes.gpaStatSub}>units approved by A&R AP, transfer credit, etc.</span>
                                         </div>
                                     </div>
                                 </div>
@@ -1505,60 +1535,68 @@ const HomePage = (props = {}) => {
 
             {/* ---------- current classes ---------- */}
             {
-                currentClassRows.length > 0 && (
+                activeStudentId && (
                     <Section
                         classes={classes}
                         title="Currently Enrolled"
-                        subtitle={`${currentClassRows.length} ${currentClassRows.length === 1 ? 'class' : 'classes'} · refund deadline shown per class`}
+                        subtitle={currentClassRows.length > 0
+                            ? `${currentClassRows.length} ${currentClassRows.length === 1 ? 'class' : 'classes'} · refund deadline shown per class`
+                            : 'No classes enrolled'}
                     >
-                        <table className={classes.table}>
-                            <thead>
-                                <tr>
-                                    <th className={classes.headerCell} style={{ width: '30%' }}>Course</th>
-                                    <th className={classes.headerCell} style={{ width: '18%' }}>Status</th>
-                                    <th className={classes.headerCell} style={{ width: '32%' }}>Session</th>
-                                    <th className={classes.headerCell}>Added Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {currentClassRows.map((row, i) => {
-                                    const tone = statusTone(row.status);
-                                    return (
-                                        <tr key={row.crn || i}>
-                                            <td className={classes.cell}>
-                                                <span className={classes.cellStrong}>{row.course}</span>
-                                                {row.crn && <span className={classes.cellSub}>CRN {row.crn}</span>}
-                                            </td>
-                                            <td className={classes.cell}>
-                                                {row.status && (
-                                                    <Pill
-                                                        classes={classes}
-                                                        className={toneClass(classes, tone)}
-                                                    >
-                                                        {row.status}
-                                                    </Pill>
-                                                )}
-                                            </td>
-                                            <td className={classes.cell}>
-                                                {row.session || '—'}
-                                                {row.refundDate && <span className={classes.cellSub}>Refund deadline {row.refundDate}</span>}
-                                                {row.dropDate && <span className={classes.cellSub}>Drop deadline {row.dropDate}</span>}
-                                            </td>
-                                            <td className={classes.cell}>
-                                                {row.addedDate && <span className={classes.cellSub}>{row.addedDate}</span>}
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
+                        {currentClassRows.length === 0 ? (
+                            <div className={classes.auditPending}>
+                                No currently enrolled classes for this student.
+                            </div>
+                        ) : (
+                            <table className={classes.table}>
+                                <thead>
+                                    <tr>
+                                        <th className={classes.headerCell} style={{ width: '30%' }}>Course</th>
+                                        <th className={classes.headerCell} style={{ width: '18%' }}>Status</th>
+                                        <th className={classes.headerCell} style={{ width: '32%' }}>Session</th>
+                                        <th className={classes.headerCell}>Added Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {currentClassRows.map((row, i) => {
+                                        const tone = statusTone(row.status);
+                                        return (
+                                            <tr key={row.crn || i}>
+                                                <td className={classes.cell}>
+                                                    <span className={classes.cellStrong}>{row.course}</span>
+                                                    {row.crn && <span className={classes.cellSub}>CRN {row.crn}</span>}
+                                                </td>
+                                                <td className={classes.cell}>
+                                                    {row.status && (
+                                                        <Pill
+                                                            classes={classes}
+                                                            className={toneClass(classes, tone)}
+                                                        >
+                                                            {row.status}
+                                                        </Pill>
+                                                    )}
+                                                </td>
+                                                <td className={classes.cell}>
+                                                    {row.session || '—'}
+                                                    {row.refundDate && <span className={classes.cellSub}>Refund deadline {row.refundDate}</span>}
+                                                    {row.dropDate && <span className={classes.cellSub}>Drop with W deadline {row.dropDate}</span>}
+                                                </td>
+                                                <td className={classes.cell}>
+                                                    {row.addedDate && <span className={classes.cellSub}>{row.addedDate}</span>}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        )}
                     </Section>
                 )
             }
 
             {/* ---------- transcript ---------- */}
             {
-                transcriptByTerm?.length > 0 && (
+                activeStudentId && (
                     <Section
                         classes={classes}
                         title="Transcript"
@@ -1569,55 +1607,61 @@ const HomePage = (props = {}) => {
                                 items={[
                                     ['E', 'Exclude'],
                                     ['I', 'Include'],
-                                    ['A / 06 / 06A', 'Excluded from earned units & included in GPA'],
+                                    ['A / 06 / 06A', 'Excluded from earned units but included in GPA'],
                                 ]}
                             />
                         }
                     >
-                        <div className={classes.transcriptGrid}>
-                            {transcriptByTerm.map(({ term, courses }) => {
-                                const termUnits = courses.reduce((sum, c) => sum + (parseFloat(c.units) || 0), 0);
-                                return (
-                                    <div key={term} className={classes.termGroup}>
-                                        <div className={classes.termHeader}>
-                                            <Typography variant="h4">{formatTerm(term)}</Typography>
-                                            <span className={classes.termUnits}>{termUnits} units · {courses.length} courses · {term}</span>
+                        {!transcriptByTerm?.length ? (
+                            <div className={classes.auditPending}>
+                                No completed coursework posted for this student yet.
+                            </div>
+                        ) : (
+                            <div className={classes.transcriptGrid}>
+                                {transcriptByTerm.map(({ term, courses }) => {
+                                    const termUnits = courses.reduce((sum, c) => sum + (parseFloat(c.units) || 0), 0);
+                                    return (
+                                        <div key={term} className={classes.termGroup}>
+                                            <div className={classes.termHeader}>
+                                                <Typography variant="h4">{formatTerm(term)}</Typography>
+                                                <span className={classes.termUnits}>{termUnits} units · {courses.length} courses · {term}</span>
+                                            </div>
+                                            <table className={classes.table}>
+                                                <thead>
+                                                    <tr>
+                                                        <th className={classes.headerCell} style={{ width: '44%' }}>Course</th>
+                                                        <th className={classes.headerCell} style={{ width: '18%' }}>Grade</th>
+                                                        <th className={classes.headerCell} style={{ width: '18%' }}>Units</th>
+                                                        <th className={classes.headerCell} style={{ width: '20%' }}>Code</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {courses.map((course, i) => {
+                                                        const tone = gradeTone(course.grade);
+                                                        return (
+                                                            <tr key={i}>
+                                                                <td className={classes.cell}>
+                                                                    {course.course}
+                                                                </td>
+                                                                <td className={classes.cell}>
+                                                                    <span
+                                                                        className={`${classes.gradeBadge} ${tone === 'pass' ? classes.gradePass : ''} ${tone === 'fail' ? classes.gradeFail : ''}`}
+                                                                    >
+                                                                        {course.grade}
+                                                                    </span>
+                                                                </td>
+                                                                <td className={`${classes.cell} ${classes.cellNumeric}`}>{course.units}</td>
+                                                                <td className={`${classes.cell} ${classes.cellNumeric}`}>{course.code}</td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </tbody>
+                                            </table>
                                         </div>
-                                        <table className={classes.table}>
-                                            <thead>
-                                                <tr>
-                                                    <th className={classes.headerCell} style={{ width: '44%' }}>Course</th>
-                                                    <th className={classes.headerCell} style={{ width: '18%' }}>Grade</th>
-                                                    <th className={classes.headerCell} style={{ width: '18%' }}>Units</th>
-                                                    <th className={classes.headerCell} style={{ width: '20%' }}>Code</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {courses.map((course, i) => {
-                                                    const tone = gradeTone(course.grade);
-                                                    return (
-                                                        <tr key={i}>
-                                                            <td className={classes.cell}>
-                                                                {course.course}
-                                                            </td>
-                                                            <td className={classes.cell}>
-                                                                <span
-                                                                    className={`${classes.gradeBadge} ${tone === 'pass' ? classes.gradePass : ''} ${tone === 'fail' ? classes.gradeFail : ''}`}
-                                                                >
-                                                                    {course.grade}
-                                                                </span>
-                                                            </td>
-                                                            <td className={`${classes.cell} ${classes.cellNumeric}`}>{course.units}</td>
-                                                            <td className={`${classes.cell} ${classes.cellNumeric}`}>{course.code}</td>
-                                                        </tr>
-                                                    );
-                                                })}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                );
-                            })}
-                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </Section>
                 )
             }
