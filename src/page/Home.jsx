@@ -1109,6 +1109,7 @@ const HomePage = (props = {}) => {
                 session: record.class_duration ?? '',
                 refundDate: formatDate(record.refund_date),
                 dropDate: formatDate(record.drop_date),
+                scheduleType: record.scheduletype ?? '',
                 addedDate: formatDate(record.add_date)
             };
         })
@@ -1129,7 +1130,7 @@ const HomePage = (props = {}) => {
     const auditRan = auditVariant !== null;
 
 
-    console.log(gpaData);
+    console.log(curClasses);
     return (
         <div className={classes.page}>
 
@@ -1368,8 +1369,8 @@ const HomePage = (props = {}) => {
                                     <div className={classes.gpaStatRow}>
                                         <div className={classes.gpaStat}>
                                             <span className={classes.label}>GPA (1–99)</span>
-                                            <span className={classes.gpaStatValue}>{row.gpa_1to99}</span>
-                                            <span className={classes.gpaStatSub}>{row.units_1to99} units earned</span>
+                                            <span className={classes.gpaStatValue}>{formatValue(row.gpa_1to99)}</span>
+                                            <span className={classes.gpaStatSub}>{formatValue(row.units_1to99)} units earned</span>
                                             <span className={classes.gpaStatGradePoint}>{formatValue(row.gradept_1to99)} grade points</span>
                                             <span className={classes.gpaStatGradePoint}>{formatValue(row.gradehr_1to99)} grade hours</span>
 
@@ -1377,30 +1378,30 @@ const HomePage = (props = {}) => {
                                         </div>
                                         <div className={classes.gpaStat}>
                                             <span className={classes.label}>GPA (1–399)</span>
-                                            <span className={classes.gpaStatValue}>{row.gpa_1to399}</span>
-                                            <span className={classes.gpaStatSub}>{row.units_1to399} units earned</span>
+                                            <span className={classes.gpaStatValue}>{formatValue(row.gpa_1to399)}</span>
+                                            <span className={classes.gpaStatSub}>{formatValue(row.units_1to399)} units earned</span>
                                             <span className={classes.gpaStatGradePoint}>{formatValue(row.gradept_1to399)} grade points</span>
                                             <span className={classes.gpaStatGradePoint}>{formatValue(row.gradehr_1to399)} grade hours</span>
 
                                         </div>
                                         <div className={classes.gpaStat}>
                                             <span className={classes.label}>Cumulative GPA</span>
-                                            <span className={classes.gpaStatValue}>{row.cumpga}</span>
-                                            <span className={classes.gpaStatSub}>{row.allunits} units earned</span>
+                                            <span className={classes.gpaStatValue}>{formatValue(row.cumpga)}</span>
+                                            <span className={classes.gpaStatSub}>{formatValue(row.allunits)} units earned</span>
                                             <span className={classes.gpaStatGradePoint}>{formatValue(row.gradeptallunits)} grade points</span>
                                             <span className={classes.gpaStatGradePoint}>{formatValue(row.gradehrallunits)} grade hours</span>
 
                                         </div>
                                         <div className={classes.gpaStat}>
                                             <span className={classes.label}>Attempted</span>
-                                            <span className={`${classes.gpaStatValue} ${classes.gpaStatValueMuted}`}>{row.units_all_attm}</span>
+                                            <span className={`${classes.gpaStatValue} ${classes.gpaStatValueMuted}`}>{formatValue(row.units_all_attm)}</span>
                                             <span className={classes.gpaStatSub}>units</span>
                                             <span className={classes.gpaStatGradePoint}>A, B, C, D, F, I, P, NP, W</span>
 
                                         </div>
                                         <div className={classes.gpaStat}>
                                             <span className={classes.label}>External</span>
-                                            <span className={`${classes.gpaStatValue} ${classes.gpaStatValueMuted}`}>{row.externalunits ? row.externalunits : 0} units</span>
+                                            <span className={`${classes.gpaStatValue} ${classes.gpaStatValueMuted}`}>{formatValue(row.externalunits ?? 0)} units</span>
                                             <span className={classes.gpaStatSub}>units approved by A&R AP, transfer credit, etc.</span>
                                         </div>
                                     </div>
@@ -1551,9 +1552,10 @@ const HomePage = (props = {}) => {
                             <table className={classes.table}>
                                 <thead>
                                     <tr>
-                                        <th className={classes.headerCell} style={{ width: '30%' }}>Course</th>
+                                        <th className={classes.headerCell} style={{ width: '20%' }}>Course</th>
                                         <th className={classes.headerCell} style={{ width: '18%' }}>Status</th>
                                         <th className={classes.headerCell} style={{ width: '32%' }}>Session</th>
+                                        <th className={classes.headerCell} style={{ width: '20%' }}>Schedule Type</th>
                                         <th className={classes.headerCell}>Added Date</th>
                                     </tr>
                                 </thead>
@@ -1582,7 +1584,10 @@ const HomePage = (props = {}) => {
                                                     {row.dropDate && <span className={classes.cellSub}>Drop with W deadline {row.dropDate}</span>}
                                                 </td>
                                                 <td className={classes.cell}>
-                                                    {row.addedDate && <span className={classes.cellSub}>{row.addedDate}</span>}
+                                                    {row.scheduleType || '—'}
+                                                </td>
+                                                <td className={classes.cell}>
+                                                    {row.addedDate || '—'}
                                                 </td>
                                             </tr>
                                         );
