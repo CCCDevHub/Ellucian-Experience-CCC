@@ -4,7 +4,7 @@ module.exports = {
     cards: [{
         type: 'DegreeAuditCard',
         source: './src/cards/DegreeAuditCard',
-        title: 'Degree Audit',
+        title: `Counselor's Audit`,
         displayCardType: 'Degree Audit',
         description: 'Degree Audit Degreeworks What-If API',
         configuration: {

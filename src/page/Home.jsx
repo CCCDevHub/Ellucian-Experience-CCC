@@ -72,6 +72,11 @@ const useStyles = makeStyles()({
         fontSize: '0.8125rem',
         color: colorTextNeutral500,
     },
+    sectionNote: {
+        display: 'block',
+        fontSize: '0.75rem',
+        color: '#33363b',
+    },
     label: {
         fontSize: '0.6875rem',
         color: colorTextNeutral500,
@@ -697,12 +702,13 @@ const saveCache = (prefix, studentId, results) => {
     }));
 };
 
-const Section = ({ classes, title, subtitle, action, children }) => (
+const Section = ({ classes, title, subtitle, note, action, children }) => (
     <section className={`${classes.surface} ${classes.section}`}>
         <div className={classes.sectionHeader}>
             <div>
                 <Typography variant="h3">{title}</Typography>
                 {subtitle && <span className={classes.sectionSubtitle}>{subtitle}</span>}
+                {note && <span className={classes.sectionNote}>{note}</span>}
             </div>
             {action}
         </div>
@@ -1361,35 +1367,37 @@ const HomePage = (props = {}) => {
                     <Section
                         classes={classes}
                         title="GPA Summary"
-                        subtitle="Cumulative GPA by unit range"
+                        subtitle="Cumulative GPA by unit range (does not include current/active term)"
                     >
                         <div className={classes.gpaGrid}>
                             {gpaData.map((row, i) => (
                                 <div key={i} className={`${classes.surface} ${classes.gpaCard}`}>
                                     <div className={classes.gpaStatRow}>
                                         <div className={classes.gpaStat}>
-                                            <span className={classes.label}>GPA (1–99)</span>
+                                            <span className={classes.label}>GPA (1–99 & C1000+)</span>
                                             <span className={classes.gpaStatValue}>{formatValue(row.gpa_1to99)}</span>
                                             <span className={classes.gpaStatSub}>{formatValue(row.units_1to99)} units earned</span>
+                                            <span className={classes.gpaStatGradePoint}>{formatValue(row.gradehr_1to99)} grade units</span>
                                             <span className={classes.gpaStatGradePoint}>{formatValue(row.gradept_1to99)} grade points</span>
-                                            <span className={classes.gpaStatGradePoint}>{formatValue(row.gradehr_1to99)} grade hours</span>
+
 
 
                                         </div>
                                         <div className={classes.gpaStat}>
-                                            <span className={classes.label}>GPA (1–399)</span>
+                                            <span className={classes.label}>GPA (1–399 & C1000+)</span>
                                             <span className={classes.gpaStatValue}>{formatValue(row.gpa_1to399)}</span>
                                             <span className={classes.gpaStatSub}>{formatValue(row.units_1to399)} units earned</span>
+                                            <span className={classes.gpaStatGradePoint}>{formatValue(row.gradehr_1to399)} grade units</span>
                                             <span className={classes.gpaStatGradePoint}>{formatValue(row.gradept_1to399)} grade points</span>
-                                            <span className={classes.gpaStatGradePoint}>{formatValue(row.gradehr_1to399)} grade hours</span>
+
 
                                         </div>
                                         <div className={classes.gpaStat}>
                                             <span className={classes.label}>Cumulative GPA</span>
                                             <span className={classes.gpaStatValue}>{formatValue(row.cumpga)}</span>
                                             <span className={classes.gpaStatSub}>{formatValue(row.allunits)} units earned</span>
+                                            <span className={classes.gpaStatGradePoint}>{formatValue(row.gradehrallunits)} grade units</span>
                                             <span className={classes.gpaStatGradePoint}>{formatValue(row.gradeptallunits)} grade points</span>
-                                            <span className={classes.gpaStatGradePoint}>{formatValue(row.gradehrallunits)} grade hours</span>
 
                                         </div>
                                         <div className={classes.gpaStat}>
@@ -1606,6 +1614,7 @@ const HomePage = (props = {}) => {
                         classes={classes}
                         title="Transcript"
                         subtitle="Completed coursework by term"
+                        note="UNITS = Course units per Banner"
                         action={
                             <Legend
                                 classes={classes}
@@ -1629,7 +1638,7 @@ const HomePage = (props = {}) => {
                                         <div key={term} className={classes.termGroup}>
                                             <div className={classes.termHeader}>
                                                 <Typography variant="h4">{formatTerm(term)}</Typography>
-                                                <span className={classes.termUnits}>{termUnits} units · {courses.length} courses · {term}</span>
+                                                {/* <span className={classes.termUnits}>{termUnits} units · {courses.length} courses · {term}</span> */}
                                             </div>
                                             <table className={classes.table}>
                                                 <thead>
@@ -1655,7 +1664,7 @@ const HomePage = (props = {}) => {
                                                                         {course.grade}
                                                                     </span>
                                                                 </td>
-                                                                <td className={`${classes.cell} ${classes.cellNumeric}`}>{course.units}</td>
+                                                                <td className={`${classes.cell} ${classes.cellNumeric}`}>{formatValue(course.units)}</td>
                                                                 <td className={`${classes.cell} ${classes.cellNumeric}`}>{course.code}</td>
                                                             </tr>
                                                         );
