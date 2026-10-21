@@ -1095,7 +1095,10 @@ const HomePage = (props = {}) => {
         if (!transcriptData) return null;
         const groups = new Map();
         for (const record of transcriptData) {
-            const term = record.term ?? 'Unknown Term';
+            // Some pipelines return a placeholder row (no term, no course data) when a student
+            // has no completed coursework — drop it instead of showing an empty "Unknown Term" group.
+            if (!record.term || !(record.course || record.grade || record.units || record.code)) continue;
+            const term = record.term;
             if (!groups.has(term)) groups.set(term, []);
             groups.get(term).push(record);
         }
@@ -1136,7 +1139,7 @@ const HomePage = (props = {}) => {
     const auditRan = auditVariant !== null;
 
 
-    console.log(curClasses);
+    console.log();
     return (
         <div className={classes.page}>
 
@@ -1288,7 +1291,20 @@ const HomePage = (props = {}) => {
 
             {/* ---------- standing ---------- */}
             {
-                standings.length > 0 && (() => {
+                (() => {
+                    if (!standings.length) {
+                        return (
+                            <Section
+                                classes={classes}
+                                title="Student Standing"
+                                subtitle="Academic and progress standing"
+                            >
+                                <div className={classes.auditPending}>
+                                    No student standing posted for this student yet.
+                                </div>
+                            </Section>
+                        );
+                    }
                     // Pick the newest term by term code for the headline, but leave the table in pipeline order.
                     const latest = standings.reduce((acc, s) => (Number(s.term) > Number(acc.term) ? s : acc), standings[0]);
                     const history = standings.filter((_, i) => i !== standings.indexOf(latest));
