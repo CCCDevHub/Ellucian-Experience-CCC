@@ -1438,11 +1438,11 @@ const HomePage = (props = {}) => {
 
             {/* ---------- degrees ---------- */}
             {
-                degrees.length > 0 && (
+                activeStudentId && (
                     <Section
                         classes={classes}
                         title="Degrees Earned & Pending"
-                        subtitle={`${degrees.length} ${degrees.length === 1 ? 'record' : 'records'} posted`}
+                        subtitle={degrees.length ? `${degrees.length} ${degrees.length === 1 ? 'record' : 'records'} posted` : 'Degrees and certificates on file'}
                         action={
                             <Legend
                                 classes={classes}
@@ -1454,17 +1454,23 @@ const HomePage = (props = {}) => {
                             />
                         }
                     >
-                        <div className={classes.degreeGrid}>
-                            {degrees.map((item, i) => (
-                                <div key={i} className={classes.degreeItem}>
-                                    <div className={classes.degreeTopRow}>
-                                        <span className={classes.degreeName}>{item.label}</span>
-                                        {item.status && <span className={classes.degreeStatus}>{item.status}</span>}
+                        {!degrees.length ? (
+                            <div className={classes.auditPending}>
+                                No degrees or certificates posted for this student yet.
+                            </div>
+                        ) : (
+                            <div className={classes.degreeGrid}>
+                                {degrees.map((item, i) => (
+                                    <div key={i} className={classes.degreeItem}>
+                                        <div className={classes.degreeTopRow}>
+                                            <span className={classes.degreeName}>{item.label}</span>
+                                            {item.status && <span className={classes.degreeStatus}>{item.status}</span>}
+                                        </div>
+                                        {item.term && <span className={classes.degreeTerm}>Term {item.term}</span>}
                                     </div>
-                                    {item.term && <span className={classes.degreeTerm}>Term {item.term}</span>}
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        )}
                     </Section>
                 )
             }
