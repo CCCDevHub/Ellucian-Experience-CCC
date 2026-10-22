@@ -1058,8 +1058,8 @@ const HomePage = (props = {}) => {
         const hasASEP = rows.some(r => r.types_ed_plan === 'Abbreviated');
         const hasCSEP = rows.some(r => r.types_ed_plan === 'Comprehensive');
         return [
-            { label: 'Orientation', met: rows.some(r => r.orientation) },
-            { label: 'Placement Testing', met: rows.some(r => r.testing) },
+            { label: 'Orientation', met: rows.some(r => String(r.orientation ?? '').trim()) },
+            { label: 'Placement Testing', met: rows.some(r => String(r.testing ?? '').trim()) },
             // A CSEP takes the place of an ASEP, so a missing ASEP isn't a gap once CSEP is on file.
             { label: 'ASEP', met: hasASEP, na: hasCSEP && !hasASEP },
             { label: 'CSEP', met: hasCSEP },
@@ -1139,7 +1139,7 @@ const HomePage = (props = {}) => {
     const auditRan = auditVariant !== null;
 
 
-    console.log();
+    console.log(gpaData);
     return (
         <div className={classes.page}>
 
